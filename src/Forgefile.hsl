@@ -1,0 +1,17 @@
+include ~/toolsets/gcc/gcc-app.hsl
+include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
+
+var sources type list;
+var includes type list;
+var cflags type list;
+var libraries type list;
+var ldflags type list;
+
+var depchain type string;
+
+project pig : toolset "gcc-c-app" : dependencies $depchain : $sources, $includes, $cflags, $libraries, $ldflags, "pig";
+
+pig.prologue() {
+    $sources.ls(".*\\.c$");
+    $depchain = get_c_cpp_deps();
+}
