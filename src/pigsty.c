@@ -156,8 +156,7 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
     char *end_bp = NULL;
     char *retval = NULL;
     bp = end_bp = skip_pigsty_blank(bp);
-    *next = bp;
-    while (!is_pigsty_blank(*end_bp) && *end_bp != '=' && *end_bp != ',' && *end_bp != 0) {
+    while (!is_pigsty_blank(*end_bp) && *end_bp != 0) {
         if (*end_bp == '\"') {
             end_bp++;
             while (*end_bp != '\"' && *end_bp != 0) {
@@ -166,10 +165,16 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
                     end_bp += 2;
                 }
             }
+            end_bp++;
+            break;
         } else {
             end_bp++;
-        }
+            if (*end_bp == '=' || *end_bp == ',' || *end_bp == '>') {
+    		break;
+    	    }
+        }        
     }
+    *next = end_bp;
     retval = (char *) pig_newseg(end_bp - bp + 1);
     memset(retval, 0, end_bp - bp + 1);
     memcpy(retval, bp, end_bp - bp);
@@ -189,11 +194,10 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
         return 0;
     }
     free(token);
+    buffer = *next;    
     token = get_next_pigsty_word(buffer, next);
-    while (all_ok && *next != 0) {
-        free(token);
-        token = get_next_pigsty_word(buffer, next);
-        switch (state) {
+    while (all_ok && **next != 0) {
+	switch (state) {
             case 0:  //  field existence verifying
                 field_index = get_pigsty_field_index(token);
                 if (field_map[field_index] == 1) {
@@ -204,18 +208,28 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
                 field_map[field_index] = 1;
                 state = 1;
                 break;
+                
+    	    case 1:
+    		all_ok = (strcmp(token, "=") == 0);
+    		if (!all_ok) {
+    		    printf("pig panic: expecting \"=\" token.\n");
+    		    free(token);
+    		    return 0;
+    		}
+    		state = 2;
+    		break;
 
-            case 1:  //  field data verifying
+            case 2:  //  field data verifying
                 all_ok = SIGNATURE_FIELDS[field_index].verifier(token);
                 if (!all_ok) {
                     printf("pig panic: field \"%s\" has invalid data (\"%s\").\n", SIGNATURE_FIELDS[field_index].label, token);
                     free(token);
                     return 0;
                 }
-                state = 2;
+                state = 3;
                 break;
 
-            case 2:  //  next or end verifying
+            case 3:  //  next or end verifying
                 all_ok = (*token == ',' || *token == '>');
                 state = 0;
                 if (!all_ok) {
@@ -224,6 +238,9 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
                 }
                 break;
         }
+        free(token);
+        buffer = *next;
+        token = get_next_pigsty_word(buffer, next);
     }
     return all_ok;
 }
