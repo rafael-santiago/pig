@@ -220,13 +220,15 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     		break;
 
             case 2:  //  field data verifying
-                all_ok = SIGNATURE_FIELDS[field_index].verifier(token);
-                if (!all_ok) {
-                    printf("pig panic: field \"%s\" has invalid data (\"%s\").\n", SIGNATURE_FIELDS[field_index].label, token);
-                    free(token);
-                    return 0;
-                }
-                state = 3;
+        	if (SIGNATURE_FIELDS[field_index].verifier != NULL) {
+                    all_ok = SIGNATURE_FIELDS[field_index].verifier(token);
+	            if (!all_ok) {
+    	        	printf("pig panic: field \"%s\" has invalid data (\"%s\").\n", SIGNATURE_FIELDS[field_index].label, token);
+    	        	free(token);
+                	return 0;
+            	    }
+            	}
+            	state = 3;
                 break;
 
             case 3:  //  next or end verifying
