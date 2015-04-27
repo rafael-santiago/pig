@@ -354,6 +354,9 @@ static int verify_ipv4_addr(const char *buffer) {
     size_t o = 0;
     memset(oct, 0, sizeof(oct));
     for (b = buffer; *b != 0 && retval; b++) {
+	if (*b != '.' && !isdigit(*b)) {
+	    return 0;
+	}
 	if (*b == '.' || *(b + 1) == 0) {
 	    if (*(b + 1) == 0) {
 		oct[o] = *b;
