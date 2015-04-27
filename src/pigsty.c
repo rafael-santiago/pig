@@ -267,48 +267,106 @@ static int verify_string(const char *buffer) {
 }
 
 static int verify_u1(const char *buffer) {
-    int retval = 1;
-    return retval;
+    int retval = 0;
+    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+	retval = strtoul(buffer + 2, NULL, 16);
+    } else {
+	retval = atoi(buffer);
+    }
+    return (retval == 0 || retval == 1);
 }
 
 static int verify_u3(const char *buffer) {
-    int retval = 1;
-    return retval;
+    int retval = 0;
+    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+	retval = strtoul(buffer + 2, NULL, 16);
+    } else {
+	retval = atoi(buffer);
+    }
+    return (retval >= 0 && retval <= 7);
 }
 
 static int verify_u4(const char *buffer) {
-    int retval = 1;
-    return retval;
+    int retval = 0;
+    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+	retval = strtoul(buffer + 2, NULL, 16);
+    } else {
+	retval = atoi(buffer);
+    }
+    return (retval >= 0 && retval <= 15);
 }
 
 static int verify_u6(const char *buffer) {
-    int retval = 1;
-    return retval;
+    int retval = 0;
+    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+	retval = strtoul(buffer + 2, NULL, 16);
+    } else {
+	retval = atoi(buffer);
+    }
+    return (retval >= 0 && retval <= 63);
 }
 
 static int verify_u8(const char *buffer) {
-    int retval = 1;
-    return retval;
+    int retval = 0;
+    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+	retval = strtoul(buffer + 2, NULL, 16);
+    } else {
+	retval = atoi(buffer);
+    }
+    return (retval >= 0 && retval <= 255);
 }
 
 static int verify_u13(const char *buffer) {
-    int retval = 1;
-    return retval;
+    int retval = 0;
+    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+	retval = strtoul(buffer + 2, NULL, 16);
+    } else {
+	retval = atoi(buffer);
+    }
+    return (retval >= 0 && retval <= 8191);
 }
 
 static int verify_u16(const char *buffer) {
-    int retval = 1;
-    return retval;
+    int retval = 0;
+    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+	retval = strtoul(buffer + 2, NULL, 16);
+    } else {
+	retval = atoi(buffer);
+    }
+    return (retval >= 0 && retval <= 65535);
 }
 
 static int verify_u32(const char *buffer) {
-    int retval = 1;
-    return retval;
+    int retval = 0;
+    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+	retval = strtoul(buffer + 2, NULL, 16);
+    } else {
+	retval = atoi(buffer);
+    }
+    return (retval >= 0 && retval <= 4294967295);
 }
 
 static int verify_ipv4_addr(const char *buffer) {
     int retval = 1;
-    return retval;
+    const char *b = buffer;
+    int dots_nr = 0;
+    char oct[255];
+    size_t o = 0;
+    memset(oct, 0, sizeof(oct));
+    for (b = buffer; *b != 0 && retval; b++) {
+	if (*b == '.' || *(b + 1) == 0) {
+	    if (*(b + 1) == 0) {
+		oct[o] = *b;
+	    }
+	    dots_nr++;
+	    retval = (atoi(oct) >= 0 && atoi(oct) <= 255);
+	    o = 0;
+	} else {
+	    oct[o] = *b;
+	}
+	o = (o + 1) % sizeof(oct);
+    }
+    return retval && dots_nr == 3;
 }
 
 static int get_pigsty_field_index(const char *field) {
