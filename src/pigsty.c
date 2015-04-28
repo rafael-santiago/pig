@@ -275,7 +275,7 @@ static int verify_u1(const char *buffer) {
     } else {
 	retval = atoi(buffer);
     }
-    return (retval == 0 || retval == 1);
+    return (retval == 0x0 || retval == 0x1);
 }
 
 static int verify_u3(const char *buffer) {
@@ -285,7 +285,7 @@ static int verify_u3(const char *buffer) {
     } else {
 	retval = atoi(buffer);
     }
-    return (retval >= 0 && retval <= 7);
+    return (retval >= 0x0 && retval <= 0x3);
 }
 
 static int verify_u4(const char *buffer) {
@@ -295,7 +295,7 @@ static int verify_u4(const char *buffer) {
     } else {
 	retval = atoi(buffer);
     }
-    return (retval >= 0 && retval <= 15);
+    return (retval >= 0x0 && retval <= 0xf);
 }
 
 static int verify_u6(const char *buffer) {
@@ -305,7 +305,7 @@ static int verify_u6(const char *buffer) {
     } else {
 	retval = atoi(buffer);
     }
-    return (retval >= 0 && retval <= 63);
+    return (retval >= 0x0 && retval <= 0x3f);
 }
 
 static int verify_u8(const char *buffer) {
@@ -315,7 +315,7 @@ static int verify_u8(const char *buffer) {
     } else {
 	retval = atoi(buffer);
     }
-    return (retval >= 0 && retval <= 255);
+    return (retval >= 0x0 && retval <= 0xff);
 }
 
 static int verify_u13(const char *buffer) {
@@ -325,7 +325,7 @@ static int verify_u13(const char *buffer) {
     } else {
 	retval = atoi(buffer);
     }
-    return (retval >= 0 && retval <= 8191);
+    return (retval >= 0x0 && retval <= 0x1fff);
 }
 
 static int verify_u16(const char *buffer) {
@@ -335,7 +335,7 @@ static int verify_u16(const char *buffer) {
     } else {
 	retval = atoi(buffer);
     }
-    return (retval >= 0 && retval <= 65535);
+    return (retval >= 0x0 && retval <= 0xffff);
 }
 
 static int verify_u32(const char *buffer) {
@@ -345,7 +345,7 @@ static int verify_u32(const char *buffer) {
     } else {
 	retval = atoi(buffer);
     }
-    return (retval >= 0 && retval <= 4294967295);
+    return (retval >= 0x0 && retval <= 0xffffffff);
 }
 
 static int verify_ipv4_addr(const char *buffer) {
@@ -363,15 +363,18 @@ static int verify_ipv4_addr(const char *buffer) {
 	    if (*(b + 1) == 0) {
 		oct[o] = *b;
 	    }
-	    dots_nr++;
+	    if (*b == '.') {
+		dots_nr++;
+	    }
 	    retval = (atoi(oct) >= 0 && atoi(oct) <= 255);
-	    o = 0;
+	    o = -1;
+	    memset(oct, 0, sizeof(oct));
 	} else {
 	    oct[o] = *b;
 	}
 	o = (o + 1) % sizeof(oct);
     }
-    return retval && dots_nr == 3;
+    return (retval && dots_nr == 3);
 }
 
 static int get_pigsty_field_index(const char *field) {
