@@ -10,7 +10,8 @@ unsigned int to_int(const char *value) {
     if (strlen(value) > 3) {
 	if (*vp == '0' && *(vp + 1) == 'x') {
 	    retval = strtoul(vp + 2, NULL, 16);
-	}
+	    return retval;
+	}	
     }
     retval = atoi(value);
     return retval;
