@@ -57,3 +57,23 @@ void del_pigsty_conf_set(pigsty_conf_set_ctx *confs) {
         }
     }
 }
+
+pigsty_entry_ctx *add_signature_to_pigsty_entry(pigsty_entry_ctx *entries, const char *signature) {
+    pigsty_entry_ctx *head = entries, *p;
+    if (head == NULL) {
+	new_pigsty_entry(head);
+	p = head;	
+    } else {
+	p = get_pigsty_entry_tail(entries);
+    }
+    p->signature_name = (char *) pig_newseg(strlen(signature) + 1);
+    memset(p->signature_name, 0, strlen(signature) + 1);
+    strncpy(p->signature_name, signature, strlen(signature));
+    return head;
+}
+
+pigsty_entry_ctx *get_pigsty_entry_tail(pigsty_entry_ctx *entries) {
+    pigsty_entry_ctx *p;
+    for (p = entries; p->next; p = p->next);
+    return p;
+}

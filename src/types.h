@@ -35,6 +35,7 @@ typedef struct _pigsty_conf_set {
 }pigsty_conf_set_ctx;
 
 typedef struct _pigsty_entry {
+    char *signature_name;
     pigsty_conf_set_ctx *conf;
     struct _pigsty_entry *next;
 }pigsty_entry_ctx;

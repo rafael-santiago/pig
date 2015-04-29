@@ -9,6 +9,7 @@
 #include "../pigsty.h"
 #include "../to_int.h"
 #include "../to_str.h"
+#include "../lists.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
