@@ -46,6 +46,14 @@ char *pigsty_file_parsing_tests() {
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     UTEST_CHECK("pigsty != NULL", pigsty == NULL);
     remove("test.pigsty");
+
+
+    test_pigsty = "< ip.version = 0x00004, ip.tos = 5, ip.src = 127.0.0.1 > <ip.version = 4, ip.tlen = 20a >";  //  invalid ip version.
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    UTEST_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+
     printf("-- passed.\n");
     return NULL;
 }

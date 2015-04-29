@@ -8,6 +8,7 @@
 #include "pigsty.h"
 #include "memory.h"
 #include "lists.h"
+#include "to_int.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -56,6 +57,10 @@ static int verify_u32(const char *buffer);
 static int verify_ipv4_addr(const char *buffer);
 
 static get_pigsty_field_index(const char *field);
+
+static int verify_int(const char *buffer);
+
+static int verify_hex(const char *buffer);
 
 static struct signature_fields SIGNATURE_FIELDS[] = {
     {  "ip.version",  kIpv4_version, verify_ip_version},
@@ -179,7 +184,7 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
             if (*end_bp == '=' || *end_bp == ',' || *end_bp == '>') {
     		break;
     	    }
-        }        
+        }
     }
     *next = end_bp;
     retval = (char *) pig_newseg(end_bp - bp + 1);
@@ -267,8 +272,9 @@ static int compile_pigsty_buffer(const char *buffer) {
 }
 
 static int verify_ip_version(const char *buffer) {
-    return (strcmp(buffer, "4") == 0    || strcmp(buffer, "0x4") == 0 ||
-            strcmp(buffer, "0x04") == 0 ||  strcmp(buffer, "04") == 0);
+    return ((verify_u3(buffer)  || verify_u4(buffer) ||
+             verify_u8(buffer)  || verify_u13(buffer) ||
+             verify_u16(buffer) || verify_u32(buffer)) && to_int(buffer) == 4);
 }
 
 static int verify_string(const char *buffer) {
@@ -276,80 +282,80 @@ static int verify_string(const char *buffer) {
 }
 
 static int verify_u1(const char *buffer) {
-    int retval = 0;
-    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+    int retval = -1;
+    if (verify_hex(buffer)) {
 	retval = strtoul(buffer + 2, NULL, 16);
-    } else {
+    } else if (verify_int(buffer)) {
 	retval = atoi(buffer);
     }
     return (retval == 0x0 || retval == 0x1);
 }
 
 static int verify_u3(const char *buffer) {
-    int retval = 0;
-    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+    int retval = -1;
+    if (verify_hex(buffer)) {
 	retval = strtoul(buffer + 2, NULL, 16);
-    } else {
+    } else if (verify_int(buffer)) {
 	retval = atoi(buffer);
     }
-    return (retval >= 0x0 && retval <= 0x3);
+    return (retval >= 0x0 && retval <= 0x7);
 }
 
 static int verify_u4(const char *buffer) {
-    int retval = 0;
-    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+    int retval = -1;
+    if (verify_hex(buffer)) {
 	retval = strtoul(buffer + 2, NULL, 16);
-    } else {
+    } else if (verify_int(buffer)) {
 	retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0xf);
 }
 
 static int verify_u6(const char *buffer) {
-    int retval = 0;
-    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+    int retval = -1;
+    if (verify_hex(buffer)) {
 	retval = strtoul(buffer + 2, NULL, 16);
-    } else {
+    } else if (verify_int(buffer)) {
 	retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0x3f);
 }
 
 static int verify_u8(const char *buffer) {
-    int retval = 0;
-    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+    int retval = -1;
+    if (verify_hex(buffer)) {
 	retval = strtoul(buffer + 2, NULL, 16);
-    } else {
+    } else if (verify_int(buffer)) {
 	retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0xff);
 }
 
 static int verify_u13(const char *buffer) {
-    int retval = 0;
-    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+    int retval = -1;
+    if (verify_hex(buffer)) {
 	retval = strtoul(buffer + 2, NULL, 16);
-    } else {
+    } else if (verify_int(buffer)) {
 	retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0x1fff);
 }
 
 static int verify_u16(const char *buffer) {
-    int retval = 0;
-    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+    int retval = -1;
+    if (verify_hex(buffer)) {
 	retval = strtoul(buffer + 2, NULL, 16);
-    } else {
+    } else if (verify_int(buffer)) {
 	retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0xffff);
 }
 
 static int verify_u32(const char *buffer) {
-    int retval = 0;
-    if (strlen(buffer) > 1 && *buffer == '0' && *(buffer + 1) == 'x') {
+    int retval = -1;
+    if (verify_hex(buffer)) {
 	retval = strtoul(buffer + 2, NULL, 16);
-    } else {
+    } else if (verify_int(buffer)) {
 	retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0xffffffff);
@@ -392,4 +398,41 @@ static int get_pigsty_field_index(const char *field) {
         }
     }
     return -1;
+}
+
+static int verify_int(const char *buffer) {
+    const char *b;
+    if (buffer == NULL) {
+        return 0;
+    }
+    for (b = buffer; *b != 0; b++) {
+        if (!isdigit(*b)) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+static int verify_hex(const char *buffer) {
+    const char *b = buffer;
+    if (b == NULL) {
+        return 0;
+    }
+    if (*b != '0') {
+        return 0;
+    }
+    b++;
+    if (*b != 'x') {
+        return 0;
+    }
+    b++;
+    if (*b == 0) {
+        return 0;
+    }
+    for (; *b != 0; b++) {
+        if (!isxdigit(*b)) {
+            return 0;
+        }
+    }
+    return 1;
 }
