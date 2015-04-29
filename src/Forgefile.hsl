@@ -1,3 +1,10 @@
+#
+#                                Copyright (C) 2015 by Rafael Santiago
+#
+# This is a free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#
 include ~/toolsets/gcc/gcc-app.hsl
 include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
 
@@ -14,4 +21,19 @@ project pig : toolset "gcc-c-app" : dependencies $depchain : $sources, $includes
 pig.prologue() {
     $sources.ls(".*\\.c$");
     $depchain = get_c_cpp_deps();
+}
+
+pig.epilogue() {
+    if (hefesto.sys.last_forge_result() == 0) {
+        var exit_code type int;
+        hefesto.sys.cd("utest");
+        $exit_code = hefesto.sys.forge("pig-utests", "Forgefile.hsl", "--obj-output-dir=obj --bin-output-dir=bin");
+        hefesto.sys.cd("..");
+        if ($exit_code != 0) {
+            hefesto.sys.echo("\n~~~ UNIT TESTS FAILURE!\n");
+            hefesto.project.abort(1);
+        } else {
+            hefesto.sys.echo("\n*** BUILD SUCCESS.\n");
+        }
+    }
 }

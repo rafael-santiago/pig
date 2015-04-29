@@ -1,3 +1,10 @@
+/*
+ *                                Copyright (C) 2015 by Rafael Santiago
+ *
+ * This is a free software. You can redistribute it and/or modify under
+ * the terms of the GNU General Public License version 2.
+ *
+ */
 #include "pigsty.h"
 #include "memory.h"
 #include "lists.h"
@@ -194,7 +201,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
         return 0;
     }
     free(token);
-    buffer = *next;    
+    buffer = *next;
     token = get_next_pigsty_word(buffer, next);
     while (all_ok && **next != 0) {
 	switch (state) {
@@ -208,7 +215,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
                 field_map[field_index] = 1;
                 state = 1;
                 break;
-                
+
     	    case 1:
     		all_ok = (strcmp(token, "=") == 0);
     		if (!all_ok) {

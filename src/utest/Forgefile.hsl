@@ -1,0 +1,51 @@
+#
+#                                Copyright (C) 2015 by Rafael Santiago
+#
+# This is a free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#
+include ~/toolsets/gcc/gcc-app.hsl
+
+var sources type list;
+var includes type list;
+var cflags type list;
+var libraries type list;
+var ldflags type list;
+
+project pig-utests : toolset "gcc-c-app" : $sources, $includes, $cflags, $libraries, $ldflags, "put" ;
+
+pig-utests.prologue() {
+    $sources.ls(".*\\.c$");
+    $ldflags = get_pig_objs();
+}
+
+function get_pig_objs() : result type list {
+    var ldflags type list;
+    hefesto.sys.cd("../obj");
+    $ldflags.ls(".*\\.o");
+    var l type int;
+    var obj_file type string;
+    $l = 0;
+    while ($l < $ldflags.count()) {
+        $obj_file = $ldflags.item($l);
+        if ($obj_file.match(".*main\\.o$")) {
+            $ldflags.del_index($l);
+            break;
+        }
+        $l = $l + 1;
+    }
+    hefesto.sys.cd("../utest");
+    result $ldflags;
+}
+
+pig-utests.epilogue() {
+    if (hefesto.sys.last_forge_result() == 0) {
+        var exit_code type int;
+        hefesto.sys.echo("--\n");
+        $exit_code = hefesto.sys.run("bin/put");
+        if ($exit_code != 0) {
+            hefesto.project.abort($exit_code);
+        }
+    }
+}
