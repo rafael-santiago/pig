@@ -62,9 +62,11 @@ pigsty_entry_ctx *add_signature_to_pigsty_entry(pigsty_entry_ctx *entries, const
     pigsty_entry_ctx *head = entries, *p;
     if (head == NULL) {
 	new_pigsty_entry(head);
-	p = head;	
+	p = head;
     } else {
 	p = get_pigsty_entry_tail(entries);
+        new_pigsty_entry(p->next);
+        p = p->next;
     }
     p->signature_name = (char *) pig_newseg(strlen(signature) + 1);
     memset(p->signature_name, 0, strlen(signature) + 1);
