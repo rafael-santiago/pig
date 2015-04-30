@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "lists.h"
 #include "to_int.h"
+#include "to_voidp.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -191,6 +192,66 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
     memset(retval, 0, end_bp - bp + 1);
     memcpy(retval, bp, end_bp - bp);
     return retval;
+}
+
+pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *entries, char *buffer) {
+    char *next = NULL;
+    char *token = NULL;
+    char *tmp_buffer = buffer;
+    char *signature_name = NULL;
+    char *data = NULL;
+    void *fmt_data = NULL;
+    size_t fmt_dsize = 0;
+    pigsty_entry_ctx *entry_p = NULL;
+    pig_field_t field_index = 0;
+    token = get_next_pigsty_word(tmp_buffer, &next);
+    while (*next != 0 && signature_name == NULL) {
+	if (strcmp(token, "signature") == 0) {
+	    tmp_buffer = next;
+	    signature_name = get_next_pigsty_word(tmp_buffer, &next);
+	}
+	tmp_buffer = next;
+	free(token);
+	if (signature_name == NULL) {
+    	    token = get_next_pigsty_word(tmp_buffer, &next);
+    	}
+    }
+    if (signature_name != NULL) {
+	entries = add_signature_to_pigsty_entry(entries, signature_name);
+	free(signature_name);
+	entry_p = get_pigsty_entry_tail(entries);
+	tmp_buffer = buffer;
+	token = get_next_pigsty_word(tmp_buffer, &next);
+	while (*next != 0) {
+	    if ((field_index = get_pigsty_field_index(token)) > - 1) {
+		tmp_buffer = next;
+		free(token);
+		token = get_next_pigsty_word(tmp_buffer, &next); //  =
+		free(token);
+		token = NULL;
+		tmp_buffer = next;
+		data = get_next_pigsty_word(tmp_buffer, &next);
+		if (fmt_data != NULL) {
+		    if (verify_int(data)) {
+			fmt_data = int_to_voidp(data, &fmt_dsize);
+		    } else if (verify_str(data)) {
+			fmt_data = str_to_voidp(data, &fmt_dsize);
+		    }
+		    free(data);
+    		    entry_p->conf = add_conf_to_pigsty_conf_set(entry_p->conf, field_index, 0, fmt_data, fmt_dsize);
+    		    free(fmt_data);
+    		    fmt_data = NULL;
+    		}
+		free(data);
+		data = NULL;
+	    }
+	    tmp_buffer = next;
+	    free(token);
+	    token = get_next_pigsty_word(tmp_buffer, &next);
+	}
+	free(token);
+    }
+    return entries;
 }
 
 static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
