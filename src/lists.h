@@ -21,7 +21,7 @@ pigsty_conf_set_ctx *add_conf_to_pigsty_conf_set(pigsty_conf_set_ctx *conf,
                                                  const pig_field_t field_index,
                                                  const pig_field_t field_nature,
                                                  const void *data, size_t dsize);
-                                                 
+
 pigsty_entry_ctx *add_signature_to_pigsty_entry(pigsty_entry_ctx *entries, const char *signature);
 
 pigsty_entry_ctx *get_pigsty_entry_tail(pigsty_entry_ctx *entries);

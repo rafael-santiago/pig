@@ -6,6 +6,7 @@
  *
  */
 #include "utest.h"
+#include "../types.h"
 #include "../pigsty.h"
 #include "../to_int.h"
 #include "../to_str.h"
@@ -95,11 +96,48 @@ char *to_str_tests() {
     return NULL;
 }
 
+char *pigsty_entry_ctx_tests() {
+    pigsty_entry_ctx *pigsty = NULL;
+    printf("-- running pigsty_entry_ctx_tests...\n");
+    pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
+    pigsty = add_signature_to_pigsty_entry(pigsty, "roc!");
+    UTEST_CHECK("pigsty == NULL", pigsty != NULL);
+    UTEST_CHECK("pigsty->signature_name != oink", strcmp(pigsty->signature_name, "oink") == 0);
+    UTEST_CHECK("pigsty->next == NULL", pigsty->next != NULL);
+    UTEST_CHECK("pigsty->next->signature_name != roc!", strcmp(pigsty->next->signature_name, "roc!") == 0);
+    UTEST_CHECK("pigsty->next->next != NULL", pigsty->next->next == NULL);
+    del_pigsty_entry(pigsty);
+    printf("-- passed.\n");
+    return NULL;
+}
+
+char *pigsty_conf_set_ctx_tests() {
+    pigsty_entry_ctx *pigsty = NULL;
+    printf("-- running pigsty_conf_set_ctx_tests...\n");
+    pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
+    UTEST_CHECK("pigsty == NULL", pigsty != NULL);
+    pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_version, kNatureSet, "abc", 3);
+    pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_tos, kNatureSet, "xyz.", 4);
+    UTEST_CHECK("pigsty->conf == NULL", pigsty->conf != NULL);
+    UTEST_CHECK("pigsty->conf->index != kIpv4_version", pigsty->conf->field.index == kIpv4_version);
+    UTEST_CHECK("pigsty->conf->nature != kNatureSet", pigsty->conf->field.nature == kNatureSet);
+    UTEST_CHECK("pigsty->conf->dsize != 3", pigsty->conf->field.dsize == 3);
+    UTEST_CHECK("pigsty->conf->data != abc", strcmp(pigsty->conf->field.data,"abc") == 0);
+    UTEST_CHECK("pigsty->conf->next == NULL", pigsty->conf->next != NULL);
+    UTEST_CHECK("pigsty->conf->next->index != kIpv4_tos", pigsty->conf->next->field.index == kIpv4_tos);
+    UTEST_CHECK("pigsty->conf->next->nature != kNatureSet", pigsty->conf->next->field.nature == kNatureSet);
+    UTEST_CHECK("pigsty->conf->next->dsize != 4", pigsty->conf->next->field.dsize == 4);
+    UTEST_CHECK("pigsty->conf->next->data != xyz.", strcmp(pigsty->conf->next->field.data,"xyz.") == 0);
+    del_pigsty_entry(pigsty);
+    printf("-- passed.\n");
+}
+
 char *run_tests() {
     printf("running unit tests...\n\n");
     UTEST_RUN(pigsty_file_parsing_tests);
     UTEST_RUN(to_int_tests);
     UTEST_RUN(to_str_tests);
+    UTEST_RUN(pigsty_entry_ctx_tests);
     return NULL;
 }
 
