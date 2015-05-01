@@ -10,6 +10,7 @@
 #include "../pigsty.h"
 #include "../to_int.h"
 #include "../to_str.h"
+#include "../to_ipv4.h"
 #include "../lists.h"
 #include <stdlib.h>
 #include <string.h>
@@ -62,6 +63,7 @@ char *pigsty_file_parsing_tests() {
 
 char *to_int_tests() {
     printf("-- running to_int_tests...\n");
+    UTEST_CHECK("to_int() != 0", to_int(NULL) == 0);
     UTEST_CHECK("to_int() != 4", to_int("4") == 4);
     UTEST_CHECK("to_int() != 0xf", to_int("0xf") == 0xf);
     UTEST_CHECK("to_int() != 0x0f", to_int("0x0f") == 0xf);
@@ -74,6 +76,7 @@ char *to_int_tests() {
 char *to_str_tests() {
     char *retval = NULL;
     printf("-- running to_str_tests...\n");
+    UTEST_CHECK("to_str() != NULL", to_str(NULL) == NULL);
     retval = to_str("\"\\n\\r\\t\"");
     UTEST_CHECK("to_str() != \"\\n\\r\\t\"", strcmp(retval, "\n\r\t") == 0);
     free(retval);
@@ -91,6 +94,19 @@ char *to_str_tests() {
     free(retval);
     retval = to_str("\"well behaved string.\"");
     UTEST_CHECK("to_str() != \"well behaved string.\"", strcmp(retval, "well behaved string.") == 0);
+    free(retval);
+    printf("-- passed.\n");
+    return NULL;
+}
+
+char *to_ipv4_tests() {
+    unsigned int *retval = NULL;
+    printf("-- running to_ipv4_tests...\n");
+    retval = to_ipv4(NULL);
+    UTEST_CHECK("retval != NULL", retval == NULL);
+    retval = to_ipv4("127.0.0.1");
+    UTEST_CHECK("retval == NULL", retval != NULL);
+    UTEST_CHECK("retval != 0x7f000001", *retval != 0x7f000001);
     free(retval);
     printf("-- passed.\n");
     return NULL;
@@ -137,6 +153,7 @@ char *run_tests() {
     UTEST_RUN(pigsty_file_parsing_tests);
     UTEST_RUN(to_int_tests);
     UTEST_RUN(to_str_tests);
+    UTEST_RUN(to_ipv4_tests);
     UTEST_RUN(pigsty_entry_ctx_tests);
     return NULL;
 }
