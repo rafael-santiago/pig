@@ -13,7 +13,6 @@ static pigsty_conf_set_ctx *get_pigsty_conf_set_tail(pigsty_conf_set_ctx *conf);
 
 pigsty_conf_set_ctx *add_conf_to_pigsty_conf_set(pigsty_conf_set_ctx *conf,
                                                  const pig_field_t field_index,
-                                                 const pig_field_t field_nature,
                                                  const void *data, size_t dsize) {
     pigsty_conf_set_ctx *head = conf, *p;
     if (head == NULL) {
@@ -24,12 +23,10 @@ pigsty_conf_set_ctx *add_conf_to_pigsty_conf_set(pigsty_conf_set_ctx *conf,
         new_pigsty_conf_set(p->next);
         p = p->next;
     }
-    p->field.nature = field_nature;
-    if (field_nature == kNatureSet) {
-        p->field.data = pig_newseg(dsize);
-        memcpy(p->field.data, data, dsize);
-        p->field.dsize = dsize;
-    }
+    p->field->index = field_index;
+    p->field->data = pig_newseg(dsize);
+    memcpy(p->field->data, data, dsize);
+    p->field->dsize = dsize;
     return head;
 }
 
@@ -52,9 +49,10 @@ void del_pigsty_conf_set(pigsty_conf_set_ctx *confs) {
     pigsty_conf_set_ctx *t, *p;
     for (t = p = confs; t; p = t) {
         t = p->next;
-        if (p->field.data != NULL) {
-            free(p->field.data);
+        if (p->field->data != NULL) {
+            free(p->field->data);
         }
+        free(p->field);
     }
 }
 

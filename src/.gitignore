@@ -1,0 +1,7 @@
+bin/*
+obj/*
+*.o
+.hefesto-src-chsum-base
+utest/bin/*
+utest/obj/*
+utest/*.o

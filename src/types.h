@@ -18,19 +18,14 @@ typedef enum _pig_fields {
     kUdp_src, kUdp_dst, kUdp_size, kUdp_checksum, kUdp_payload, kRefresh, kRandom, kSignature, kUnk, kMaxPigFields
 }pig_field_t;
 
-typedef enum _pig_field_nature {
-    kNatureSet = 0, kNatureRandom, kNatureRefresh, kMaxPigNature
-}pig_field_nature_t;
-
 typedef struct _pigsty_field {
     pig_field_t index;
-    pig_field_nature_t nature;
     void *data;
     size_t dsize;
 }pigsty_field_ctx;
 
 typedef struct _pigsty_conf_set {
-    pigsty_field_ctx field;
+    pigsty_field_ctx *field;
     struct _pigsty_conf_set *next;
 }pigsty_conf_set_ctx;
 

@@ -57,6 +57,24 @@ char *pigsty_file_parsing_tests() {
     UTEST_CHECK("pigsty != NULL", pigsty == NULL);
     remove("test.pigsty");
 
+    test_pigsty = "< signature = \"valid signature\", ip.version = 4, ip.tos = 5, ip.src = 127.0.0.1 >"; //  valid pigsty entry.
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    UTEST_CHECK("pigsty == NULL", pigsty != NULL);
+    UTEST_CHECK("pigsty->signature_name != valid signature", strcmp(pigsty->signature_name, "valid signature") == 0);
+    UTEST_CHECK("pigsty->conf == NULL", pigsty->conf != NULL);
+    UTEST_CHECK("pigsty->conf->field == NULL", pigsty->conf->field != NULL);
+    UTEST_CHECK("pigsty->conf->field.index != kIpv4_version", pigsty->conf->field->index == kIpv4_version);
+    UTEST_CHECK("pigsty->conf->next == NULL", pigsty->conf->next != NULL);
+    UTEST_CHECK("pigsty->conf->next->field == NULL", pigsty->conf->next->field != NULL);
+    UTEST_CHECK("pigsty->conf->next->field->index != kIpv4_tos", pigsty->conf->next->field->index == kIpv4_tos);
+    UTEST_CHECK("pigsty->conf->next->next == NULL", pigsty->conf->next->next != NULL);
+    UTEST_CHECK("pigsty->conf->next->next->field == NULL", pigsty->conf->next->next->field != NULL);
+    UTEST_CHECK("pigsty->conf->next->next->field->index != kIpv4_src", pigsty->conf->next->next->field->index == kIpv4_src);
+    UTEST_CHECK("pigsty->conf->next->next->next != NULL", pigsty->conf->next->next->next == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+
     printf("-- passed.\n");
     return NULL;
 }
@@ -132,18 +150,16 @@ char *pigsty_conf_set_ctx_tests() {
     printf("-- running pigsty_conf_set_ctx_tests...\n");
     pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
     UTEST_CHECK("pigsty == NULL", pigsty != NULL);
-    pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_version, kNatureSet, "abc", 3);
-    pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_tos, kNatureSet, "xyz.", 4);
+    pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_version, "abc", 3);
+    pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_tos, "xyz.", 4);
     UTEST_CHECK("pigsty->conf == NULL", pigsty->conf != NULL);
-    UTEST_CHECK("pigsty->conf->index != kIpv4_version", pigsty->conf->field.index == kIpv4_version);
-    UTEST_CHECK("pigsty->conf->nature != kNatureSet", pigsty->conf->field.nature == kNatureSet);
-    UTEST_CHECK("pigsty->conf->dsize != 3", pigsty->conf->field.dsize == 3);
-    UTEST_CHECK("pigsty->conf->data != abc", strcmp(pigsty->conf->field.data,"abc") == 0);
+    UTEST_CHECK("pigsty->conf->index != kIpv4_version", pigsty->conf->field->index == kIpv4_version);
+    UTEST_CHECK("pigsty->conf->dsize != 3", pigsty->conf->field->dsize == 3);
+    UTEST_CHECK("pigsty->conf->data != abc", strcmp(pigsty->conf->field->data,"abc") == 0);
     UTEST_CHECK("pigsty->conf->next == NULL", pigsty->conf->next != NULL);
-    UTEST_CHECK("pigsty->conf->next->index != kIpv4_tos", pigsty->conf->next->field.index == kIpv4_tos);
-    UTEST_CHECK("pigsty->conf->next->nature != kNatureSet", pigsty->conf->next->field.nature == kNatureSet);
-    UTEST_CHECK("pigsty->conf->next->dsize != 4", pigsty->conf->next->field.dsize == 4);
-    UTEST_CHECK("pigsty->conf->next->data != xyz.", strcmp(pigsty->conf->next->field.data,"xyz.") == 0);
+    UTEST_CHECK("pigsty->conf->next->index != kIpv4_tos", pigsty->conf->next->field->index == kIpv4_tos);
+    UTEST_CHECK("pigsty->conf->next->dsize != 4", pigsty->conf->next->field->dsize == 4);
+    UTEST_CHECK("pigsty->conf->next->data != xyz.", strcmp(pigsty->conf->next->field->data,"xyz.") == 0);
     del_pigsty_entry(pigsty);
     printf("-- passed.\n");
 }

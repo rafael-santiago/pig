@@ -14,12 +14,11 @@
                              (p)->next = NULL, (p)->conf = NULL, (p)->signature_name = NULL )
 
 #define new_pigsty_conf_set(c) ( (c) = (pigsty_conf_set_ctx *) pig_newseg(sizeof(pigsty_conf_set_ctx)),\
-                                    (c)->next = NULL, (c)->field.data = NULL, (c)->field.dsize = 0, (c)->field.index = kUnk, (c)->field.nature = kNatureSet )
+                                    (c)->next = NULL, (c)->field = (pigsty_field_ctx *) pig_newseg(sizeof(pigsty_field_ctx)), (c)->field->data = NULL, (c)->field->index = kUnk )
 
 
 pigsty_conf_set_ctx *add_conf_to_pigsty_conf_set(pigsty_conf_set_ctx *conf,
                                                  const pig_field_t field_index,
-                                                 const pig_field_t field_nature,
                                                  const void *data, size_t dsize);
 
 pigsty_entry_ctx *add_signature_to_pigsty_entry(pigsty_entry_ctx *entries, const char *signature);

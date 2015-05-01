@@ -10,6 +10,7 @@
 #include "lists.h"
 #include "to_int.h"
 #include "to_voidp.h"
+#include "to_str.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -57,11 +58,15 @@ static int verify_u32(const char *buffer);
 
 static int verify_ipv4_addr(const char *buffer);
 
-static get_pigsty_field_index(const char *field);
+static int get_pigsty_field_index(const char *field);
 
 static int verify_int(const char *buffer);
 
 static int verify_hex(const char *buffer);
+
+static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *entries, char *buffer, char **next);
+
+static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *data);
 
 static struct signature_fields SIGNATURE_FIELDS[] = {
     {  "ip.version",  kIpv4_version, verify_ip_version},
@@ -111,11 +116,24 @@ pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char
             free(data);
             return NULL;
         }
+        entry = make_pigsty_data_from_loaded_data(entry, data);
         free(data);
     } else {
         printf("pig panic: some i/o error happened.\n");
         del_pigsty_entry(entry);
         return NULL;
+    }
+    return entry;
+}
+
+static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *buffer) {
+    char *data = (char *) buffer;
+    char *next_data = NULL;
+    entry = mk_pigsty_entry_from_compiled_buffer(entry, data, &next_data);
+    while (*next_data != 0) {
+        printf("data = %s\n", data);
+        data = next_data;
+        entry = mk_pigsty_entry_from_compiled_buffer(entry, data, &next_data);
     }
     return entry;
 }
@@ -194,8 +212,7 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
     return retval;
 }
 
-pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *entries, char *buffer) {
-    char *next = NULL;
+static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *entries, char *buffer, char **next) {
     char *token = NULL;
     char *tmp_buffer = buffer;
     char *signature_name = NULL;
@@ -203,17 +220,21 @@ pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *entries
     void *fmt_data = NULL;
     size_t fmt_dsize = 0;
     pigsty_entry_ctx *entry_p = NULL;
-    pig_field_t field_index = 0;
-    token = get_next_pigsty_word(tmp_buffer, &next);
-    while (*next != 0 && signature_name == NULL) {
+    int field_index = 0;
+    token = get_next_pigsty_word(tmp_buffer, next);
+    while (**next != 0 && signature_name == NULL) {
 	if (strcmp(token, "signature") == 0) {
-	    tmp_buffer = next;
-	    signature_name = get_next_pigsty_word(tmp_buffer, &next);
+	    tmp_buffer = *next;
+	    signature_name = get_next_pigsty_word(tmp_buffer, next); //  =
+            free(signature_name);
+            tmp_buffer = *next;
+            token = get_next_pigsty_word(tmp_buffer, next);
+            signature_name = to_str(token);
 	}
-	tmp_buffer = next;
+	tmp_buffer = *next;
 	free(token);
 	if (signature_name == NULL) {
-    	    token = get_next_pigsty_word(tmp_buffer, &next);
+    	    token = get_next_pigsty_word(tmp_buffer, next);
     	}
     }
     if (signature_name != NULL) {
@@ -221,33 +242,37 @@ pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *entries
 	free(signature_name);
 	entry_p = get_pigsty_entry_tail(entries);
 	tmp_buffer = buffer;
-	token = get_next_pigsty_word(tmp_buffer, &next);
-	while (*next != 0) {
-	    if ((field_index = get_pigsty_field_index(token)) > - 1) {
-		tmp_buffer = next;
+	token = get_next_pigsty_word(tmp_buffer, next);
+        while (**next != 0) {
+            if ((field_index = get_pigsty_field_index(token)) > -1 && field_index != kSignature) {
+		tmp_buffer = *next;
 		free(token);
-		token = get_next_pigsty_word(tmp_buffer, &next); //  =
+		token = get_next_pigsty_word(tmp_buffer, next); //  =
 		free(token);
 		token = NULL;
-		tmp_buffer = next;
-		data = get_next_pigsty_word(tmp_buffer, &next);
-		if (fmt_data != NULL) {
+		tmp_buffer = *next;
+		data = get_next_pigsty_word(tmp_buffer, next);
+		if (data != NULL) {
 		    if (verify_int(data)) {
 			fmt_data = int_to_voidp(data, &fmt_dsize);
-		    } else if (verify_str(data)) {
+		    } else if (verify_ipv4_addr(data)) {
+                        fmt_data = ipv4_to_voidp(data, &fmt_dsize);
+                    } else if (verify_string(data)) {
 			fmt_data = str_to_voidp(data, &fmt_dsize);
 		    }
-		    free(data);
-    		    entry_p->conf = add_conf_to_pigsty_conf_set(entry_p->conf, field_index, 0, fmt_data, fmt_dsize);
+    		    entry_p->conf = add_conf_to_pigsty_conf_set(entry_p->conf, field_index, fmt_data, fmt_dsize);
     		    free(fmt_data);
     		    fmt_data = NULL;
     		}
 		free(data);
 		data = NULL;
 	    }
-	    tmp_buffer = next;
+	    tmp_buffer = *next;
 	    free(token);
-	    token = get_next_pigsty_word(tmp_buffer, &next);
+	    token = get_next_pigsty_word(tmp_buffer, next);
+            if (*token == '>') {
+                break;
+            }
 	}
 	free(token);
     }
