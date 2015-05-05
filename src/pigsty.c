@@ -78,6 +78,8 @@ static int verify_required_fields_tcp(pigsty_conf_set_ctx *tcp_set);
 
 static int verify_required_fields_udp(pigsty_conf_set_ctx *udp_set);
 
+static int verify_required_datagram_fields(pigsty_conf_set_ctx *set, const int *fields, const size_t fields_size);
+
 static struct signature_fields SIGNATURE_FIELDS[] = {
     {  "ip.version",  kIpv4_version, verify_ip_version},
     {      "ip.ihl",      kIpv4_ihl,         verify_u4},
