@@ -131,7 +131,7 @@ char *to_ipv4_tests() {
 }
 
 char *pigsty_entry_ctx_tests() {
-    pigsty_entry_ctx *pigsty = NULL;
+    pigsty_entry_ctx *pigsty = NULL, *p;
     printf("-- running pigsty_entry_ctx_tests...\n");
     pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
     pigsty = add_signature_to_pigsty_entry(pigsty, "roc!");
@@ -140,6 +140,11 @@ char *pigsty_entry_ctx_tests() {
     UTEST_CHECK("pigsty->next == NULL", pigsty->next != NULL);
     UTEST_CHECK("pigsty->next->signature_name != roc!", strcmp(pigsty->next->signature_name, "roc!") == 0);
     UTEST_CHECK("pigsty->next->next != NULL", pigsty->next->next == NULL);
+    p = get_pigsty_entry_signature_name("oink", pigsty);
+    UTEST_CHECK("p == NULL", p != NULL);
+    UTEST_CHECK("p->signature_name != oink", strcmp(p->signature_name, "oink") == 0);
+    p = get_pigsty_entry_signature_name("not-added", pigsty);
+    UTEST_CHECK("p != NULL", p == NULL);
     del_pigsty_entry(pigsty);
     printf("-- passed.\n");
     return NULL;

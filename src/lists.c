@@ -77,3 +77,13 @@ pigsty_entry_ctx *get_pigsty_entry_tail(pigsty_entry_ctx *entries) {
     for (p = entries; p->next; p = p->next);
     return p;
 }
+
+pigsty_entry_ctx *get_pigsty_entry_signature_name(const char *signature_name, pigsty_entry_ctx *entries) {
+    pigsty_entry_ctx *ep;
+    for (ep = entries; ep != NULL; ep = ep->next) {
+        if (strcmp(ep->signature_name, signature_name) == 0) {
+            return ep;
+        }
+    }
+    return NULL;
+}

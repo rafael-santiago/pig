@@ -68,6 +68,16 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
 
 static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *data);
 
+static int verify_required_fields(pigsty_entry_ctx *entry);
+
+static int verify_required_fields_ipv4(pigsty_conf_set_ctx *ip4_set);
+
+static int verify_required_fields_ipv6(pigsty_conf_set_ctx *ip6_set);
+
+static int verify_required_fields_tcp(pigsty_conf_set_ctx *tcp_set);
+
+static int verify_required_fields_udp(pigsty_conf_set_ctx *udp_set);
+
 static struct signature_fields SIGNATURE_FIELDS[] = {
     {  "ip.version",  kIpv4_version, verify_ip_version},
     {      "ip.ihl",      kIpv4_ihl,         verify_u4},
@@ -130,8 +140,7 @@ static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *ent
     char *data = (char *) buffer;
     char *next_data = NULL;
     entry = mk_pigsty_entry_from_compiled_buffer(entry, data, &next_data);
-    while (*next_data != 0) {
-        printf("data = %s\n", data);
+    while (*next_data != 0 && entry != NULL) {
         data = next_data;
         entry = mk_pigsty_entry_from_compiled_buffer(entry, data, &next_data);
     }
@@ -230,6 +239,13 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
             tmp_buffer = *next;
             token = get_next_pigsty_word(tmp_buffer, next);
             signature_name = to_str(token);
+            if (get_pigsty_entry_signature_name(signature_name, entries) != NULL) {
+                printf("pig panic: packet signature \"%s\" redeclared.\n", signature_name);
+                free(signature_name);
+                free(token);
+                del_pigsty_entry(entries);
+                return NULL;
+            }
 	}
 	tmp_buffer = *next;
 	free(token);
@@ -521,4 +537,131 @@ static int verify_hex(const char *buffer) {
         }
     }
     return 1;
+}
+
+static int verify_required_datagram_fields(pigsty_conf_set_ctx *set, const int *fields, const size_t fields_size) {
+    size_t f;
+    int retval = 1;
+    int present_fields[SIGNATURE_FIELDS_SIZE];
+    pigsty_conf_set_ctx *sp;
+    memset(present_fields, 0, sizeof(present_fields));
+    for (sp = set; sp != NULL; sp = sp->next) {
+        present_fields[sp->field->index] = 1;
+    }
+    for (f = 0; f < fields_size && retval == 1; f++) {
+        retval = (present_fields[fields[f]] == 1);
+        if (retval == 0) {
+            printf("pig error: field \"%s\" is required.\n", SIGNATURE_FIELDS[f].label);
+        }
+    }
+    return retval;
+}
+
+static int verify_required_fields_ipv4(pigsty_conf_set_ctx *ip4_set) {
+    int ip4_required_fields[] = { kIpv4_src, kIpv4_dst, kIpv4_protocol };
+    return verify_required_datagram_fields(ip4_set, ip4_required_fields, sizeof(ip4_required_fields) / sizeof(ip4_required_fields[0]));
+}
+
+static int verify_required_fields_ipv6(pigsty_conf_set_ctx *ip6_set) {
+    return 0;
+}
+
+static int verify_required_fields_tcp(pigsty_conf_set_ctx *tcp_set) {
+    int tcp_required_fields[] = { kTcp_src, kTcp_dst };
+    return verify_required_datagram_fields(tcp_set, tcp_required_fields, sizeof(tcp_required_fields) / sizeof(tcp_required_fields[0]));
+}
+
+static int verify_required_fields_udp(pigsty_conf_set_ctx *udp_set) {
+    int udp_required_fields[] = { kUdp_src, kUdp_dst };
+    return verify_required_datagram_fields(udp_set, udp_required_fields, sizeof(udp_required_fields) / sizeof(udp_required_fields[0]));
+}
+
+static int verify_required_fields(pigsty_entry_ctx *entry) {
+    pigsty_entry_ctx *ep;
+    pigsty_conf_set_ctx *cp;
+    int retval = 1;
+    int ip_version = 0;
+    int transport_layer = 0;
+    for (ep = entry; ep != NULL && retval == 1; ep = ep->next) {
+        //  INFO(Santiago): verifying the IP mandatory fields.
+        ip_version = 0;
+        for (cp = ep->conf; cp != NULL && ip_version == 0; cp = cp->next) {
+            if (cp->field->index == kIpv4_version && cp->field->data != NULL) {
+                ip_version = *(int *)cp->field->data;
+            }
+        }
+        if (ip_version == 0) {
+            printf("pig panic: signature %s: ip.version missing.\n", ep->signature_name);
+            retval = 0;
+        }
+        if (retval == 1) {
+            switch(ip_version) {
+                case 4:
+                    retval = verify_required_fields_ipv4(cp);
+                    break;
+
+                //case 6:
+                //    retval = verify_required_fields_ipv6(cp);
+                //    break;
+
+                default:
+                    retval = 0; //  INFO(Santiago): in practice it should not happen.
+                    break;
+            }
+        }
+        //  INFO(Santiago): verifying the transport layer mandatory fields.
+        transport_layer = -1;
+        for (cp = ep->conf; cp != NULL && transport_layer == -1; cp = cp->next) {
+            if (cp->field->index == kIpv4_protocol && cp->field->data != NULL) {
+                transport_layer = *(int *)cp->field->data;
+            }
+        }
+        if (transport_layer > -1) {
+            switch (transport_layer) {
+                case 6:
+                    retval = verify_required_fields_tcp(cp);
+                    break;
+
+                case 17:
+                    retval = verify_required_fields_udp(cp);
+                    break;
+
+                default:
+                    retval = 1; //  INFO(Santiago): just skipping.
+                    break;
+            }
+            if (retval == 0) {
+                printf("pig panic: signature %s: required field missing.\n", ep->signature_name);
+            }
+        } else {
+            for (cp = ep->conf; cp != NULL && retval == 1; cp = cp->next) {
+                retval = !(cp->field->index == kTcp_src      ||
+                           cp->field->index == kTcp_dst      ||
+                           cp->field->index == kTcp_seq      ||
+                           cp->field->index == kTcp_ackno    ||
+                           cp->field->index == kTcp_size     ||
+                           cp->field->index == kTcp_reserv   ||
+                           cp->field->index == kTcp_urg      ||
+                           cp->field->index == kTcp_ack      ||
+                           cp->field->index == kTcp_psh      ||
+                           cp->field->index == kTcp_rst      ||
+                           cp->field->index == kTcp_syn      ||
+                           cp->field->index == kTcp_fin      ||
+                           cp->field->index == kTcp_wsize    ||
+                           cp->field->index == kTcp_checksum ||
+                           cp->field->index == kTcp_urgp     ||
+                           cp->field->index == kTcp_payload  ||
+                           cp->field->index == kUdp_src      ||
+                           cp->field->index == kUdp_dst      ||
+                           cp->field->index == kUdp_size     ||
+                           cp->field->index == kUdp_checksum ||
+                           cp->field->index == kUdp_payload  ||
+                           cp->field->index == kUdp_src);
+            }
+            if (retval == 0) {
+                printf("pig panic: signature %s: tcp/udp fields informed in a non tcp or udp packet.\n", ep->signature_name);
+            }
+        }
+    }
+    return retval;
 }
