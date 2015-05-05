@@ -27,6 +27,8 @@ pigsty_entry_ctx *get_pigsty_entry_signature_name(const char *signature_name, pi
 
 pigsty_entry_ctx *get_pigsty_entry_tail(pigsty_entry_ctx *entries);
 
+pigsty_field_ctx *get_pigsty_conf_set_field(const int index, pigsty_conf_set_ctx *conf);
+
 void del_pigsty_entry(pigsty_entry_ctx *entries);
 
 void del_pigsty_conf_set(pigsty_conf_set_ctx *confs);

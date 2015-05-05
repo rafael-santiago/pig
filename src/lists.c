@@ -87,3 +87,13 @@ pigsty_entry_ctx *get_pigsty_entry_signature_name(const char *signature_name, pi
     }
     return NULL;
 }
+
+pigsty_field_ctx *get_pigsty_conf_set_field(const int index, pigsty_conf_set_ctx *conf) {
+    pigsty_conf_set_ctx *cp;
+    for (cp = conf; cp != NULL; cp = cp->next) {
+	if (cp->field->index == index) {
+	    return cp->field;
+	}
+    }
+    return NULL;
+}
