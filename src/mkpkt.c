@@ -32,7 +32,7 @@ unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf) {
     		mk_ipv4_dgram(retval, conf);
     		protocol = get_pigsty_conf_set_field(kIpv4_protocol, conf);
     		break;
-    		
+
     	    //case kIpv6_version:
     	    //	break;
         }
@@ -41,7 +41,7 @@ unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf) {
     		case 6:
     		    mk_tcp_dgram(&retval[offset], conf);
     		    break;
-    		    
+
     		case 17:
     		    mk_udp_dgram(&retval[offset], conf);
     		    break;
