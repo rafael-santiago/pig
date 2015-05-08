@@ -4,7 +4,7 @@
 
 void parse_ip4_dgram(struct ip4 **hdr, const char *buf, size_t bsize) {
     struct ip4 *ip = NULL;
-    size_t payload_offset = 0;
+    size_t payload_offset = 0, p = 0;
     if (hdr == NULL || *hdr == NULL || buf == NULL) {
         return;
     }
@@ -34,6 +34,45 @@ void parse_ip4_dgram(struct ip4 **hdr, const char *buf, size_t bsize) {
     payload_offset = (ip->ihl * 4);
     if (payload_offset < bsize) {
         ip->payload = (unsigned char *) pig_newseg(payload_offset + 1);
-        memcpy(ip->payload, &buf[payload_offset], bsize - ip->tlen);
+        ip->payload_size = bsize - payload_offset;
+        for (p = 0; p < ip->payload_size; p++) {
+            ip->payload[p] = buf[payload_offset + p];
+        }
+    }
+}
+
+unsigned char *mk_ip4_buffer(const struct ip4 *hdr, size_t *bsize) {
+    unsigned char *retval = NULL;
+    size_t payload_offset = 0, p = 0;
+    if (hdr == NULL || bsize == NULL) {
+        return NULL;
+    }
+    *bsize = hdr->tlen;
+    retval = (unsigned char *) pig_newseg(*bsize);
+    retval[ 0] = (hdr->version << 4) | hdr->ihl;
+    retval[ 1] = hdr->tos;
+    retval[ 2] = (hdr->tlen & 0xff00) >> 8;
+    retval[ 3] = (hdr->tlen & 0x00ff);
+    retval[ 4] = (hdr->id & 0xff00) >> 8;
+    retval[ 5] = (hdr->id & 0x00ff);
+    retval[ 6] = (hdr->flags_fragoff & 0xff00) >> 8;
+    retval[ 7] = (hdr->flags_fragoff & 0x00ff);
+    retval[ 8] = hdr->ttl;
+    retval[ 9] = hdr->protocol;
+    retval[10] = (hdr->chsum & 0xff00) >> 8;
+    retval[11] = (hdr->chsum & 0x00ff);
+    retval[12] = (hdr->src & 0xff000000) >> 24;
+    retval[13] = (hdr->src & 0x00ff0000) >> 16;
+    retval[14] = (hdr->src & 0x0000ff00) >>  8;
+    retval[15] = (hdr->src & 0x000000ff);
+    retval[16] = (hdr->dst & 0xff000000) >> 24;
+    retval[17] = (hdr->dst & 0x00ff0000) >> 16;
+    retval[18] = (hdr->dst & 0x0000ff00) >>  8;
+    retval[19] = (hdr->dst & 0x000000ff);
+    payload_offset = (hdr->ihl * 4); //  INFO(Santiago): including options.
+    if (payload_offset < *bsize) {
+        for (p = 0; p < hdr->payload_size; p++) {
+            retval[payload_offset + p] = hdr->payload[p];
+        }
     }
 }

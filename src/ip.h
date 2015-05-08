@@ -21,4 +21,6 @@ struct ip4 {
 
 void parse_ip4_dgram(struct ip4 **hdr, const char *buf, size_t bsize);
 
+unsigned char *mk_ip4_buffer(const struct ip4 *hdr, size_t *bsize);
+
 #endif
