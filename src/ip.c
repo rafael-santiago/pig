@@ -43,7 +43,7 @@ void parse_ip4_dgram(struct ip4 **hdr, const char *buf, size_t bsize) {
 
 unsigned char *mk_ip4_buffer(const struct ip4 *hdr, size_t *bsize) {
     unsigned char *retval = NULL;
-    size_t payload_offset = 0, p = 0;
+    size_t p = 0;
     if (hdr == NULL || bsize == NULL) {
         return NULL;
     }
@@ -69,10 +69,9 @@ unsigned char *mk_ip4_buffer(const struct ip4 *hdr, size_t *bsize) {
     retval[17] = (hdr->dst & 0x00ff0000) >> 16;
     retval[18] = (hdr->dst & 0x0000ff00) >>  8;
     retval[19] = (hdr->dst & 0x000000ff);
-    payload_offset = (hdr->ihl * 4); //  INFO(Santiago): including options.
-    if (payload_offset < *bsize) {
+    if (*bsize > 20) {
         for (p = 0; p < hdr->payload_size; p++) {
-            retval[payload_offset + p] = hdr->payload[p];
+            retval[20 + p] = hdr->payload[p];
         }
     }
 }

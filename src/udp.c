@@ -13,6 +13,7 @@ void parse_udp_dgram(struct udp **hdr, const char *buf, size_t bsize) {
     udp->chsum = ((unsigned short)buf[6] << 8) | buf[7];
     if (bsize > 8) {
 	udp->payload_size = bsize - 8;
+        udp->payload = (unsigned char *) pig_newseg(udp->payload_size);
 	for (p = 0; p < udp->payload_size; p++) {
 	    udp->payload[p] = buf[8 + p];
 	}

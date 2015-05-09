@@ -18,4 +18,8 @@ struct tcp {
     size_t payload_size;
 };
 
+void parse_tcp_dgram(struct tcp **hdr, const char *buf, size_t bsize);
+
+unsigned char *mk_tcp_buffer(const struct tcp *hdr, size_t *bsize);
+
 #endif
