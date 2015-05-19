@@ -16,8 +16,21 @@ var ldflags type list;
 project pig-utests : toolset "gcc-c-app" : $sources, $includes, $cflags, $libraries, $ldflags, "put" ;
 
 pig-utests.prologue() {
-    $sources.ls(".*\\.c$");
-    $ldflags = get_pig_objs();
+    var exit_code type int;
+    $exit_code = 1;
+    if (hefesto.sys.cd("cute/src")) {
+        $exit_code = hefesto.sys.forge("cute", "Forgefile.hsl", "--obj-output-dir=obj --bin-output-dir=lib");
+        hefesto.sys.cd("../..");
+        if ($exit_code == 0) {
+            $sources.ls(".*\\.c$");
+            $ldflags = get_pig_objs();
+            $includes.add_item("cute/src");
+            $ldflags.add_item("cute/src/lib/libcute.a");
+        }
+    }
+    if ($exit_code != 0) {
+        hefesto.project.abort($exit_code);
+    }
 }
 
 function get_pig_objs() : result type list {
