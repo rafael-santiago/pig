@@ -11,6 +11,7 @@
 #include "../to_str.h"
 #include "../to_ipv4.h"
 #include "../lists.h"
+#include "../ip.h"
 #include <cute.h>
 #include <stdlib.h>
 #include <string.h>
@@ -152,6 +153,49 @@ CUTE_TEST_CASE(pigsty_conf_set_ctx_tests)
     del_pigsty_entry(pigsty);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(ip_packet_making_tests)
+    struct ip4 ip4_hdr, ip4_hdr_parsed;
+    struct ip4 *ip4_hdr_parsed_p = NULL;
+    unsigned char *packet = NULL;
+    unsigned char *expected_packet = "\x45\x00\x00\x14\xde\xad\xbe\xef\x10\x06\xab\xcd\x7f\x00\x00\x01\x7f\x00\x00\x02";
+    size_t p = 0;
+    size_t packet_size    = 0;
+    ip4_hdr.version       = 0x4;
+    ip4_hdr.ihl           = 0x5;
+    ip4_hdr.tos           = 0;
+    ip4_hdr.tlen          = 0x0014;
+    ip4_hdr.id            = 0xdead;
+    ip4_hdr.flags_fragoff = 0xbeef;
+    ip4_hdr.ttl           = 0x10;
+    ip4_hdr.protocol      = 0x6;
+    ip4_hdr.chsum         = 0xabcd;
+    ip4_hdr.src           = 0x7f000001;
+    ip4_hdr.dst           = 0x7f000002;
+    ip4_hdr.payload       = NULL;
+    ip4_hdr.payload_size  = 0;
+    packet = mk_ip4_buffer(&ip4_hdr, &packet_size);
+    CUTE_CHECK_EQ("packet_size != ip4_hdr.tlen", ip4_hdr.tlen, packet_size);
+    CUTE_CHECK("packet == NULL", packet != NULL);
+    for (p = 0; p < packet_size; p++) {
+        CUTE_CHECK_EQ("packet[i] != expected_packet[i]", packet[p], expected_packet[p]);
+    }
+    ip4_hdr_parsed_p = &ip4_hdr_parsed;
+    parse_ip4_dgram(&ip4_hdr_parsed_p, packet, ip4_hdr.tlen);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.version != 0x4", ip4_hdr_parsed.version, 0x4);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.ihl != 0x5", ip4_hdr_parsed.ihl, 0x5);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.tos != 0x0", ip4_hdr_parsed.tos, 0x0);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.tlen != 0x0014", ip4_hdr_parsed.tlen, 0x14);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.id != 0xdead", ip4_hdr_parsed.id, 0xdead);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.flags_fragoff != 0xbeef", ip4_hdr_parsed.flags_fragoff, 0xbeef);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.ttl != 0x10", ip4_hdr_parsed.ttl, 0x10);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.protocol != 0x6", ip4_hdr_parsed.protocol, 0x6);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.chsum != 0xabcd", ip4_hdr_parsed.chsum, 0xabcd);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.src != 0x7f000001", ip4_hdr_parsed.src, 0x7f000001);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.dst != 0x7f000002", ip4_hdr_parsed.dst, 0x7f000002);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.payload != NULL", ip4_hdr_parsed.payload, NULL);
+    CUTE_CHECK_EQ("ip4_hdr_parsed.payload_size != 0", ip4_hdr_parsed.payload_size, 0);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -159,6 +203,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(to_str_tests);
     CUTE_RUN_TEST(to_ipv4_tests);
     CUTE_RUN_TEST(pigsty_entry_ctx_tests);
+    CUTE_RUN_TEST(ip_packet_making_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(run_tests)

@@ -2,7 +2,7 @@
 #include "memory.h"
 #include <string.h>
 
-void parse_ip4_dgram(struct ip4 **hdr, const char *buf, size_t bsize) {
+void parse_ip4_dgram(struct ip4 **hdr, const unsigned char *buf, size_t bsize) {
     struct ip4 *ip = NULL;
     size_t payload_offset = 0, p = 0;
     if (hdr == NULL || *hdr == NULL || buf == NULL) {
@@ -38,6 +38,9 @@ void parse_ip4_dgram(struct ip4 **hdr, const char *buf, size_t bsize) {
         for (p = 0; p < ip->payload_size; p++) {
             ip->payload[p] = buf[payload_offset + p];
         }
+    } else {
+        ip->payload = NULL;
+        ip->payload_size = 0;
     }
 }
 
@@ -74,4 +77,5 @@ unsigned char *mk_ip4_buffer(const struct ip4 *hdr, size_t *bsize) {
             retval[20 + p] = hdr->payload[p];
         }
     }
+    return retval;
 }
