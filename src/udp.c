@@ -1,7 +1,7 @@
 #include "udp.h"
 #include "memory.h"
 
-void parse_udp_dgram(struct udp **hdr, const char *buf, size_t bsize) {
+void parse_udp_dgram(struct udp **hdr, const unsigned char *buf, size_t bsize) {
     struct udp *udp = *hdr;
     size_t p = 0;
     if (udp == NULL || buf == NULL || bsize == 0) {
@@ -17,6 +17,9 @@ void parse_udp_dgram(struct udp **hdr, const char *buf, size_t bsize) {
 	for (p = 0; p < udp->payload_size; p++) {
 	    udp->payload[p] = buf[8 + p];
 	}
+    } else {
+	udp->payload = NULL;
+	udp->payload_size = 0;
     }
 }
 

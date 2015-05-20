@@ -12,4 +12,8 @@ struct udp {
     size_t payload_size;
 };
 
+void parse_udp_dgram(struct udp **hdr, const unsigned char *buf, size_t bsize);
+
+unsigned char *mk_udp_buffer(const struct udp *hdr, size_t *bsize);
+
 #endif
