@@ -228,7 +228,7 @@ CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
-    //CUTE_RUN_TEST(pigsty_file_parsing_tests);
+    CUTE_RUN_TEST(pigsty_file_parsing_tests);
     CUTE_RUN_TEST(to_int_tests);
     CUTE_RUN_TEST(to_str_tests);
     CUTE_RUN_TEST(to_ipv4_tests);
