@@ -1,7 +1,7 @@
 #include "tcp.h"
 #include "memory.h"
 
-void parse_tcp_dgram(struct tcp **hdr, const char *buf, size_t bsize) {
+void parse_tcp_dgram(struct tcp **hdr, const unsigned char *buf, size_t bsize) {
     struct tcp *tcp = *hdr;
     size_t p = 0;
     if (tcp == NULL || buf == NULL || bsize < 20) {

@@ -13,6 +13,7 @@
 #include "../lists.h"
 #include "../ip.h"
 #include "../udp.h"
+#include "../tcp.h"
 #include <cute.h>
 #include <stdlib.h>
 #include <string.h>
@@ -226,6 +227,45 @@ CUTE_TEST_CASE(udp_packet_making_tests)
     free(packet);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(tcp_packet_making_tests)
+    unsigned char *packet = NULL;
+    unsigned char *expected_packet = "\xde\xad\xbe\xef\x00\x11\x22\x33\x33\x22\x11\x00\x50\x03\x11\x44\x77\x88\xaa\xff";
+    size_t packet_size = 0, p = 0;
+    struct tcp tcp_hdr, tcp_hdr_parsed, *tcp_hdr_p = NULL;
+    tcp_hdr.src = 0xdead;
+    tcp_hdr.dst = 0xbeef;
+    tcp_hdr.seqno = 0x00112233;
+    tcp_hdr.ackno = 0x33221100;
+    tcp_hdr.len = 0x5;
+    tcp_hdr.reserv = 0x0;
+    tcp_hdr.flags = 0x03;
+    tcp_hdr.window = 0x1144;
+    tcp_hdr.chsum = 0x7788;
+    tcp_hdr.urgp = 0xaaff;
+    tcp_hdr.payload = NULL;
+    tcp_hdr.payload_size = 0;
+    packet = mk_tcp_buffer(&tcp_hdr, &packet_size);
+    CUTE_CHECK_NEQ("packet == NULL", packet, NULL);
+    CUTE_CHECK_EQ("packet_size != 20", packet_size, 20);
+    for (p = 0; p < packet_size; p++) {
+        CUTE_CHECK_EQ("packet[i] != expected_packet[i]", packet[p], expected_packet[p]);
+    }
+    tcp_hdr_p = &tcp_hdr_parsed;
+    parse_tcp_dgram(&tcp_hdr_p, packet, packet_size);
+    CUTE_CHECK_EQ("tcp_hdr.src != 0xdead", tcp_hdr_parsed.src, 0xdead);
+    CUTE_CHECK_EQ("tcp_hdr.dst != 0xbeef", tcp_hdr_parsed.dst, 0xbeef);
+    CUTE_CHECK_EQ("tcp_hdr.seqno != 0x00112233", tcp_hdr_parsed.seqno, 0x00112233);
+    CUTE_CHECK_EQ("tcp_hdr.ackno != 0x33221100", tcp_hdr_parsed.ackno, 0x33221100);
+    CUTE_CHECK_EQ("tcp_hdr.len != 0x5", tcp_hdr_parsed.len, 0x5);
+    CUTE_CHECK_EQ("tcp_hdr.reserv != 0x0", tcp_hdr_parsed.reserv, 0x0);
+    CUTE_CHECK_EQ("tcp_hdr.flags != 0x03", tcp_hdr_parsed.flags, 0x03);
+    CUTE_CHECK_EQ("tcp_hdr.chsum != 0x7788", tcp_hdr_parsed.chsum, 0x7788);
+    CUTE_CHECK_EQ("tcp_hdr.urgp != 0xaaff", tcp_hdr_parsed.urgp, 0xaaff);
+    CUTE_CHECK_EQ("tcp_hdr.payload != NULL", tcp_hdr_parsed.payload, NULL);
+    CUTE_CHECK_EQ("tcp_hdr.payload_size != 0", tcp_hdr_parsed.payload_size, 0);
+    free(packet);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -235,6 +275,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(pigsty_entry_ctx_tests);
     CUTE_RUN_TEST(ip_packet_making_tests);
     CUTE_RUN_TEST(udp_packet_making_tests);
+    CUTE_RUN_TEST(tcp_packet_making_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(run_tests)
