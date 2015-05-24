@@ -79,3 +79,34 @@ unsigned char *mk_ip4_buffer(const struct ip4 *hdr, size_t *bsize) {
     }
     return retval;
 }
+
+unsigned short eval_ip4_chsum(const struct ip4 hdr) {
+    int retval = 0;
+    unsigned char hi = 0, lo = 0;
+    size_t p = 0;
+    retval += ((((unsigned short)((hdr.version << 4) | hdr.ihl)) << 8) | hdr.tos);
+    retval += hdr.tlen;
+    retval += hdr.id;
+    retval += hdr.flags_fragoff;
+    retval += ((unsigned short)(hdr.ttl << 8) | hdr.protocol);
+    retval += hdr.chsum;
+    retval += ((hdr.src & 0xffff0000) >> 16);
+    retval += (hdr.src & 0x0000ffff);
+    retval += ((hdr.dst & 0xffff0000) >> 16);
+    retval += (hdr.dst & 0x0000ffff);
+    if (hdr.payload_size > 0 && hdr.payload != NULL) {
+        p = 0;
+        while (p < hdr.payload_size) {
+            hi = hdr.payload[p++];
+            lo = 0;
+            if (p < hdr.payload_size) {
+                lo = hdr.payload[p++];
+            }
+            retval += ((unsigned short)(hi << 8) | lo);
+        }
+    }
+    while (retval >> 16) {
+        retval = (retval >> 16) + ((retval << 16) >> 16);
+    }
+    return (unsigned short)(~retval);
+}

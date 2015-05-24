@@ -44,3 +44,33 @@ unsigned char *mk_udp_buffer(const struct udp *hdr, size_t *bsize) {
     }
     return retval;
 }
+
+unsigned short eval_udp_chsum(const struct udp hdr, const unsigned int src_addr,
+                              const unsigned int dst_addr, unsigned short phdr_len) {
+    int retval = 0;
+    size_t p = 0;
+    unsigned char hi = 0, lo = 0;
+    retval = (src_addr >> 16) +
+             (src_addr & 0x0000ffff) +
+             (dst_addr >> 16) +
+             (dst_addr & 0x0000ffff) + 0x0011 + phdr_len;
+    retval += hdr.src;
+    retval += hdr.dst;
+    retval += hdr.len;
+    retval += hdr.chsum;
+    if (hdr.payload_size > 0 && hdr.payload != NULL) {
+        p = 0;
+        while (p < hdr.payload_size) {
+            hi = hdr.payload[p++];
+            lo = 0;
+            if (p < hdr.payload_size) {
+                lo = hdr.payload[p++];
+            }
+            retval += (((unsigned short)hi << 8) | lo);
+        }
+    }
+    while (retval >> 16) {
+        retval = (retval >> 16) + ((retval << 16) >> 16);
+    }
+    return (unsigned short)(~retval);
+}

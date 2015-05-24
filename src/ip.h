@@ -23,4 +23,7 @@ void parse_ip4_dgram(struct ip4 **hdr, const unsigned char *buf, size_t bsize);
 
 unsigned char *mk_ip4_buffer(const struct ip4 *hdr, size_t *bsize);
 
+unsigned short eval_ip4_chsum(const struct ip4 hdr);
+
+
 #endif

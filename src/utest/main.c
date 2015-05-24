@@ -266,6 +266,47 @@ CUTE_TEST_CASE(tcp_packet_making_tests)
     free(packet);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(ip4_chsum_evaluation_tests)
+    struct ip4 ip;
+    unsigned short expected_chsum = 0xb1e6;
+    ip.version = 0x4;
+    ip.ihl = 0x5;
+    ip.tos = 0x00;
+    ip.tlen = 0x003c;
+    ip.id = 0x1c46;
+    ip.flags_fragoff = 0x4000;
+    ip.ttl = 0x40;
+    ip.protocol = 0x06;
+    ip.chsum = 0x0;
+    ip.src = 0xac100a63;
+    ip.dst = 0xac100a0c;
+    ip.payload = NULL;
+    ip.payload_size = 0;
+    ip.chsum = eval_ip4_chsum(ip);
+    CUTE_CHECK_EQ("ip.chsum != expected_chsum", ip.chsum, expected_chsum);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(udp_chsum_evaluation_tests)
+    struct udp uhdr;
+    unsigned short expected_chsum = 0xd199;
+    uhdr.src = 0x35;
+    uhdr.dst = 0xec34;
+    uhdr.len = 0x9a;
+    uhdr.chsum = 0x0;
+    uhdr.payload = "\x27\x47\x81\x80\x00\x01\x00\x03\x00\x00\x00\x00\x03\x77\x77\x77\x06\x67"
+                   "\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00\x01\x03"
+                   "\x77\x77\x77\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00"
+                   "\x00\x01\x00\x01\x00\x00\x01\x2b\x00\x04\xad\xc2\x76\x37\x03\x77\x77\x77"
+                   "\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00"
+                   "\x01\x00\x00\x01\x2b\x00\x04\xad\xc2\x76\x38\x03\x77\x77\x77\x06\x67\x6f"
+                   "\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00\x01\x00\x00"
+                   "\x01\x2b\x00\x04\xad\xc2\x76\x3f\x00\x00\x00\x13\x00\x21\x00\x34\x00\x42"
+                   "\x00\x55";
+    uhdr.payload_size = 146;
+    uhdr.chsum = eval_udp_chsum(uhdr, 0xc01e460f, 0xc01e460a, uhdr.len);
+    CUTE_CHECK_EQ("uhdr.chsum != expected_chsum", uhdr.chsum, expected_chsum);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -276,6 +317,8 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(ip_packet_making_tests);
     CUTE_RUN_TEST(udp_packet_making_tests);
     CUTE_RUN_TEST(tcp_packet_making_tests);
+    CUTE_RUN_TEST(ip4_chsum_evaluation_tests);
+    CUTE_RUN_TEST(udp_chsum_evaluation_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(run_tests)
