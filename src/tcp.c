@@ -67,3 +67,61 @@ unsigned char *mk_tcp_buffer(const struct tcp *hdr, size_t *bsize) {
     }
     return retval;
 }
+
+unsigned short eval_tcp_ip4_chsum(const struct tcp hdr, const unsigned int src_addr, const unsigned int dst_addr) {
+    struct ip_pseudo_hdr {
+        unsigned int src;
+        unsigned int dst;
+        //WARN(Santiago): Here should go just another dummy ZERO.... let's skip this....
+        unsigned char next_hdr;
+        unsigned short payload_len;
+    };
+    unsigned char *stream_buf = NULL;
+    int retval = 0;
+    size_t p = 0;
+    unsigned char hi = 0, lo = 0;
+    struct ip_pseudo_hdr ipp_hdr;
+    ipp_hdr.src = src_addr;
+    ipp_hdr.dst = dst_addr;
+    //  WARN(Santiago): Here in this implementation I am using the
+    //                  payload field from tcp structure to save
+    //                  the tcp option too. So,
+    //                      ((4 * tcp_len) + payload_size)
+    //                  could be a wrong calculation in some cases.
+    //                  Due to it a better choice is use the default
+    //                                              tcp header size.
+    ipp_hdr.payload_len = 20 + hdr.payload_size;
+    ipp_hdr.next_hdr = 6;
+    retval += (ipp_hdr.src >> 16);
+    retval += (ipp_hdr.src & 0x0000ffff);
+    retval += (ipp_hdr.dst >> 16);
+    retval += (ipp_hdr.dst & 0x0000ffff);
+    retval += ipp_hdr.next_hdr;
+    retval += ipp_hdr.payload_len;
+
+    retval += hdr.src;
+    retval += hdr.dst;
+    retval += (hdr.seqno >> 16);
+    retval += hdr.seqno & 0x0000ffff;
+    retval += (hdr.ackno >> 16);
+    retval += hdr.ackno & 0x0000ffff;
+    retval += (((unsigned short)hdr.len << 12) | ((unsigned short)hdr.reserv << 6) | ((unsigned short)hdr.flags));
+    retval += hdr.window;
+    retval += hdr.chsum;
+    retval += hdr.urgp;
+    if (hdr.payload_size > 0 && hdr.payload != NULL) {
+        p = 0;
+        while (p < hdr.payload_size) {
+            hi = hdr.payload[p++];
+            lo = 0;
+            if (p < hdr.payload_size) {
+                lo = hdr.payload[p++];
+            }
+            retval += (((unsigned short) hi << 8) | lo);
+        }
+    }
+    while (retval >> 16) {
+        retval = (retval >> 16) + (retval & 0x0000ffff);
+    }
+    return (unsigned short)(~retval);
+}

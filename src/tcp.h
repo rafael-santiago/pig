@@ -22,4 +22,6 @@ void parse_tcp_dgram(struct tcp **hdr, const unsigned char *buf, size_t bsize);
 
 unsigned char *mk_tcp_buffer(const struct tcp *hdr, size_t *bsize);
 
+unsigned short eval_tcp_ip4_chsum(const struct tcp hdr, const unsigned int src_addr, const unsigned int dst_addr);
+
 #endif

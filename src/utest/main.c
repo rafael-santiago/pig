@@ -307,6 +307,51 @@ CUTE_TEST_CASE(udp_chsum_evaluation_tests)
     CUTE_CHECK_EQ("uhdr.chsum != expected_chsum", uhdr.chsum, expected_chsum);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(tcp_chsum_evaluation_tests)
+    struct tcp uhdr;
+    unsigned short expected_chsum = 0xbc6e;
+    uhdr.src = 0x0050;
+    uhdr.dst = 0xc1ed;
+    uhdr.seqno = 0xcb6dd9e0;
+    uhdr.ackno = 0x6fc3ae65;
+    uhdr.len = 0x5;
+    uhdr.reserv = 0;
+    uhdr.flags= 0x10;
+    uhdr.window = 0x003a;
+    uhdr.chsum = 0x0;
+    uhdr.urgp = 0x0;
+    uhdr.payload_size = 0;
+    uhdr.payload = NULL;
+    uhdr.chsum = eval_tcp_ip4_chsum(uhdr, 0xcdb9d80a, 0xc0a8070a);
+    CUTE_CHECK_EQ("uhdr.chsum != expected_chsum", uhdr.chsum, expected_chsum);
+    uhdr.src = 0x0050;
+    uhdr.dst = 0xc1f6;
+    uhdr.seqno = 0x040343c2;
+    uhdr.ackno = 0xf2690cd1;
+    uhdr.len = 0x5;
+    uhdr.reserv = 0;
+    uhdr.flags = 0x18;
+    uhdr.window = 0x00fb;
+    uhdr.chsum = 0x0;
+    uhdr.urgp = 0x0;
+    uhdr.payload_size = 223;
+    uhdr.payload = "\x48\x54\x54\x50\x2f\x31\x2e\x31\x20\x32\x30\x30\x20\x4f\x4b\x0d\x0a\x54\x72\x61"
+		   "\x6e\x73\x66\x65\x72\x2d\x45\x6e\x63\x6f\x64\x69\x6e\x67\x3a\x20\x63\x68\x75\x6e"
+		   "\x6b\x65\x64\x0d\x0a\x44\x61\x74\x65\x3a\x20\x46\x72\x69\x2c\x20\x32\x30\x20\x4a"
+		   "\x75\x6e\x20\x32\x30\x31\x34\x20\x31\x36\x3a\x31\x38\x3a\x31\x38\x20\x47\x4d\x54"
+		   "\x0d\x0a\x53\x65\x72\x76\x65\x72\x3a\x20\x57\x61\x72\x70\x2f\x32\x2e\x31\x2e\x33"
+		   "\x2e\x33\x0d\x0a\x41\x63\x63\x65\x73\x73\x2d\x43\x6f\x6e\x74\x72\x6f\x6c\x2d\x41"
+		   "\x6c\x6c\x6f\x77\x2d\x4f\x72\x69\x67\x69\x6e\x3a\x20\x68\x74\x74\x70\x3a\x2f\x2f"
+		   "\x78\x6b\x63\x64\x2e\x63\x6f\x6d\x0d\x0a\x41\x63\x63\x65\x73\x73\x2d\x43\x6f\x6e"
+		   "\x74\x72\x6f\x6c\x2d\x41\x6c\x6c\x6f\x77\x2d\x43\x72\x65\x64\x65\x6e\x74\x69\x61"
+		   "\x6c\x73\x3a\x20\x74\x72\x75\x65\x0d\x0a\x43\x6f\x6e\x74\x65\x6e\x74\x2d\x54\x79"
+		   "\x70\x65\x3a\x20\x74\x65\x78\x74\x2f\x70\x6c\x61\x69\x6e\x0d\x0a\x0d\x0a\x30\x0d"
+		   "\x0a\x0d\x0a";
+    expected_chsum = 0x4e24;
+    uhdr.chsum = eval_tcp_ip4_chsum(uhdr, 0x6b066222, 0xc0a8070a);
+    CUTE_CHECK_EQ("uhdr.chsum != expected_chsum", uhdr.chsum, expected_chsum);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -319,6 +364,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(tcp_packet_making_tests);
     CUTE_RUN_TEST(ip4_chsum_evaluation_tests);
     CUTE_RUN_TEST(udp_chsum_evaluation_tests);
+    CUTE_RUN_TEST(tcp_chsum_evaluation_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(run_tests)

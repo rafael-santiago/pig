@@ -90,9 +90,9 @@ unsigned short eval_ip4_chsum(const struct ip4 hdr) {
     retval += hdr.flags_fragoff;
     retval += ((unsigned short)(hdr.ttl << 8) | hdr.protocol);
     retval += hdr.chsum;
-    retval += ((hdr.src & 0xffff0000) >> 16);
+    retval += (hdr.src >> 16);
     retval += (hdr.src & 0x0000ffff);
-    retval += ((hdr.dst & 0xffff0000) >> 16);
+    retval += (hdr.dst >> 16);
     retval += (hdr.dst & 0x0000ffff);
     if (hdr.payload_size > 0 && hdr.payload != NULL) {
         p = 0;
@@ -106,7 +106,7 @@ unsigned short eval_ip4_chsum(const struct ip4 hdr) {
         }
     }
     while (retval >> 16) {
-        retval = (retval >> 16) + ((retval << 16) >> 16);
+        retval = (retval >> 16) + (retval & 0x0000ffff);
     }
     return (unsigned short)(~retval);
 }

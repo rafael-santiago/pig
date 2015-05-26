@@ -70,7 +70,7 @@ unsigned short eval_udp_chsum(const struct udp hdr, const unsigned int src_addr,
         }
     }
     while (retval >> 16) {
-        retval = (retval >> 16) + ((retval << 16) >> 16);
+        retval = (retval >> 16) + (retval & 0x0000ffff);
     }
     return (unsigned short)(~retval);
 }
