@@ -140,6 +140,7 @@ CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(pigsty_conf_set_ctx_tests)
     pigsty_entry_ctx *pigsty = NULL;
+    pigsty_conf_set_ctx *cp = NULL;
     pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
     CUTE_CHECK("pigsty == NULL", pigsty != NULL);
     pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_version, "abc", 3);
@@ -152,6 +153,10 @@ CUTE_TEST_CASE(pigsty_conf_set_ctx_tests)
     CUTE_CHECK("pigsty->conf->next->index != kIpv4_tos", pigsty->conf->next->field->index == kIpv4_tos);
     CUTE_CHECK("pigsty->conf->next->dsize != 4", pigsty->conf->next->field->dsize == 4);
     CUTE_CHECK("pigsty->conf->next->data != xyz.", strcmp(pigsty->conf->next->field->data,"xyz.") == 0);
+    pigsty = add_signature_to_pigsty_entry(pigsty, "oink2");
+    cp = get_pigsty_conf_set_by_index(1, pigsty->conf);
+    CUTE_CHECK("cp == NULL", cp != NULL);
+    CUTE_CHECK("cp != pigsty->conf->next", cp == pigsty->conf->next);
     del_pigsty_entry(pigsty);
 CUTE_TEST_CASE_END
 
@@ -359,6 +364,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(to_str_tests);
     CUTE_RUN_TEST(to_ipv4_tests);
     CUTE_RUN_TEST(pigsty_entry_ctx_tests);
+    CUTE_RUN_TEST(pigsty_conf_set_ctx_tests);
     CUTE_RUN_TEST(ip_packet_making_tests);
     CUTE_RUN_TEST(udp_packet_making_tests);
     CUTE_RUN_TEST(tcp_packet_making_tests);

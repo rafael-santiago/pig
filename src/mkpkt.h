@@ -9,7 +9,8 @@
 #define _PIG_MKPKT_H 1
 
 #include "types.h"
+#include <stdlib.h>
 
-unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf);
+unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, size_t *pktsize);
 
 #endif

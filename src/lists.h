@@ -33,4 +33,6 @@ void del_pigsty_entry(pigsty_entry_ctx *entries);
 
 void del_pigsty_conf_set(pigsty_conf_set_ctx *confs);
 
+pigsty_conf_set_ctx *get_pigsty_conf_set_by_index(const size_t index, pigsty_conf_set_ctx *conf);
+
 #endif

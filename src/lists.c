@@ -97,3 +97,14 @@ pigsty_field_ctx *get_pigsty_conf_set_field(const int index, pigsty_conf_set_ctx
     }
     return NULL;
 }
+
+pigsty_conf_set_ctx *get_pigsty_conf_set_by_index(const size_t index, pigsty_conf_set_ctx *conf) {
+    size_t i = 0;
+    pigsty_conf_set_ctx *cp = NULL;
+    for (cp = conf; cp != NULL; cp = cp->next, i++) {
+        if (i == index) {
+            return cp;
+        }
+    }
+    return NULL;
+}
