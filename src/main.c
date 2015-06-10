@@ -7,6 +7,8 @@
  */
 #include "types.h"
 #include "pigsty.h"
+#include "lists.h"
+#include "oink.h"
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
@@ -21,7 +23,7 @@ static void sigint_watchdog(int signr);
 
 static pigsty_entry_ctx *load_signatures(const char *signatures);
 
-static void run_pig_run(const char *signatures, const char *timeout);
+static void run_pig_run(const char *signatures, const char *iface, const char *timeout);
 
 static char *get_option(const char *option, char *default_value, const int argc, char **argv) {
     static char retval[8192];
@@ -97,19 +99,27 @@ static pigsty_entry_ctx *load_signatures(const char *signatures) {
     return sig_entries;
 }
 
-static void run_pig_run(const char *signatures, const char *timeout) {
+static void run_pig_run(const char *signatures, const char *iface, const char *timeout) {
     int timeo = 10;
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0;
+    pigsty_entry_ctx *signature = NULL;
+    int sockfd = -1;
     if (timeout != NULL) {
         timeo = atoi(timeout);
     }
     if (!should_be_quiet) {
         printf("pig INFO: starting up pig engine...\n\n");
     }
+    sockfd = init_raw_socket();
+    if (sockfd == -1) {
+        printf("pig PANIC: unable to create the socket.\npig ERROR: aborted.\n");
+        return;
+    }
     pigsty = load_signatures(signatures);
     if (pigsty == NULL) {
         printf("pig ERROR: aborted.\n");
+        deinit_raw_socket(sockfd);
         return;
     }
     signatures_count = get_pigsty_entry_count(pigsty);
@@ -117,12 +127,20 @@ static void run_pig_run(const char *signatures, const char *timeout) {
         printf("\npig INFO: done (%d signature(s) read).\n\n", signatures_count);
     }
     while (!should_exit) {
-        if (!should_be_quiet) {
-            printf("pig INFO: a packet based on signature was sent.\n");
+        signature = get_pigsty_entry_by_index(rand() % signatures_count, pigsty);
+        if (signature == NULL) {
+            continue; //  WARN(Santiago): It should never happen. However... Sometimes... The World tends to be a rather weird place.
         }
-        sleep(timeo);
+        if (oink(signature, sockfd)) {
+            //  TODO(Santiago): Send it.
+            if (!should_be_quiet) {
+                printf("pig INFO: a packet based on signature was sent.\n");
+            }
+            sleep(timeo);
+        }
     }
     del_pigsty_entry(pigsty);
+    deinit_raw_socket(sockfd);
 }
 
 int main(int argc, char **argv) {
@@ -157,7 +175,8 @@ int main(int argc, char **argv) {
         should_be_quiet = (get_option("no-echo", NULL, argc, argv) != NULL);
         signal(SIGINT, sigint_watchdog);
         signal(SIGTERM, sigint_watchdog);
-        run_pig_run(signatures, timeout);
+        srand(time(0));
+        run_pig_run(signatures, iface, timeout);
     } else {
         printf("usage: %s --signatures=file.0,file.1,(...),file.n --iface=<nic> [--timeout=<in secs> --no-echo]\n", argv[0]);
     }

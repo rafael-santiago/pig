@@ -21,6 +21,16 @@ project pig : toolset "gcc-c-app" : dependencies $depchain : $sources, $includes
 pig.prologue() {
     $sources.ls(".*\\.c$");
     $depchain = get_c_cpp_deps();
+    var native_stuff type string;
+    $native_stuff = hefesto.sys.os_name();
+    if (hefesto.sys.cd($native_stuff)) {
+        $sources.ls(".*\\.c$");
+        $depchain = $depchain + get_c_cpp_deps();
+        hefesto.sys.cd("..");
+    } else {
+        hefesto.sys.echo("ERROR: subdirectory \"" + $native_stuff + "\" not found.\n");
+        hefesto.project.abort(1);
+    }
 }
 
 pig.epilogue() {
