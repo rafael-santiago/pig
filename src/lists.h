@@ -37,4 +37,8 @@ pigsty_conf_set_ctx *get_pigsty_conf_set_by_index(const size_t index, pigsty_con
 
 size_t get_pigsty_conf_set_count(pigsty_conf_set_ctx *conf);
 
+size_t get_pigsty_entry_count(pigsty_entry_ctx *entries);
+
+pigsty_entry_ctx *get_pigsty_entry_by_index(const size_t index, pigsty_entry_ctx *entries);
+
 #endif

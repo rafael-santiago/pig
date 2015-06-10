@@ -117,3 +117,24 @@ size_t get_pigsty_conf_set_count(pigsty_conf_set_ctx *conf) {
     }
     return count;
 }
+
+size_t get_pigsty_entry_count(pigsty_entry_ctx *entries) {
+    size_t count = 0;
+    pigsty_entry_ctx *ep = NULL;
+    for (ep = entries; ep != NULL; ep = ep->next) {
+        count++;
+    }
+    return count;
+}
+
+pigsty_entry_ctx *get_pigsty_entry_by_index(const size_t index, pigsty_entry_ctx *entries) {
+    pigsty_entry_ctx *ep = NULL;
+    size_t count = 0;
+    for (ep = entries; ep != NULL; ep = ep->next) {
+        if (count == index) {
+            return ep;
+        }
+        count++;
+    }
+    return NULL;
+}

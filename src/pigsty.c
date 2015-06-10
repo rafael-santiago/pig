@@ -198,23 +198,27 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
     char *end_bp = NULL;
     char *retval = NULL;
     bp = end_bp = skip_pigsty_blank(bp);
-    while (!is_pigsty_blank(*end_bp) && *end_bp != 0) {
-        if (*end_bp == '\"') {
-            end_bp++;
-            while (*end_bp != '\"' && *end_bp != 0) {
+    if (*bp != '=') {
+        while (!is_pigsty_blank(*end_bp) && *end_bp != 0) {
+            if (*end_bp == '\"') {
                 end_bp++;
-                if (*end_bp == '\\') {
-                    end_bp += 2;
+                while (*end_bp != '\"' && *end_bp != 0) {
+                    end_bp++;
+                    if (*end_bp == '\\') {
+                        end_bp += 2;
+                    }
+                }
+                end_bp++;
+                break;
+            } else {
+                end_bp++;
+                if (*end_bp == '=' || *end_bp == ',' || *end_bp == ']') {
+                    break;
                 }
             }
-            end_bp++;
-            break;
-        } else {
-            end_bp++;
-            if (*end_bp == '=' || *end_bp == ',' || *end_bp == '>') {
-    		break;
-    	    }
         }
+    } else {
+        end_bp = bp + 1;
     }
     *next = end_bp;
     retval = (char *) pig_newseg(end_bp - bp + 1);
@@ -288,7 +292,7 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
 	    tmp_buffer = *next;
 	    free(token);
 	    token = get_next_pigsty_word(tmp_buffer, next);
-            if (*token == '>') {
+            if (*token == ']') {
                 break;
             }
 	}
@@ -304,7 +308,10 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     unsigned char field_map[SIGNATURE_FIELDS_SIZE];
     int field_index = 0;
     memset(field_map, 0, sizeof(field_map));
-    if (*token != '<') {
+    if (*token == 0) {
+        return 1;
+    }
+    if (*token != '[') {
         printf("pig PANIC: signature not well opened.\n");
         free(token);
         return 0;
@@ -312,10 +319,14 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     free(token);
     buffer = *next;
     token = get_next_pigsty_word(buffer, next);
-    while (all_ok && **next != 0) {
+    while (all_ok && **next != 0 && token != NULL) {
 	switch (state) {
             case 0:  //  field existence verifying
                 field_index = get_pigsty_field_index(token);
+                if (field_index == -1) {
+                    printf("pig PANIC: unknown field \"%s\".\n", token);
+                    return 0;
+                }
                 if (field_map[field_index] == 1) {
                     free(token);
                     printf("pig PANIC: field \"%s\" redeclared.\n", SIGNATURE_FIELDS[field_index].label);
@@ -348,17 +359,22 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
                 break;
 
             case 3:  //  next or end verifying
-                all_ok = (*token == ',' || *token == '>');
+                all_ok = (*token == ',' || *token == ']');
                 state = 0;
                 if (!all_ok) {
-                    printf("pig PANIC: missing \",\" or \">\".\n");
+                    printf("pig PANIC: missing \",\" or \"]\".\n");
                     all_ok = 0;
                 }
                 break;
         }
-        free(token);
-        buffer = *next;
-        token = get_next_pigsty_word(buffer, next);
+        if (*token != ']') {
+            free(token);
+            buffer = *next;
+            token = get_next_pigsty_word(buffer, next);
+        } else {
+            free(token);
+            token = NULL;
+        }
     }
     return all_ok;
 }
@@ -471,6 +487,12 @@ static int verify_ipv4_addr(const char *buffer) {
     int dots_nr = 0;
     char oct[255];
     size_t o = 0;
+    if (strcmp(buffer, "north-american-ip") == 0 ||
+        strcmp(buffer, "south-american-ip") == 0 ||
+        strcmp(buffer, "asian-ip") == 0          ||
+        strcmp(buffer, "european-ip") == 0) {
+        return 1;
+    }
     memset(oct, 0, sizeof(oct));
     for (b = buffer; *b != 0 && retval; b++) {
 	if (*b != '.' && !isdigit(*b)) {

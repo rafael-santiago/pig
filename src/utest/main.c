@@ -34,32 +34,32 @@ int write_to_file(const char *filepath, const char *data) {
 
 CUTE_TEST_CASE(pigsty_file_parsing_tests)
     pigsty_entry_ctx *pigsty = NULL;
-    char *test_pigsty = "< ip.version = 4, ip.tos = 5, ip.src = 127.900.0.1 >";  //  invalid ip octect.
+    char *test_pigsty = "[ ip.version = 4, ip.tos = 5, ip.src = 127.900.0.1 ]";  //  invalid ip octect.
     write_to_file("test.pigsty", test_pigsty);
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty != NULL", pigsty == NULL);
     remove("test.pigsty");
 
-    test_pigsty = "< ip.version = 4, ip.tos = 5, ip.src = 127.0.0.0.1 >";  //  invalid ip with more octects than expected.
+    test_pigsty = "[ ip.version = 4, ip.tos = 5, ip.src = 127.0.0.0.1 ]";  //  invalid ip with more octects than expected.
     write_to_file("test.pigsty", test_pigsty);
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty != NULL", pigsty == NULL);
     remove("test.pigsty");
 
-    test_pigsty = "< ip.version = 4x0, ip.tos = 5, ip.src = 127.0.0.1 >";  //  invalid ip version.
+    test_pigsty = "[ ip.version = 4x0, ip.tos = 5, ip.src = 127.0.0.1 ]";  //  invalid ip version.
     write_to_file("test.pigsty", test_pigsty);
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty != NULL", pigsty == NULL);
     remove("test.pigsty");
 
 
-    test_pigsty = "< ip.version = 0x00004, ip.tos = 5, ip.src = 127.0.0.1 > <ip.version = 4, ip.tlen = 20a >";  //  invalid ip version.
+    test_pigsty = "[ ip.version = 0x00004, ip.tos = 5, ip.src = 127.0.0.1 ] [ip.version = 4, ip.tlen = 20a ]";  //  invalid ip version.
     write_to_file("test.pigsty", test_pigsty);
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty != NULL", pigsty == NULL);
     remove("test.pigsty");
 
-    test_pigsty = "< signature = \"valid signature\", ip.version = 4, ip.tos = 5, ip.src = 127.0.0.1 >"; //  valid pigsty entry.
+    test_pigsty = "[ signature = \"valid signature\", ip.version = 4, ip.tos = 5, ip.src = 127.0.0.1 ]"; //  valid pigsty entry.
     write_to_file("test.pigsty", test_pigsty);
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty == NULL", pigsty != NULL);
@@ -135,6 +135,12 @@ CUTE_TEST_CASE(pigsty_entry_ctx_tests)
     CUTE_CHECK("p->signature_name != oink", strcmp(p->signature_name, "oink") == 0);
     p = get_pigsty_entry_signature_name("not-added", pigsty);
     CUTE_CHECK("p != NULL", p == NULL);
+    CUTE_CHECK("get_pigsty_entry_count() != 2", get_pigsty_entry_count(pigsty) == 2);
+    p = get_pigsty_entry_by_index(1, pigsty);
+    CUTE_CHECK("p == NULL", p != NULL);
+    CUTE_CHECK("p->signature_name != roc!", strcmp(p->signature_name, "roc!") == 0);
+    p = get_pigsty_entry_by_index(-1, pigsty);
+    CUTE_CHECK("p != NULL", p == NULL);
     del_pigsty_entry(pigsty);
 CUTE_TEST_CASE_END
 
@@ -158,6 +164,8 @@ CUTE_TEST_CASE(pigsty_conf_set_ctx_tests)
     CUTE_CHECK("cp == NULL", cp != NULL);
     CUTE_CHECK("cp != pigsty->conf->next", cp == pigsty->conf->next);
     CUTE_CHECK("get_pigsty_conf_set_count() != 2", get_pigsty_conf_set_count(pigsty->conf) == 2);
+    cp = get_pigsty_conf_set_by_index(99, pigsty->conf);
+    CUTE_CHECK("cp != NULL", cp == NULL);
     del_pigsty_entry(pigsty);
 CUTE_TEST_CASE_END
 

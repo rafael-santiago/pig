@@ -59,25 +59,62 @@ static void sigint_watchdog(int signr) {
 }
 
 static pigsty_entry_ctx *load_signatures(const char *signatures) {
-    return NULL;
+    pigsty_entry_ctx *sig_entries = NULL;
+    const char *sp = NULL;
+    char curr_file_path[8192] = "";
+    char *cfp = NULL;
+    sp = signatures;
+    cfp = &curr_file_path[0];
+    while (*sp != 0) {
+        if (*sp != ',' && *(sp + 1) != 0) {
+            *cfp = *sp;
+            cfp++;
+        } else {
+            if (*(sp + 1) == 0) {
+                if (*sp != ',') {
+                    *cfp = *sp;
+                    cfp++;
+                }
+            }
+            *cfp = '\0';
+            if (!should_be_quiet) {
+                printf("pig INFO: loading \"%s\"...\n", curr_file_path);
+            }
+            sig_entries = load_pigsty_data_from_file(sig_entries, curr_file_path);
+            if (sig_entries == NULL) {
+                if (!should_be_quiet) {
+                    printf("pig INFO: load failure.\n");
+                }
+                break;
+            }
+            if (!should_be_quiet) {
+                printf("pig INFO: load success.\n");
+            }
+            cfp = &curr_file_path[0];
+        }
+        sp++;
+    }
+    return sig_entries;
 }
 
 static void run_pig_run(const char *signatures, const char *timeout) {
     int timeo = 10;
     pigsty_entry_ctx *pigsty = NULL;
+    size_t signatures_count = 0;
     if (timeout != NULL) {
         timeo = atoi(timeout);
     }
     if (!should_be_quiet) {
-        printf("pig INFO: starting up pig engine...\n");
+        printf("pig INFO: starting up pig engine...\n\n");
     }
     pigsty = load_signatures(signatures);
     if (pigsty == NULL) {
         printf("pig ERROR: aborted.\n");
         return;
     }
+    signatures_count = get_pigsty_entry_count(pigsty);
     if (!should_be_quiet) {
-        printf("pig INFO: done.\n\n");
+        printf("\npig INFO: done (%d signature(s) read).\n\n", signatures_count);
     }
     while (!should_exit) {
         if (!should_be_quiet) {
@@ -85,16 +122,10 @@ static void run_pig_run(const char *signatures, const char *timeout) {
         }
         sleep(timeo);
     }
+    del_pigsty_entry(pigsty);
 }
 
 int main(int argc, char **argv) {
-    /*pigsty_entry_ctx *pigsty = NULL;
-    if ((pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty")) == NULL) {
-	printf("*** error! :S\n");
-	return 1;
-    }
-    printf("*** success! ;)\n");
-    del_pigsty_entry(pigsty);*/
     char *signatures = NULL;
     char *iface = NULL;
     char *timeout = NULL;
