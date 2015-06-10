@@ -108,3 +108,12 @@ pigsty_conf_set_ctx *get_pigsty_conf_set_by_index(const size_t index, pigsty_con
     }
     return NULL;
 }
+
+size_t get_pigsty_conf_set_count(pigsty_conf_set_ctx *conf) {
+    pigsty_conf_set_ctx *cp = NULL;
+    size_t count = 0;
+    for (cp = conf; cp != NULL; cp = cp->next) {
+        count++;
+    }
+    return count;
+}

@@ -123,7 +123,7 @@ pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char
     char *data = get_pigsty_file_data(filepath);
     if (data != NULL) {
         if (!compile_pigsty_buffer(data)) {
-            printf("pig panic: invalid signature detected, fix it and try again.\n");
+            printf("pig PANIC: invalid signature detected, fix it and try again.\n");
             del_pigsty_entry(entry);
             free(data);
             return NULL;
@@ -131,7 +131,7 @@ pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char
         entry = make_pigsty_data_from_loaded_data(entry, data);
         free(data);
     } else {
-        printf("pig panic: some i/o error happened.\n");
+        printf("pig PANIC: some i/o error happened.\n");
         del_pigsty_entry(entry);
         return NULL;
     }
@@ -154,21 +154,21 @@ static char *get_pigsty_file_data(const char *filepath) {
     FILE *fp = fopen(filepath, "rb");
     long file_size = 0;
     if (fp == NULL) {
-        printf("pig i/o panic: unable to open file \"%s\".\n", filepath);
+        printf("pig i/o PANIC: unable to open file \"%s\".\n", filepath);
         return NULL;
     }
     if (fseek(fp, 0L, SEEK_END) != -1) {
         file_size = ftell(fp);
         fseek(fp, 0L, SEEK_SET);
     } else {
-        printf("pig i/o panic: unable to get some file informations from \"%s\".\n", filepath);
+        printf("pig i/o PANIC: unable to get some file informations from \"%s\".\n", filepath);
         fclose(fp);
         return NULL;
     }
     retval = (char *) pig_newseg(file_size + 1);
     memset(retval, 0, file_size + 1);
     if (fread(retval, 1, file_size, fp) == -1) {
-        printf("pig i/o panic: unable to load data from file \"%s\".\n", filepath);
+        printf("pig i/o PANIC: unable to load data from file \"%s\".\n", filepath);
         free(retval);
         retval = NULL;
     }
@@ -242,7 +242,7 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
             token = get_next_pigsty_word(tmp_buffer, next);
             signature_name = to_str(token);
             if (get_pigsty_entry_signature_name(signature_name, entries) != NULL) {
-                printf("pig panic: packet signature \"%s\" redeclared.\n", signature_name);
+                printf("pig PANIC: packet signature \"%s\" redeclared.\n", signature_name);
                 free(signature_name);
                 free(token);
                 del_pigsty_entry(entries);
@@ -305,7 +305,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     int field_index = 0;
     memset(field_map, 0, sizeof(field_map));
     if (*token != '<') {
-        printf("pig panic: signature not well opened.\n");
+        printf("pig PANIC: signature not well opened.\n");
         free(token);
         return 0;
     }
@@ -318,7 +318,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
                 field_index = get_pigsty_field_index(token);
                 if (field_map[field_index] == 1) {
                     free(token);
-                    printf("pig panic: field \"%s\" redeclared.\n", SIGNATURE_FIELDS[field_index].label);
+                    printf("pig PANIC: field \"%s\" redeclared.\n", SIGNATURE_FIELDS[field_index].label);
                     return 0;
                 }
                 field_map[field_index] = 1;
@@ -328,7 +328,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     	    case 1:
     		all_ok = (strcmp(token, "=") == 0);
     		if (!all_ok) {
-    		    printf("pig panic: expecting \"=\" token.\n");
+                    printf("pig PANIC: expecting \"=\" token.\n");
     		    free(token);
     		    return 0;
     		}
@@ -339,7 +339,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
         	if (SIGNATURE_FIELDS[field_index].verifier != NULL) {
                     all_ok = SIGNATURE_FIELDS[field_index].verifier(token);
 	            if (!all_ok) {
-    	        	printf("pig panic: field \"%s\" has invalid data (\"%s\").\n", SIGNATURE_FIELDS[field_index].label, token);
+                        printf("pig PANIC: field \"%s\" has invalid data (\"%s\").\n", SIGNATURE_FIELDS[field_index].label, token);
     	        	free(token);
                 	return 0;
             	    }
@@ -351,7 +351,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
                 all_ok = (*token == ',' || *token == '>');
                 state = 0;
                 if (!all_ok) {
-                    printf("pig panic: missing \",\" or \">\".\n");
+                    printf("pig PANIC: missing \",\" or \">\".\n");
                     all_ok = 0;
                 }
                 break;
@@ -593,7 +593,7 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
             }
         }
         if (ip_version == 0) {
-            printf("pig panic: signature %s: ip.version missing.\n", ep->signature_name);
+            printf("pig PANIC: signature %s: ip.version missing.\n", ep->signature_name);
             retval = 0;
         }
         if (retval == 1) {
@@ -633,7 +633,7 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                     break;
             }
             if (retval == 0) {
-                printf("pig panic: signature %s: required field missing.\n", ep->signature_name);
+                printf("pig PANIC: signature %s: required field missing.\n", ep->signature_name);
             }
         } else {
             for (cp = ep->conf; cp != NULL && retval == 1; cp = cp->next) {
@@ -661,7 +661,7 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                            cp->field->index == kUdp_src);
             }
             if (retval == 0) {
-                printf("pig panic: signature %s: tcp/udp fields informed in a non tcp or udp packet.\n", ep->signature_name);
+                printf("pig PANIC: signature %s: tcp/udp fields informed in a non tcp or udp packet.\n", ep->signature_name);
             }
         }
     }

@@ -157,6 +157,7 @@ CUTE_TEST_CASE(pigsty_conf_set_ctx_tests)
     cp = get_pigsty_conf_set_by_index(1, pigsty->conf);
     CUTE_CHECK("cp == NULL", cp != NULL);
     CUTE_CHECK("cp != pigsty->conf->next", cp == pigsty->conf->next);
+    CUTE_CHECK("get_pigsty_conf_set_count() != 2", get_pigsty_conf_set_count(pigsty->conf) == 2);
     del_pigsty_entry(pigsty);
 CUTE_TEST_CASE_END
 
