@@ -173,7 +173,7 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
             break;
 
     }
-printf("src = %.8x / dst = %.8x\n", iph.src, iph.dst);
+
     iph.tlen = (4 *  iph.ihl) + iph.payload_size;
     iph.chsum = 0;
     iph.chsum = eval_ip4_chsum(iph);

@@ -37,4 +37,19 @@ typedef struct _pigsty_entry {
     struct _pigsty_entry *next;
 }pigsty_entry_ctx;
 
+typedef enum _pig_addr_range_type {
+    kNone,
+    kWild,
+    kCidr,
+    kAddr
+}pig_addr_range_type_t;
+
+typedef struct _pig_target_addr {
+    pig_addr_range_type_t type;
+    unsigned char v;
+    unsigned char *addr;
+    size_t asize;
+    struct _pig_target_addr *next;
+}pig_target_addr_ctx;
+
 #endif

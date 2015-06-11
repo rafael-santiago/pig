@@ -12,4 +12,6 @@
 
 pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char *filepath);
 
+int verify_ipv4_addr(const char *buffer);
+
 #endif

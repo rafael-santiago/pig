@@ -56,8 +56,6 @@ static int verify_u16(const char *buffer);
 
 static int verify_u32(const char *buffer);
 
-static int verify_ipv4_addr(const char *buffer);
-
 static int get_pigsty_field_index(const char *field);
 
 static int verify_int(const char *buffer);
@@ -481,7 +479,7 @@ static int verify_u32(const char *buffer) {
     return (retval >= 0x0 && retval <= 0xffffffff);
 }
 
-static int verify_ipv4_addr(const char *buffer) {
+int verify_ipv4_addr(const char *buffer) {
     int retval = 1;
     const char *b = buffer;
     int dots_nr = 0;

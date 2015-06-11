@@ -7,6 +7,7 @@
  */
 #include "lists.h"
 #include "memory.h"
+#include "netmask.h"
 #include <string.h>
 
 static pigsty_conf_set_ctx *get_pigsty_conf_set_tail(pigsty_conf_set_ctx *conf);
@@ -138,3 +139,45 @@ pigsty_entry_ctx *get_pigsty_entry_by_index(const size_t index, pigsty_entry_ctx
     }
     return NULL;
 }
+
+void del_pig_target_addr(pig_target_addr_ctx *addrs) {
+    pig_target_addr_ctx *t, *p;
+    for (t = p = addrs; t; p = t) {
+        t = p->next;
+        if (p->addr != NULL) {
+            free(p->addr);
+        }
+    }
+}
+
+static pig_target_addr_ctx *get_pig_target_addr_tail(pig_target_addr_ctx *addrs) {
+    pig_target_addr_ctx *a = NULL;
+    for (a = addrs; a->next != NULL; a = a->next);
+    return a;
+}
+
+pig_target_addr_ctx *add_target_addr_to_pig_target_addr(pig_target_addr_ctx *addrs, const char *range) {
+    pig_target_addr_ctx *head = addrs, *p = NULL;
+    if (head == NULL) {
+        new_pig_target_addr(head);
+        p = head;
+    } else {
+        p = get_pig_target_addr_tail(head);
+        new_pig_target_addr(p->next);
+        p = p->next;
+    }
+    p->type = get_range_type(range);
+    return head;
+}
+
+size_t get_pig_target_addr_count(pig_target_addr_ctx *addrs) {
+    size_t c = 0;
+    pig_target_addr_ctx * a = NULL;
+    for (a = addrs; a != NULL; a = a->next) {
+        c++;
+    }
+    return c;
+}
+
+//pig_target_addr_ctx *get_pig_target_addr_by_index(const size_t index, pig_target_addr_ctx *addrs) {
+//}

@@ -14,6 +14,7 @@
 #include "../ip.h"
 #include "../udp.h"
 #include "../tcp.h"
+#include "../netmask.h"
 #include <cutest.h>
 #include <stdlib.h>
 #include <string.h>
@@ -366,6 +367,48 @@ CUTE_TEST_CASE(tcp_chsum_evaluation_tests)
     CUTE_CHECK_EQ("uhdr.chsum != expected_chsum", uhdr.chsum, expected_chsum);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(netmask_get_range_type_tests)
+    pig_addr_range_type_t type = kNone;
+    type = get_range_type("*");
+    CUTE_CHECK("type != kWild", type == kWild);
+    type = get_range_type("127.0.0.1");
+    CUTE_CHECK("type != kAddr", type == kAddr);
+    type = get_range_type("1272.0.0.1");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("127.1230.0.1");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("127.0.12310.1");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("127.0.0.112312");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("192.30.70.3/20");
+    CUTE_CHECK("type != kCidr", type == kCidr);
+    type = get_range_type("127.0.0.1.2");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("220.78.168.0/21");
+    CUTE_CHECK("type != kCidr", type == kCidr);
+    type = get_range_type("299.78.168.0/21");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("220.78.168.0.27/21");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("192.30.70.1113/20");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("192.30.1270.3/20");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("192.a30.70.3/20");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("192.2330.70.3/20");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("north-american-ip");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("european-ip");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("asian-ip");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("south-american-ip");
+    CUTE_CHECK("type != kNone", type == kNone);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -380,6 +423,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(ip4_chsum_evaluation_tests);
     CUTE_RUN_TEST(udp_chsum_evaluation_tests);
     CUTE_RUN_TEST(tcp_chsum_evaluation_tests);
+    CUTE_RUN_TEST(netmask_get_range_type_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(run_tests)

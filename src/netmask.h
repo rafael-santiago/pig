@@ -5,9 +5,11 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_TO_IPV4_H
-#define _PIG_TO_IPV4_H 1
+#ifndef _PIG_NETMASK_H
+#define _PIG_NETMASK_H 1
 
-unsigned int *to_ipv4(const char *data);
+#include "types.h"
+
+pig_addr_range_type_t get_range_type(const char *range);
 
 #endif
