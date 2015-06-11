@@ -134,7 +134,7 @@ static void run_pig_run(const char *signatures, const char *targets, const char 
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0;
     pigsty_entry_ctx *signature = NULL;
-    pig_target_addr_ctx *addr = parse_targets(targets);
+    pig_target_addr_ctx *addr = NULL;
     int sockfd = -1;
     if (timeout != NULL) {
         timeo = atoi(timeout);
@@ -152,6 +152,11 @@ static void run_pig_run(const char *signatures, const char *targets, const char 
         printf("pig ERROR: aborted.\n");
         deinit_raw_socket(sockfd);
         return;
+    }
+    if (targets != NULL) {
+        printf("\npig INFO: parsing the supplied targets...\n");
+        printf("pig INFO: all targets were parsed.\n");
+        addr = parse_targets(targets);
     }
     signatures_count = get_pigsty_entry_count(pigsty);
     if (!should_be_quiet) {
