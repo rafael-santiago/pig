@@ -23,7 +23,7 @@ static void sigint_watchdog(int signr);
 
 static pigsty_entry_ctx *load_signatures(const char *signatures);
 
-static void run_pig_run(const char *signatures, const char *timeout);
+static void run_pig_run(const char *signatures, const char *targets, const char *timeout);
 
 static char *get_option(const char *option, char *default_value, const int argc, char **argv) {
     static char retval[8192];
@@ -99,11 +99,42 @@ static pigsty_entry_ctx *load_signatures(const char *signatures) {
     return sig_entries;
 }
 
-static void run_pig_run(const char *signatures, const char *timeout) {
+static pig_target_addr_ctx *parse_targets(const char *targets) {
+    pig_target_addr_ctx *addr = NULL;
+    const char *tp = NULL;
+    char range[0xff];
+    size_t r = 0;
+    if (targets == NULL) {
+        return NULL;
+    }
+    memset(range, 0, sizeof(range));
+    r = 0;
+    for (tp = targets; *tp != 0; tp++) {
+        if (*tp == ',' || *(tp + 1) == 0) {
+            if (*(tp + 1) == 0) {
+                range[r] = *tp;
+            }
+            if (get_range_type(range) == kNone) {
+                printf("pig WARNING: the IP range \"%s\" seems invalid... it will be skipped.\n", range);
+            } else {
+                addr = add_target_addr_to_pig_target_addr(addr, range);
+            }
+            r = 0;
+            memset(range, 0, sizeof(range));
+        } else {
+            range[r] = *tp;
+            r = (r + 1) % sizeof(range);
+        }
+    }
+    return addr;
+}
+
+static void run_pig_run(const char *signatures, const char *targets, const char *timeout) {
     int timeo = 10;
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0;
     pigsty_entry_ctx *signature = NULL;
+    pig_target_addr_ctx *addr = parse_targets(targets);
     int sockfd = -1;
     if (timeout != NULL) {
         timeo = atoi(timeout);
@@ -140,6 +171,7 @@ static void run_pig_run(const char *signatures, const char *timeout) {
         }
     }
     del_pigsty_entry(pigsty);
+    del_pig_target_addr(addr);
     deinit_raw_socket(sockfd);
 }
 
@@ -147,6 +179,7 @@ int main(int argc, char **argv) {
     char *signatures = NULL;
     char *timeout = NULL;
     char *tp = NULL;
+    char *targets = NULL;
     if (get_option("version", NULL, argc, argv) != NULL) {
         printf("pig v%s\n", PIG_VERSION);
         return 0;
@@ -167,12 +200,13 @@ int main(int argc, char **argv) {
             }
         }
         should_be_quiet = (get_option("no-echo", NULL, argc, argv) != NULL);
+        targets = get_option("targets", NULL, argc, argv);
         signal(SIGINT, sigint_watchdog);
         signal(SIGTERM, sigint_watchdog);
         srand(time(0));
-        run_pig_run(signatures, timeout);
+        run_pig_run(signatures, targets, timeout);
     } else {
-        printf("usage: %s --signatures=file.0,file.1,(...),file.n [--timeout=<in secs> --no-echo]\n", argv[0]);
+        printf("usage: %s --signatures=file.0,file.1,(...),file.n [--timeout=<in secs> --no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n]\n", argv[0]);
     }
     return 0;
 }

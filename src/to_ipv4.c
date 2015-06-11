@@ -35,3 +35,67 @@ unsigned int *to_ipv4(const char *data) {
     }
     return retval;
 }
+
+unsigned int *to_ipv4_mask(const char *mask) {
+    unsigned int *retval = NULL;
+    const char *mp = NULL;
+    char temp[20];
+    unsigned char byte = 0;
+    size_t t = 0;
+    retval = (unsigned int *) pig_newseg(sizeof(unsigned int));
+    if (strcmp(mask, "*") == 0) {
+        *retval = 0xffffffff;
+        return retval;
+    }
+    *retval = 0;
+    memset(temp, 0, sizeof(temp));
+    for (mp = mask; *mp != 0; mp++) {
+        if (*mp == '.' || *(mp + 1) == 0) {
+            if (*(mp + 1) == 0) {
+                temp[t] = *mp;
+            }
+            byte = 0xff;
+            if (strcmp(temp, "*") != 0) {
+                byte = atoi(temp);
+            }
+            t = 0;
+            memset(temp, 0, sizeof(temp));
+            *retval = ((*retval) << 8) | byte;
+        } else {
+            temp[t] = *mp;
+            t = (t + 1) % sizeof(temp);
+        }
+    }
+    return retval;
+}
+
+unsigned int *to_ipv4_cidr(const char *range) {
+    char temp[0xff];
+    char *tp = NULL;
+    unsigned int *ip = NULL;
+    int bits_nr = 0;
+    unsigned int mask = 0xffffffff;
+    memset(temp, 0, sizeof(temp));
+    strncpy(temp, range, sizeof(temp) - 1);
+    tp = strstr(temp, "/");
+    if (tp == NULL) {
+        return NULL;
+    }
+    *tp = 0;
+    ip = to_ipv4(temp);
+    if (ip == NULL) {
+        return NULL;
+    }
+    tp = strstr(range, "/");
+    if (tp == NULL) {
+        free(ip);
+        return NULL;
+    }
+    strncpy(temp, tp + 1, sizeof(temp) - 1);
+    bits_nr = atoi(temp);
+    while (bits_nr-- > 0) {
+        mask = mask >> 1;
+    }
+    *ip = (*ip | mask);
+    return ip;
+}

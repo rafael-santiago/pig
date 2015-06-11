@@ -47,7 +47,7 @@ typedef enum _pig_addr_range_type {
 typedef struct _pig_target_addr {
     pig_addr_range_type_t type;
     unsigned char v;
-    unsigned char *addr;
+    void *addr;
     size_t asize;
     struct _pig_target_addr *next;
 }pig_target_addr_ctx;

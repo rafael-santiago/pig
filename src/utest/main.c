@@ -419,14 +419,73 @@ CUTE_TEST_CASE(netmask_get_range_type_tests)
     CUTE_CHECK("type != kNone", type == kNone);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(to_ipv4_mask_tests)
+    unsigned int *mask = NULL;
+    mask = to_ipv4_mask("*");
+    CUTE_CHECK("mask == NULL", mask != NULL);
+    CUTE_CHECK("mask != 0xffffffff", *mask == 0xffffffff);
+    free(mask);
+    mask = to_ipv4_mask("127.*.*.*");
+    CUTE_CHECK("mask == NULL", mask != NULL);
+    CUTE_CHECK("mask != 0x7fffffff", *mask == 0x7fffffff);
+    free(mask);
+    mask = to_ipv4_mask("127.0.*.*");
+    CUTE_CHECK("mask == NULL", mask != NULL);
+    CUTE_CHECK("mask != 0x7f00ffff", *mask == 0x7f00ffff);
+    free(mask);
+    mask = to_ipv4_mask("127.0.0.*");
+    CUTE_CHECK("mask == NULL", mask != NULL);
+    CUTE_CHECK("mask != 0x7f0000ff", *mask == 0x7f0000ff);
+    free(mask);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(to_ipv4_cidr_tests)
+    unsigned int *mask = NULL;
+    mask = to_ipv4_cidr("220.78.168.0/21");
+    CUTE_CHECK("mask == NULL", mask != NULL);
+    CUTE_CHECK("mask != 0xdc4eafff", *mask == 0xdc4eafff);
+    free(mask);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(pig_target_addr_ctx_tests)
+    pig_target_addr_ctx *addr = NULL;
+    addr = add_target_addr_to_pig_target_addr(addr, "127.0.0.1");
+    addr = add_target_addr_to_pig_target_addr(addr, "127.*.*.*");
+    addr = add_target_addr_to_pig_target_addr(addr, "220.78.168.0/21");
+    CUTE_CHECK("addr == NULL", addr != NULL);
+    CUTE_CHECK("addr->v != 4", addr->v == 4);
+    CUTE_CHECK("addr->asize != 4", addr->asize == 4);
+    CUTE_CHECK("addr->type != kAddr", addr->type == kAddr);
+    CUTE_CHECK("addr->addr == NULL", addr->addr != NULL);
+    CUTE_CHECK("*addr->addr != 0x7f000001", *(unsigned int *)addr->addr == 0x7f000001);
+
+    CUTE_CHECK("addr->next == NULL", addr->next != NULL);
+    CUTE_CHECK("addr->next->v != 4", addr->next->v == 4);
+    CUTE_CHECK("addr->next->asize != 4", addr->next->asize == 4);
+    CUTE_CHECK("addr->next->type != kWild", addr->next->type == kWild);
+    CUTE_CHECK("addr->next->addr == NULL", addr->next->addr != NULL);
+    CUTE_CHECK("*addr->next->addr != 0x7fffffff", *(unsigned int *)addr->next->addr == 0x7fffffff);
+
+    CUTE_CHECK("addr->next->next == NULL", addr->next->next != NULL);
+    CUTE_CHECK("addr->next->next->v != 4", addr->next->next->v == 4);
+    CUTE_CHECK("addr->next->next->asize != 4", addr->next->next->asize == 4);
+    CUTE_CHECK("addr->next->next->type != kCidr", addr->next->next->type == kCidr);
+    CUTE_CHECK("addr->next->next->addr == NULL", addr->next->next->addr != NULL);
+    CUTE_CHECK("*addr->next->next->addr != 0xdc4eafff", *(unsigned int *)addr->next->next->addr == 0xdc4eafff);
+    del_pig_target_addr(addr);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
     CUTE_RUN_TEST(to_int_tests);
     CUTE_RUN_TEST(to_str_tests);
     CUTE_RUN_TEST(to_ipv4_tests);
+    CUTE_RUN_TEST(to_ipv4_mask_tests);
+    CUTE_RUN_TEST(to_ipv4_cidr_tests);
     CUTE_RUN_TEST(pigsty_entry_ctx_tests);
     CUTE_RUN_TEST(pigsty_conf_set_ctx_tests);
+    CUTE_RUN_TEST(pig_target_addr_ctx_tests);
     CUTE_RUN_TEST(ip_packet_making_tests);
     CUTE_RUN_TEST(udp_packet_making_tests);
     CUTE_RUN_TEST(tcp_packet_making_tests);

@@ -8,6 +8,7 @@
 #include "lists.h"
 #include "memory.h"
 #include "netmask.h"
+#include "to_ipv4.h"
 #include <string.h>
 
 static pigsty_conf_set_ctx *get_pigsty_conf_set_tail(pigsty_conf_set_ctx *conf);
@@ -167,6 +168,26 @@ pig_target_addr_ctx *add_target_addr_to_pig_target_addr(pig_target_addr_ctx *add
         p = p->next;
     }
     p->type = get_range_type(range);
+    switch (p->type) {
+
+        case kAddr:
+            p->addr = to_ipv4(range);
+            break;
+
+        case kWild:
+            p->addr = to_ipv4_mask(range);
+            break;
+
+        case kCidr:
+            p->addr = to_ipv4_cidr(range);
+            break;
+
+        default:
+            break;
+
+    }
+    p->v = 4;
+    p->asize = sizeof(int);
     return head;
 }
 
