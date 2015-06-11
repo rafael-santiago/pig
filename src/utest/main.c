@@ -371,6 +371,16 @@ CUTE_TEST_CASE(netmask_get_range_type_tests)
     pig_addr_range_type_t type = kNone;
     type = get_range_type("*");
     CUTE_CHECK("type != kWild", type == kWild);
+    type = get_range_type("255.*.*.*");
+    CUTE_CHECK("type != kWild", type == kWild);
+    type = get_range_type("255.255.*.*");
+    CUTE_CHECK("type != kWild", type == kWild);
+    type = get_range_type("255.255.255.*");
+    CUTE_CHECK("type != kWild", type == kWild);
+    type = get_range_type("255.255.255.255.*");
+    CUTE_CHECK("type != kNone", type == kNone);
+    type = get_range_type("255...*");
+    CUTE_CHECK("type != kNone", type == kNone);
     type = get_range_type("127.0.0.1");
     CUTE_CHECK("type != kAddr", type == kAddr);
     type = get_range_type("1272.0.0.1");

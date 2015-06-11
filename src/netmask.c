@@ -28,17 +28,19 @@ pig_addr_range_type_t get_range_type(const char *range) {
         memset(temp, 0, sizeof(temp));
         for (rp = range; *rp != 0 && is; rp++) {
             if (*rp == '.' || *(rp + 1) == 0) {
-                oc++;
-                if (*(rp+1) == 0) {
-                    temp[t] = *(rp + 1);
+                if (*rp == '.') {
+                    oc++;
                 }
-                is = (strcmp(temp, "*") == 0 || (atoi(temp) >= 0 && atoi(temp) <= 255));
+                if (*(rp+1) == 0) {
+                    temp[t] = *rp;
+                }
+                is = (*temp != 0 && (strcmp(temp, "*") == 0 || (atoi(temp) >= 0 && atoi(temp) <= 255)));
                 memset(temp, 0, sizeof(temp));
                 t = 0;
             } else {
                 temp[t] = *rp;
                 t = (t + 1) % sizeof(temp);
-                is = isdigit(*rp);
+                is = (*rp == '*' || isdigit(*rp));
             }
         }
     } else {
@@ -50,6 +52,7 @@ pig_addr_range_type_t get_range_type(const char *range) {
     }
 
     //  WARN(Santiago): is a cidr?
+    t = 0;
     is = 1;
     oc = 0;
     memset(temp, 0, sizeof(temp));
@@ -61,7 +64,7 @@ pig_addr_range_type_t get_range_type(const char *range) {
             if (*(rp+1) == '/') {
                 temp[t] = *rp;
             }
-            is = (atoi(temp) >= 0 && atoi(temp) <= 255);
+            is = (*temp != 0 && (atoi(temp) >= 0 && atoi(temp) <= 255));
             memset(temp, 0, sizeof(temp));
             t = 0;
         } else {
