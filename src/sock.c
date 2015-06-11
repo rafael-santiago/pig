@@ -19,14 +19,14 @@ int init_raw_socket() {
 }
 
 void deinit_raw_socket(const int sockfd) {
-#ifndef __linux
+#ifdef __linux
     lin_rsk_close(sockfd);
 #endif
 }
 
 int inject(const unsigned char *packet, const size_t packet_size, const int sockfd) {
-#ifndef __linux
-    return lin_rsk_send(packet, packet_size, sockfd);
+#ifdef __linux
+    return lin_rsk_sendto(packet, packet_size, sockfd);
 #else
     return -1;
 #endif

@@ -32,7 +32,7 @@ void lin_rsk_close(const int sockfd) {
 int lin_rsk_sendto(const char *buffer, size_t buffer_size, const int sockfd) {
     struct sockaddr_in sk_in = { 0 };
     unsigned int ipv4_addr = 0;
-    if (((buffer[0] & 0xf0) >> 4) == 4) {
+    if (((buffer[0] & 0xf0) >> 4) != 4) {
         return -1;
     }
     if (buffer_size < 20) { //  WARN(Santiago): It must be at least a valid IP packet even if it brings an alien inside ;)

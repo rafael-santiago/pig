@@ -23,7 +23,7 @@ static void sigint_watchdog(int signr);
 
 static pigsty_entry_ctx *load_signatures(const char *signatures);
 
-static void run_pig_run(const char *signatures, const char *iface, const char *timeout);
+static void run_pig_run(const char *signatures, const char *timeout);
 
 static char *get_option(const char *option, char *default_value, const int argc, char **argv) {
     static char retval[8192];
@@ -99,7 +99,7 @@ static pigsty_entry_ctx *load_signatures(const char *signatures) {
     return sig_entries;
 }
 
-static void run_pig_run(const char *signatures, const char *iface, const char *timeout) {
+static void run_pig_run(const char *signatures, const char *timeout) {
     int timeo = 10;
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0;
@@ -131,10 +131,10 @@ static void run_pig_run(const char *signatures, const char *iface, const char *t
         if (signature == NULL) {
             continue; //  WARN(Santiago): It should never happen. However... Sometimes... The World tends to be a rather weird place.
         }
-        if (oink(signature, sockfd)) {
+        if (oink(signature, sockfd) != -1) {
             //  TODO(Santiago): Send it.
             if (!should_be_quiet) {
-                printf("pig INFO: a packet based on signature was sent.\n");
+                printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
             }
             sleep(timeo);
         }
@@ -145,22 +145,16 @@ static void run_pig_run(const char *signatures, const char *iface, const char *t
 
 int main(int argc, char **argv) {
     char *signatures = NULL;
-    char *iface = NULL;
     char *timeout = NULL;
     char *tp = NULL;
     if (get_option("version", NULL, argc, argv) != NULL) {
         printf("pig v%s\n", PIG_VERSION);
         return 0;
     }
-    if (argc > 2) {
+    if (argc > 1) {
         signatures = get_option("signatures", NULL, argc, argv);
         if (signatures == NULL) {
             printf("pig ERROR: --signatures option is missing.\n");
-            return 1;
-        }
-        iface = get_option("iface", NULL, argc, argv);
-        if (iface == NULL) {
-            printf("pig ERROR: --iface option is missing.\n");
             return 1;
         }
         timeout = get_option("timeout", NULL, argc, argv);
@@ -176,9 +170,9 @@ int main(int argc, char **argv) {
         signal(SIGINT, sigint_watchdog);
         signal(SIGTERM, sigint_watchdog);
         srand(time(0));
-        run_pig_run(signatures, iface, timeout);
+        run_pig_run(signatures, timeout);
     } else {
-        printf("usage: %s --signatures=file.0,file.1,(...),file.n --iface=<nic> [--timeout=<in secs> --no-echo]\n", argv[0]);
+        printf("usage: %s --signatures=file.0,file.1,(...),file.n [--timeout=<in secs> --no-echo]\n", argv[0]);
     }
     return 0;
 }

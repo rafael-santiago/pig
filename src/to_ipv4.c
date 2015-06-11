@@ -11,6 +11,7 @@ unsigned int *to_ipv4(const char *data) {
         return NULL;
     }
     retval = (unsigned int *) pig_newseg(sizeof(unsigned  int));
+    *retval = 0;
     memset(oct, 0, sizeof(oct));
     for (dp = data; *dp != 0; dp++) {
         if (*dp == '.' || *(dp + 1) == 0) {
@@ -21,8 +22,8 @@ unsigned int *to_ipv4(const char *data) {
             o = 0;
             memset(oct, 0, sizeof(oct));
         } else {
-            o = (o + 1) % sizeof(oct);
             oct[o] = *dp;
+            o = (o + 1) % sizeof(oct);
         }
     }
     return retval;

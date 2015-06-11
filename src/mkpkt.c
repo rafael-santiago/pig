@@ -74,6 +74,7 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
     char *temp = NULL;
     unsigned int src_addr[4] = {0, 0, 0, 0};
     unsigned int dst_addr[4] = {0, 0, 0, 0};
+
     memset(&iph, 0, sizeof(struct ip4));
     mk_default_ipv4(&iph);
     for (cp = conf; cp != NULL; cp = cp->next) {
@@ -172,12 +173,13 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
             break;
 
     }
-
+printf("src = %.8x / dst = %.8x\n", iph.src, iph.dst);
     iph.tlen = (4 *  iph.ihl) + iph.payload_size;
     iph.chsum = 0;
     iph.chsum = eval_ip4_chsum(iph);
 
     temp = mk_ip4_buffer(&iph, buf_size);
+
     memcpy(buf, temp, *buf_size % 0xffff);
     if (iph.payload != NULL) {
         free(iph.payload);
@@ -210,7 +212,6 @@ static void mk_default_tcp(struct tcp *hdr) {
 static void mk_tcp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const unsigned int src_addr[4], const unsigned int dst_addr[4], const int version) {
     pigsty_conf_set_ctx *cp = NULL;
     struct tcp tcph;
-    unsigned char *buf_p = *buf;
     memset(&tcph, 0, sizeof(struct tcp));
     mk_default_tcp(&tcph);
     for (cp = conf; cp != NULL; cp = cp->next) {
@@ -297,7 +298,7 @@ static void mk_tcp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_
 
     }
 
-    buf_p = mk_tcp_buffer(&tcph, buf_size);
+    (*buf) = mk_tcp_buffer(&tcph, buf_size);
     if (tcph.payload != NULL) {
         free(tcph.payload);
     }
@@ -316,7 +317,6 @@ static void mk_default_udp(struct udp *hdr) {
 
 static void mk_udp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const unsigned int src_addr[4], const unsigned int dst_addr[4], const int version) {
     pigsty_conf_set_ctx *cp = NULL;
-    unsigned char *buf_p = *buf;
     struct udp udph;
     memset(&udph, 0, sizeof(struct udp));
     mk_default_udp(&udph);
@@ -361,7 +361,7 @@ static void mk_udp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_
 
     }
 
-    buf_p = mk_udp_buffer(&udph, buf_size);
+    (*buf) = mk_udp_buffer(&udph, buf_size);
     if (udph.payload != NULL) {
         free(udph.payload);
     }

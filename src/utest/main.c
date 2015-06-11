@@ -117,7 +117,7 @@ CUTE_TEST_CASE(to_ipv4_tests)
     CUTE_CHECK("retval != NULL", retval == NULL);
     retval = to_ipv4("127.0.0.1");
     CUTE_CHECK("retval == NULL", retval != NULL);
-    CUTE_CHECK("retval != 0x7f000001", *retval != 0x7f000001);
+    CUTE_CHECK("retval != 0x7f000001", *retval == 0x7f000001);
     free(retval);
 CUTE_TEST_CASE_END
 
