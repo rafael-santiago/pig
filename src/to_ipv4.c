@@ -73,7 +73,6 @@ unsigned int *to_ipv4_cidr(const char *range) {
     char temp[0xff];
     char *tp = NULL;
     unsigned int *ip = NULL;
-    int bits_nr = 0;
     unsigned int mask = 0xffffffff;
     memset(temp, 0, sizeof(temp));
     strncpy(temp, range, sizeof(temp) - 1);
@@ -92,10 +91,7 @@ unsigned int *to_ipv4_cidr(const char *range) {
         return NULL;
     }
     strncpy(temp, tp + 1, sizeof(temp) - 1);
-    bits_nr = atoi(temp);
-    while (bits_nr-- > 0) {
-        mask = mask >> 1;
-    }
+    mask = mask >> atoi(temp);
     *ip = (*ip | mask);
     return ip;
 }
