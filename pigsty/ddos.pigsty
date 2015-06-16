@@ -1,0 +1,216 @@
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 6,
+  tcp.dst = 20432,
+  tcp.ack = 1,
+  signature = "Shaft Client to Handler"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 6,
+  tcp.dst = 27665,
+  tcp.ack = 1,
+  tcp.payload = "betaalmostdone",
+  signature = "Trin00 Attacker to Master Suite (betaalmostdone)"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 6,
+  tcp.dst = 27665,
+  tcp.ack = 1,
+  tcp.payload = "g0rave",
+  signature = "Trin00 Attacker to Master Suite (g0rave)"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 6,
+  tcp.dst = 27665,
+  tcp.ack = 1,
+  tcp.payload = "killme",
+  signature = "Trin00 Attacker to Master Suite (killme)"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 6,
+  tcp.syn = 1,
+  tcp.seqno = 674711609,
+  tcp.size = 5,
+  signature = "Shaft SYN Flood"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 6,
+  tcp.dst = 12754,
+  tcp.ack = 1,
+  tcp.payload = ">",
+  signature = "MStream Client to Handler"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 6,
+  tcp.src = 12754,
+  tcp.ack = 1,
+  tcp.payload = ">",
+  signature = "MStream Handler to Client"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 6,
+  tcp.dst = 15104,
+  tcp.syn = 1,
+  signature = "MStream Client to Handler SYN"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 6,
+  tcp.dst = 15104,
+  tcp.ack = 1,
+  tcp.payload = ">",
+  signature = "MStream Handler to Client SYN"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 10498,
+  udp.payload = "stream/",
+  signature = "MStream Handler to Agent"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 6838,
+  udp.payload = "newserver",
+  signature = "MStream Agent to Handler"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 31335,
+  udp.payload = "PONG",
+  signature = "Trin00 Daemon to Master PONG"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 31335,
+  udp.payload = "l44",
+  signature = "Trin00 Daemon to Master MSG DETECT"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 31335,
+  udp.payload = "dasdjashdjahsHELLOshdjahsjdahsj",
+  signature = "Trin00 Daemon to Master HELLO DETECT"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 27444,
+  udp.payload = "l4adsl",
+  signature = "Trin00 Daemon to Master DEFAULT PASS DETECT"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 18753,
+  udp.payload = "alive tijgu",
+  signature = "Shaft Handler to Agent"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 20433,
+  udp.payload = "alive",
+  signature = "Shaft Agent to Handler"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 10498,
+  udp.payload = "ping",
+  signature = "MStream Handler Ping to Agent"
+]
+[
+  ip.src = asian-ip,
+  ip.dst = 127.0.0.1,
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.tos = 0,
+  ip.protocol = 17,
+  udp.dst = 10498,
+  udp.payload = "pong",
+  signature = "MStream Handler Pong to Agent"
+]
