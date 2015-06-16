@@ -9,11 +9,11 @@
 #include "sock.h"
 #include "mkpkt.h"
 
-int oink(const pigsty_entry_ctx *signature, const int sockfd) {
+int oink(const pigsty_entry_ctx *signature, const pig_target_addr_ctx *addrs, const int sockfd) {
     unsigned char *packet = NULL;
     size_t packet_size = 0;
     int retval = -1;
-    packet = mk_ip_pkt(signature->conf, &packet_size);
+    packet = mk_ip_pkt(signature->conf, (pig_target_addr_ctx *)addrs, &packet_size);
     if (packet != NULL) {
         retval = inject(packet, packet_size, sockfd);
         free(packet);

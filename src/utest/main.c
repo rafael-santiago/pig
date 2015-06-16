@@ -441,9 +441,11 @@ CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(to_ipv4_cidr_tests)
     unsigned int *mask = NULL;
-    mask = to_ipv4_cidr("220.78.168.0/21");
+    unsigned int cidr_range = 0;
+    mask = to_ipv4_cidr("220.78.168.0/21", &cidr_range);
     CUTE_CHECK("mask == NULL", mask != NULL);
     CUTE_CHECK("mask != 0xdc4eafff", *mask == 0xdc4eafff);
+    CUTE_CHECK("mask->cidr_range != 21", cidr_range == 21);
     free(mask);
 CUTE_TEST_CASE_END
 

@@ -49,6 +49,7 @@ typedef struct _pig_target_addr {
     unsigned char v;
     void *addr;
     size_t asize;
+    unsigned int cidr_range;
     struct _pig_target_addr *next;
 }pig_target_addr_ctx;
 

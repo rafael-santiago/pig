@@ -179,7 +179,7 @@ pig_target_addr_ctx *add_target_addr_to_pig_target_addr(pig_target_addr_ctx *add
             break;
 
         case kCidr:
-            p->addr = to_ipv4_cidr(range);
+            p->addr = to_ipv4_cidr(range, &p->cidr_range);
             break;
 
         default:
@@ -199,6 +199,18 @@ size_t get_pig_target_addr_count(pig_target_addr_ctx *addrs) {
     }
     return c;
 }
-
-//pig_target_addr_ctx *get_pig_target_addr_by_index(const size_t index, pig_target_addr_ctx *addrs) {
-//}
+unsigned int get_ipv4_pig_target_by_index(const size_t index, pig_target_addr_ctx *addrs) {
+    size_t i = 0;
+    pig_target_addr_ctx *ap = NULL;
+    unsigned int ipv4_addr = 0;
+    for (ap = addrs; ap != NULL; ap = ap->next) {
+        if (i == index) {
+            break;
+        }
+        i++;
+    }
+    if (ap != NULL) {
+        ipv4_addr = mk_rnd_ipv4_by_mask(ap);
+    }
+    return ipv4_addr;
+}

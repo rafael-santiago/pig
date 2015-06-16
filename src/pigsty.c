@@ -488,7 +488,8 @@ int verify_ipv4_addr(const char *buffer) {
     if (strcmp(buffer, "north-american-ip") == 0 ||
         strcmp(buffer, "south-american-ip") == 0 ||
         strcmp(buffer, "asian-ip") == 0          ||
-        strcmp(buffer, "european-ip") == 0) {
+        strcmp(buffer, "european-ip") == 0       ||
+        strcmp(buffer, "user-defined-ip") == 0) {
         return 1;
     }
     memset(oct, 0, sizeof(oct));

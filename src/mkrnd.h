@@ -1,6 +1,8 @@
 #ifndef _PIG_MKRND_H
 #define _PIG_MKRND_H 1
 
+#include "types.h"
+
 unsigned char mk_rnd_u1();
 
 unsigned char mk_rnd_u3();
@@ -24,5 +26,7 @@ unsigned int mk_rnd_north_american_ipv4();
 unsigned int mk_rnd_south_american_ipv4();
 
 unsigned int mk_rnd_asian_ipv4();
+
+unsigned int mk_rnd_ipv4_by_mask(const pig_target_addr_ctx *mask);
 
 #endif

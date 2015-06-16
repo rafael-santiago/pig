@@ -61,3 +61,34 @@ unsigned int mk_rnd_south_american_ipv4() {
 unsigned int mk_rnd_asian_ipv4() {
     return mk_rnd_ipv4(202);
 }
+
+unsigned int mk_rnd_ipv4_by_mask(const pig_target_addr_ctx *mask) {
+    unsigned int retval = 0;
+    unsigned int maskval = 0;
+    if (mask == NULL || mask->addr == NULL) {
+        return 0;
+    }
+
+    switch (mask->type) {
+
+        case kWild:
+            retval = (rand() % 0xffffffff) & *((unsigned int *)mask->addr);
+            break;
+
+        case kAddr:
+            retval = *(unsigned int *)mask->addr;
+            break;
+
+        case kCidr:
+            maskval = 0xffffffff;
+            maskval = maskval << mask->cidr_range;
+            maskval |= *(unsigned int *)mask->addr;
+            retval = (rand() % 0xffffffff) | maskval;
+            while ((retval | *(unsigned int *)mask->addr) != retval) {
+                retval = (rand() % 0xffffffff) | maskval;
+            }
+            break;
+    }
+
+    return retval;
+}

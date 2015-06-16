@@ -14,7 +14,7 @@
 #include "mkrnd.h"
 #include <string.h>
 
-static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf);
+static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
 
 //static void mk_ipv6_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf);
 
@@ -28,7 +28,7 @@ static void mk_default_tcp(struct tcp *hdr);
 
 static void mk_default_udp(struct udp *hdr);
 
-unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, size_t *pktsize) {
+unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, size_t *pktsize) {
     unsigned char *retval = NULL;
     int version = 0;
     pigsty_field_ctx *ip_version = NULL, *protocol = NULL;
@@ -45,7 +45,7 @@ unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, size_t *pktsize) {
     // }
     if (version == 4) {
         retval = (unsigned char *) pig_newseg(0xffff);
-        mk_ipv4_dgram(retval, pktsize, conf);
+        mk_ipv4_dgram(retval, pktsize, conf, addrs);
     }
     return retval;
 }
@@ -66,7 +66,7 @@ static void mk_default_ipv4(struct ip4 *hdr) {
     hdr->payload = NULL;
 }
 
-static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf) {
+static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs) {
     pigsty_conf_set_ctx *cp = NULL;
     struct ip4 iph;
     struct tcp tcph;
@@ -74,6 +74,7 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
     char *temp = NULL;
     unsigned int src_addr[4] = {0, 0, 0, 0};
     unsigned int dst_addr[4] = {0, 0, 0, 0};
+    size_t addrs_count = 0, addr_index = 0;
 
     memset(&iph, 0, sizeof(struct ip4));
     mk_default_ipv4(&iph);
@@ -130,6 +131,10 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
                         iph.src = mk_rnd_south_american_ipv4();
                     } else if (strcmp(cp->field->data, "north-american-ip") == 0) {
                         iph.src = mk_rnd_north_american_ipv4();
+                    } else if (strcmp(cp->field->data, "user-defined-ip") == 0) {
+                        addrs_count = get_pig_target_addr_count(addrs);
+                        addr_index = rand() % addrs_count;
+                        iph.src = get_ipv4_pig_target_by_index(addr_index, addrs);
                     }
                 } else {
                     iph.src = *(unsigned int *)cp->field->data;
@@ -146,6 +151,10 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
                         iph.dst = mk_rnd_south_american_ipv4();
                     } else if (strcmp(cp->field->data, "north-american-ip") == 0) {
                         iph.dst = mk_rnd_north_american_ipv4();
+                    } else if (strcmp(cp->field->data, "user-defined-ip") == 0) {
+                        addrs_count = get_pig_target_addr_count(addrs);
+                        addr_index = rand() % addrs_count;
+                        iph.dst = get_ipv4_pig_target_by_index(addr_index, addrs);
                     }
                 } else {
                     iph.dst = *(unsigned int *)cp->field->data;
@@ -313,6 +322,8 @@ static void mk_default_udp(struct udp *hdr) {
     } while (hdr->dst == 0);
     hdr->len = 8;
     hdr->chsum = 0;
+    hdr->payload = NULL;
+    hdr->payload_size = 0;
 }
 
 static void mk_udp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const unsigned int src_addr[4], const unsigned int dst_addr[4], const int version) {

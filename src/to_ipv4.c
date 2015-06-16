@@ -69,7 +69,7 @@ unsigned int *to_ipv4_mask(const char *mask) {
     return retval;
 }
 
-unsigned int *to_ipv4_cidr(const char *range) {
+unsigned int *to_ipv4_cidr(const char *range, unsigned int *cidr_range) {
     char temp[0xff];
     char *tp = NULL;
     unsigned int *ip = NULL;
@@ -91,6 +91,9 @@ unsigned int *to_ipv4_cidr(const char *range) {
         return NULL;
     }
     strncpy(temp, tp + 1, sizeof(temp) - 1);
+    if (cidr_range != NULL) {
+        *cidr_range = atoi(temp);
+    }
     mask = mask >> atoi(temp);
     *ip = (*ip | mask);
     return ip;

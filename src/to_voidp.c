@@ -28,7 +28,6 @@ void *str_to_voidp(const char *data, size_t *dsize) {
     if (data == NULL || dsize == NULL) {
         return NULL;
     }
-    retval = pig_newseg(strlen(data));
     retval = to_str(data);
     *dsize = strlen(retval);
     return retval;

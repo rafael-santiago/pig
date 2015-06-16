@@ -17,7 +17,7 @@
                                     (c)->next = NULL, (c)->field = (pigsty_field_ctx *) pig_newseg(sizeof(pigsty_field_ctx)), (c)->field->data = NULL, (c)->field->index = kUnk )
 
 #define new_pig_target_addr(t) ( (t) = (pig_target_addr_ctx *) pig_newseg(sizeof(pig_target_addr_ctx)),\
-                                 (t)->next = NULL, (t)->asize = 0, (t)->addr = NULL, (t)->type = kNone, (t)->v = 0 )
+                                 (t)->next = NULL, (t)->asize = 0, (t)->addr = NULL, (t)->type = kNone, (t)->v = 0, (t)->cidr_range = 0 )
 
 
 pigsty_conf_set_ctx *add_conf_to_pigsty_conf_set(pigsty_conf_set_ctx *conf,
@@ -51,5 +51,7 @@ pig_target_addr_ctx *add_target_addr_to_pig_target_addr(pig_target_addr_ctx *add
 size_t get_pig_target_addr_count(pig_target_addr_ctx *addrs);
 
 //pig_target_addr_ctx *get_pig_target_addr_by_index(const size_t index, pig_target_addr_ctx *addrs);
+
+unsigned int get_ipv4_pig_target_by_index(const size_t index, pig_target_addr_ctx *addrs);
 
 #endif

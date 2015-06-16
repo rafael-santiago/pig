@@ -10,6 +10,6 @@
 
 #include "types.h"
 
-int oink(const pigsty_entry_ctx *signature, const int sockfd);
+int oink(const pigsty_entry_ctx *signature, const pig_target_addr_ctx *addrs, const int sockfd);
 
 #endif

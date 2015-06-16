@@ -39,7 +39,7 @@ unsigned char *mk_udp_buffer(const struct udp *hdr, size_t *bsize) {
     retval[5] = hdr->len & 0x00ff;
     retval[6] = (hdr->chsum & 0xff00) >> 8;
     retval[7] = hdr->chsum & 0x00ff;
-    for (p = 0; hdr->payload_size; p++) {
+    for (p = 0; p < hdr->payload_size; p++) {
 	retval[8 + p] = hdr->payload[p];
     }
     return retval;

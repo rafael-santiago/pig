@@ -12,6 +12,6 @@ unsigned int *to_ipv4(const char *data);
 
 unsigned int *to_ipv4_mask(const char *mask);
 
-unsigned int *to_ipv4_cidr(const char *range);
+unsigned int *to_ipv4_cidr(const char *range, unsigned int *cidr_range);
 
 #endif

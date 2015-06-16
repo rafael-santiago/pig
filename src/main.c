@@ -132,9 +132,9 @@ static pig_target_addr_ctx *parse_targets(const char *targets) {
 static void run_pig_run(const char *signatures, const char *targets, const char *timeout) {
     int timeo = 10;
     pigsty_entry_ctx *pigsty = NULL;
-    size_t signatures_count = 0;
+    size_t signatures_count = 0, addr_count = 0;
     pigsty_entry_ctx *signature = NULL;
-    pig_target_addr_ctx *addr = NULL;
+    pig_target_addr_ctx *addr = NULL, *addr_p = NULL;
     int sockfd = -1;
     if (timeout != NULL) {
         timeo = atoi(timeout);
@@ -167,8 +167,7 @@ static void run_pig_run(const char *signatures, const char *targets, const char 
         if (signature == NULL) {
             continue; //  WARN(Santiago): It should never happen. However... Sometimes... The World tends to be a rather weird place.
         }
-        if (oink(signature, sockfd) != -1) {
-            //  TODO(Santiago): Send it.
+        if (oink(signature, addr, sockfd) != -1) {
             if (!should_be_quiet) {
                 printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
             }
