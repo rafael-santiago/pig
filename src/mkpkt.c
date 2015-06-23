@@ -56,9 +56,9 @@ static void mk_default_ipv4(struct ip4 *hdr) {
     hdr->tos = mk_rnd_u8();
     hdr->tlen = hdr->ihl * 4;
     hdr->id = mk_rnd_u16();
-    hdr->flags_fragoff = (((unsigned short) mk_rnd_u3()) << 13) | mk_rnd_u13();
-    hdr->ttl = mk_rnd_u8();
-    hdr->protocol = mk_rnd_u8();
+    hdr->flags_fragoff = 0x4000;
+    hdr->ttl = 64;
+    hdr->protocol = 0;
     hdr->chsum = 0;
     hdr->src = 0;
     hdr->dst = 0;
@@ -208,7 +208,7 @@ static void mk_default_tcp(struct tcp *hdr) {
     } while (hdr->dst == 0);
     hdr->seqno = mk_rnd_u16();
     hdr->ackno = mk_rnd_u16();
-    hdr->len = 4;
+    hdr->len = 5;
     hdr->reserv = mk_rnd_u6();
     hdr->flags = mk_rnd_u6();
     hdr->window = mk_rnd_u16();
