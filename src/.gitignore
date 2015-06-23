@@ -5,3 +5,4 @@ obj/*
 utest/bin/*
 utest/obj/*
 utest/*.o
+*-hefesto-src-chsum-base
