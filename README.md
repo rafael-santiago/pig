@@ -1,3 +1,135 @@
 # Pig
 
-A Linux packet crafting tool.
+``Pig`` (which can be understood as ``P``acket ``i``ntruder ``g``enerator) is a ``Linux`` packet crafting tool.
+You can use ``Pig`` to test your ``IDS``/``IPS`` among other things.
+
+``Pig`` brings a bunch of well-known attack signatures ready to be used and you can expand this collection
+with more specific things to your requirements.
+
+Until now it is possible to create ``IPv4`` signatures with transport layer based on ``TCP`` or ``UDP``.
+
+# How to build it?
+
+You need to use the [``Hefesto``](https://github.com/rafael-santiago/hefesto) to build ``pig``. After follow
+the steps to put ``Hefesto`` working on your system. Move to the ``pig`` subdirectory ``src`` and run the following command:
+
+``hefesto``
+
+After this command you should find the ``pig`` binary inside the subdirectory ``bin``.
+
+# The pigsty files
+
+``Pigsty files`` are plain text files where you can define a set of packet signatures. There is a specific syntax to be
+followed. Look out an example of a pigsty file:
+
+        [ signature   =      "Hello",
+          ip.version  =            4,
+          ip.ihl      =            5,
+          ip.tos      =            0,
+          ip.src      = 192.30.70.10,
+          ip.dst      =  192.30.70.3,
+          ip.protocol =           17,
+          udp.dst     =         1008,
+          udp.src     =        32000,
+          udp.payload =    "Hello!!" ]
+
+Basically, all signature data must goes between square brackets: ``[`` ... ``]``.
+
+Inside this area the piece of information is supplied by the scheme ``field = data``.
+
+If you have some experience with Computer Networks is sure that the majority of fields listed on ``Table 1``
+have strong meaning for you. You must use these fields to create your further signatures.
+
+**Table 1**: The ``pig`` signature fields.
+
+|    **Field**   |   **Stands for**   |  **Protocol** | **Data type** |     **Sample definition**   |
+|:--------------:|:------------------:|:-------------:|:-------------:|:---------------------------:|
+| ``signature``  | The signature name |       -       |     string    | ``signature = "Udp flood"`` |
+|``ip.version``  |    IP version      |      *IP*     |     number    |      ``ip.version = 4``     |
+|  ``ip.ihl``    | Internet Header Len|      *IP*     |     number    |         ``ip.ihl = 5``      |
+|  ``ip.tos``    |    Type of service |      *IP*     |     number    |         ``ip.tos = 0 ``     |
+| ``ip.tlen``    |     Total Length   |      *IP*     |     number    |         ``ip.tlen = 20``    |
+|  ``ip.id``     |       Packet ID    |      *IP*     |     number    |       ``ip.id = 0xbeef``    |
+| ``ip.flags``   |       IP Flags     |      *IP*     |     number    |       ``ip.flags = 4``      |
+| ``ip.offset``  |   Fragment offset  |      *IP*     |     number    |       ``ip.offset = 0``     |
+|  ``ip.ttl``    |   Time to live     |      *IP*     |     number    |          ``ip.ttl = 64``    |
+|``ip.protocol`` |       Protocol     |      *IP*     |     number    |       ``ip.protocol = 6``   |
+|``ip.checksum`` |       Checksum     |      *IP*     |     number    |       ``ip.checksum = 0``   |
+|   ``ip.src``   |   Source address   |      *IP*     |  ip address   |    ``ip.src = 192.30.70.3`` |
+|   ``ip.dst``   |   Dest. address    |      *IP*     |  ip address   |    ``ip.dst = 192.30.70.3`` |
+|   ``tcp.src``  |    Source port     |      *TCP*    |     number    |         ``tcp.src = 80``    |
+|   ``tcp.dst``  |    Dest. port      |      *TCP*    |     number    |         ``tcp.dst = 21``    |
+| ``tcp.seqno``  |  Sequence number   |      *TCP*    |     number    |        ``tcp.seqno = 10202``|
+| ``tcp.ackno``  | Acknowledge number |      *TCP*    |     number    |       ``tcp.ackno = 10200`` |
+|  ``tcp.size``  |     TCP Length     |      *TCP*    |     number    |       ``tcp.size = 4``      |
+|``tcp.reserv``  | TCP reserv. field  |      *TCP*    |     number    |       ``tcp.reserv = 0``    |
+|   ``tcp.urg``  |  TCP urg. flag     |      *TCP*    |       bit     |       ``tcp.urg = 0``       |
+|   ``tcp.ack``  |  TCP ack. flag     |      *TCP*    |       bit     |       ``tcp.ack = 1``       |
+|   ``tcp.psh``  |  TCP psh. flag     |      *TCP*    |       bit     |       ``tcp.psh = 0``       |
+|   ``tcp.rst``  |  TCP psh. flag     |      *TCP*    |       bit     |       ``tcp.rst = 0``       |
+|   ``tcp.syn``  |  TCP syn. flag     |      *TCP*    |       bit     |       ``tcp.syn = 0``       |
+|   ``tcp.fin``  |  TCP fin. flag     |      *TCP*    |       bit     |       ``tcp.fin = 0``       |
+|  ``tcp.wsize`` |  TCP window size   |      *TCP*    |     number    |       ``tcp.wsize = 0``     |
+|``tcp.checksum``|    Checksum        |      *TCP*    |     number    |       ``tcp.checksum = 0``  |
+|``tcp.urgp``    |  Urgent pointer    |      *TCP*    |     number    |      ``tcp.urgp = 0``       |
+|``tcp.payload`` |      Payload       |      *TCP*    |     string    | ``tcp.payload = "\x01abc"`` |
+|   ``udp.src``  |    Source port     |      *UDP*    |     number    |        ``udp.src = 53``     |
+|   ``udp.dst``  |    Dest. port      |      *UDP*    |     number    |        ``udp.dst = 7``      |
+|   ``udp.size`` |     UDP Length     |      *UDP*    |     number    |       ``udp.size = 8``      |
+|``udp.checksum``|      Checksum      |      *UDP*    |     number    |       ``udp.checksum = 0``  |
+|``udp.payload`` |      Payload       |      *UDP*    |     number    |    ``udp.payload = "boo!"`` |
+
+When creating a signature you do not need specify all data. If you specify only the most relevant packet parts
+the remaining parts will be filled with default values. The ``checksums`` are **always** recalculated.
+
+Tip: take a look in subdirectory ``pigsty``. You will find lots of signature files. It is pretty simple define new ones.
+
+## Specifying IP addresses geographically
+
+Yes, this is possible. In order to use this feature you just need to specify the values listed on ``Table 2``
+in ``ip adddress`` typed fields.
+
+**Table 2**: IPs by geographic area.
+
+|   **Value to use**  |          **Stands for**         |
+|:-------------------:|:-------------------------------:|
+|``north-american-ip``| IP addresses from North America |
+|``south-american-ip``| IP addresses from South America |
+|    ``asian-ip``     | IP addresses from Asia          |
+|   ``european-ip``   | IP addresses from Europe        |
+
+## Specifying my own addresses
+
+You should in any ``ip address`` typed field use ``user-defined-ip`` as value. Note that you need to use the
+command line option ``--targets`` in this case. See section "``Using pig``" for more information.
+
+# Using pig
+
+The ``Pig`` usage is very straightforward being necessary supply only one command line option. This option is
+``--signatures`` which must receive a list of file paths to ``pigsty files``.
+
+Supposing that we want to generate ``DDos`` based traffic:
+
+``pig --signatures=pigsty/ddos.pigsty``
+
+Now we want mess around with everything:
+
+``pig --signatures=pigsty/ddos.pigsty,pigsty/attackresponses.pigsty,pigsty/badtraffic.pigsty,pigsty/backdoors.pigsty``
+
+## Extra options
+
+### Defining timeouts between the signature sends
+
+For it use the option ``--timeout=<secs>``
+
+### Echo suppressing
+
+Use the ``--no-echo`` option.
+
+### Defining targets
+
+Use the ``--target`` option. You can specify a list based on exact IPs, IP masks and [``CIDRs``](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).
+
+Look this:
+
+``pig --signature=pigsty/local-mess.pigsty --target=192.30.70.3,192.30.70.*,192.30.70.0/9``
