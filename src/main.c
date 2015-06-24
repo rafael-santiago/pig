@@ -25,6 +25,8 @@ static pigsty_entry_ctx *load_signatures(const char *signatures);
 
 static void run_pig_run(const char *signatures, const char *targets, const char *timeout);
 
+static int is_targets_option_required(const pigsty_entry_ctx *entries);
+
 static char *get_option(const char *option, char *default_value, const int argc, char **argv) {
     static char retval[8192];
     int a;
@@ -133,7 +135,7 @@ static void run_pig_run(const char *signatures, const char *targets, const char 
     int timeo = 10;
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0, addr_count = 0;
-    pigsty_entry_ctx *signature = NULL;
+    pigsty_entry_ctx *signature = NULL, *sp = NULL;
     pig_target_addr_ctx *addr = NULL, *addr_p = NULL;
     int sockfd = -1;
     if (timeout != NULL) {
@@ -158,6 +160,12 @@ static void run_pig_run(const char *signatures, const char *targets, const char 
         printf("pig INFO: all targets were parsed.\n");
         addr = parse_targets(targets);
     }
+    if (is_targets_option_required(pigsty) && addr == NULL) {
+        printf("pig PANIC: --targets option is required by some loaded signatures.\n");
+        deinit_raw_socket(sockfd);
+        del_pigsty_entry(pigsty);
+        return;
+    }
     signatures_count = get_pigsty_entry_count(pigsty);
     if (!should_be_quiet) {
         printf("\npig INFO: done (%d signature(s) read).\n\n", signatures_count);
@@ -177,6 +185,21 @@ static void run_pig_run(const char *signatures, const char *targets, const char 
     del_pigsty_entry(pigsty);
     del_pig_target_addr(addr);
     deinit_raw_socket(sockfd);
+}
+
+static int is_targets_option_required(const pigsty_entry_ctx *entries) {
+    const pigsty_conf_set_ctx *cp = NULL;
+    const pigsty_entry_ctx *ep = NULL;
+    for (ep = entries; ep != NULL; ep = ep->next) {
+        for (cp = ep->conf; cp != NULL; cp = cp->next) {
+            if (cp->field->index == kIpv4_src || cp->field->index == kIpv4_dst) {
+                if (cp->field->dsize > 4 && strcmp(cp->field->data, "user-defined-ip") == 0) {
+                    return 1;
+                }
+            }
+        }
+    }
+    return 0;
 }
 
 int main(int argc, char **argv) {

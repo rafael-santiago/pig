@@ -41,7 +41,8 @@ void *ipv4_to_voidp(const char *data, size_t *dsize) {
     if (strcmp(data, "south-american-ip") != 0 &&
         strcmp(data, "north-american-ip") != 0 &&
         strcmp(data, "european-ip")       != 0 &&
-        strcmp(data, "asian-ip")          != 0) {
+        strcmp(data, "asian-ip")          != 0 &&
+        strcmp(data, "user-defined-ip")   != 0) {
         retval = pig_newseg(sizeof(unsigned int));
         retval = to_ipv4(data);
         *dsize = sizeof(unsigned int);

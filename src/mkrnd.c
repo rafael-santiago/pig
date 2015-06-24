@@ -64,6 +64,7 @@ unsigned int mk_rnd_asian_ipv4() {
 
 unsigned int mk_rnd_ipv4_by_mask(const pig_target_addr_ctx *mask) {
     unsigned int retval = 0;
+    unsigned int rnd = 0;
     unsigned int maskval = 0;
     if (mask == NULL || mask->addr == NULL) {
         return 0;
@@ -72,7 +73,21 @@ unsigned int mk_rnd_ipv4_by_mask(const pig_target_addr_ctx *mask) {
     switch (mask->type) {
 
         case kWild:
-            retval = (rand() % 0xffffffff) & *((unsigned int *)mask->addr);
+            maskval = *(unsigned int *)mask->addr;
+            rnd = rand() % 0xffffff;
+            retval = maskval;
+            if ((maskval & 0xff000000) == 0xff000000) {
+                retval = (rnd & 0xff000000) | (retval & 0x00ffffff);
+            }
+            if ((maskval & 0x00ff0000) == 0x00ff0000) {
+                retval = (rnd & 0x00ff0000) | (retval & 0xff00ffff);
+            }
+            if ((maskval & 0x0000ff00) == 0x0000ff00) {
+                retval = (rnd & 0x0000ff00) | (retval & 0xffff00ff);
+            }
+            if ((maskval & 0x000000ff) == 0xff) {
+                retval = (rnd & 0x000000ff) | (retval & 0xffffff00);
+            }
             break;
 
         case kAddr:
@@ -81,12 +96,10 @@ unsigned int mk_rnd_ipv4_by_mask(const pig_target_addr_ctx *mask) {
 
         case kCidr:
             maskval = 0xffffffff;
-            maskval = maskval << mask->cidr_range;
-            maskval |= *(unsigned int *)mask->addr;
-            retval = (rand() % 0xffffffff) | maskval;
-            while ((retval | *(unsigned int *)mask->addr) != retval) {
-                retval = (rand() % 0xffffffff) | maskval;
-            }
+            maskval = maskval >> mask->cidr_range;
+            retval = 0xffffffff ^ (rand() % maskval);
+            maskval = *(unsigned int *)mask->addr;
+            retval = maskval & retval;
             break;
     }
 
