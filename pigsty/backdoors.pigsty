@@ -1,0 +1,559 @@
+[ signature="Sub 7 2.2",
+  tcp.ack = 1, tcp.src = 27374, tcp.payload = "\x0d\x0a\x5b\x52\x50\x4c\x5d\x30\x30\x32\x0d\x0a",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Dagger 1.4.0 - Client connect", 
+  tcp.ack = 1, tcp.src = 1024, tcp.dst = 2589, tcp.payload = "\x0b \x00 \x00 \x00 \x07 \x00 \x00 \x00\&Connect", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Dagger 1.4.0", 
+  tcp.ack = 1, tcp.dst = 1024, tcp.src = 2589, tcp.payload = "\x32\x00\x00\x00\x06\x00\x00\x00\Drives\x24\x00", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="ACKcmdCTrojanScan",
+  tcp.ack = 1, tcp.src = 80, tcp.dst = 1054, tcp.seqno = 101058054, tcp.ackno = 101058054, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Sub 7 DEFCON 8.2.1 access", 
+  tcp.ack = 1, tcp.src = 16959, tcp.payload = "PWD acidphreak", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="QAZ Worm client login access", 
+  tcp.ack = 1, tcp.dst = 7597, tcp.payload = "\x71 \x61 \x7a \x77 \x73 \x78 \x2e \x68 \x73 \x71", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetBus active (tcp.src = 12345)", 
+  tcp.ack = 1, tcp.src = 12345, tcp.payload = "NetBus", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetBus active (tcp.src = 12346)", 
+  tcp.ack = 1, tcp.src = 12346, tcp.payload = "NetBus", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetBus active (tcp.src = 20034)",
+  tcp.ack = 1, tcp.src = 20034, tcp.payload = "NetBus", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetBus getinfo (tcp.src = 12345)", 
+  tcp.ack = 1, tcp.dst = 12345, tcp.payload = "GetInfo\x0d", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetBus getinfo (tcp.src = 12346)", 
+  tcp.ack = 1, tcp.dst = 12346, tcp.payload = "GetInfo\x0d", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="BackOrifice access", 
+  tcp.ack = 1, tcp.src = 80, tcp.payload = "server\x3a BO\x2f", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Infector.1.x", 
+  tcp.ack = 1, tcp.src = 146, tcp.dst = 1024, tcp.payload = "WHATISIT", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Satans Backdoor 2.0 beta", 
+  tcp.ack = 1, tcp.src = 666, tcp.dst = 1024, tcp.payload = "Remote\x3a You are connected to me.", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Doly 2.0 access", 
+  tcp.ack = 1, tcp.src = 6789, tcp.payload = "\x57 \x74 \x7a \x75 \x70 \x20 \x55 \x73 \x65", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Hack Attack 1.20 connect", 
+  tcp.ack = 1, tcp.src = 31785, tcp.payload = "host", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Girlfriend access", 
+  tcp.ack = 1, tcp.dst = 21554, tcp.src = 20030, tcp.payload = "Girl", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="BackConstruction 2.1 connection (tcp.port = 5401)", 
+  tcp.ack = 1, tcp.dst = 5401, tcp.payload = "c\x3a\\\&", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="BackConstruction 2.1 connection (tcp.port = 5402)", 
+  tcp.ack = 1, tcp.dst = 5402, tcp.payload = "c\x3a\\\&", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="DonaldDick 1.53 traffic", 
+  tcp.ack = 1, tcp.src = 23476, tcp.payload = "pINg", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetSphere 1.31.337 access (tcp.src = 30100)", 
+  tcp.ack = 1, tcp.src = 30100, tcp.payload = "NetSphere", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetSphere 1.31.337 access (tcp.src = 30101)", 
+  tcp.ack = 1, tcp.src = 30101, tcp.payload = "NetSphere", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetSphere 1.31.337 access (tcp.src = 30102)", 
+  tcp.ack = 1, tcp.src = 30102, tcp.payload = "NetSphere", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="BackConstruction 2.1 client FTP open request", 
+  tcp.ack = 1, tcp.dst = 666, tcp.payload = "FTPON", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="BackConstruction 2.1 server FTP open reply", 
+  tcp.ack = 1, tcp.src = 666, tcp.payload = "FTP Port open", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetMetro file list", 
+  tcp.ack = 1, tcp.dst = 5032, tcp.payload = "\x2d \x2d", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Win Crash 1.0 server active", 
+  tcp.syn = 1, tcp.ack = 1, tcp.src = 5714, tcp.payload = "\xb4 \xb4", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff00)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.0, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff01)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.1, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff02)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.2, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff03)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.3, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff04)", 
+  tcp.ack = 1, tcp.dst = 5032,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.4, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff05)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.5, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff06)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.6, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff07)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.7, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff08)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.8, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff09)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.9, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff0a)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.10, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff0b)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.11, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff0c)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.12, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff0d)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.13, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff0e)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.14, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff0f)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.15, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff10)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.16, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff11)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.17, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff12)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.18, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff13)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.19, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff14)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.20, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff15)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.21, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff16)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.22, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff17)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.23, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Q access (ip.src = 0xffffff18)", 
+  tcp.ack = 1, tcp.dst = 5032, 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = 255.255.255.24, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="CDK", 
+  tcp.ack = 1, tcp.dst = 79, tcp.payload = "ypi0ca", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="NetSphere access", 
+  tcp.ack = 1, tcp.src = 30100, tcp.payload = "NetSphere", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="GateCrasher", 
+  tcp.ack = 1, tcp.src = 6969, tcp.payload = "GateCrasher", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Infector 1.6 server to client", 
+  tcp.src = 146, tcp.payload = "\x57 \x48 \x41 \x54 \x49 \x53 \x49 \x54", tcp.dst = 1010,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="Infector 1.6 client to server connection request", 
+  tcp.ack = 1, tcp.src = 1000, tcp.payload = "\x46 \x43 \x20", tcp.dst = 146,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="PhaseZero server active on network", 
+  tcp.ack = 1, tcp.src = 555, tcp.payload = "phAse",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="w00w00", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "w00w00",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="tcp backdoor", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "tcpBackdoor",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="r00t", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "r00t",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="rewt", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "rewt",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="linux rootkit", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "wh00t!",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="linux rootkit (lrkr0x)", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "lrkr0x",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="linux rootkit (d13hh[)", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "d13hh[",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="linux rootkit (satori)", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "satori",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="sm4ck", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "hax0r",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="solaris 2.5", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "friday",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="HidePak", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "StoogR",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="HideSource", 
+  tcp.ack = 1, tcp.dst = 23, tcp.payload = "wank",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="hack-a-tack", 
+  tcp.ack = 1, tcp.src = 31790, tcp.payload = "A", tcp.dst = 31789,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 6 ]
+
+[ signature="DeepThroat access", 
+  udp.src = 4120, udp.payload = "--Ahhhhhhhhhh",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="BackOrifice access (UDP)", 
+  udp.dst = 31337, udp.payload = "\xce\x63 \xd1\xd2 \x16\xe7 \x13\xcf \x39\xa5 \xa5\x86",
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 system info client request", 
+  udp.src = 60000, udp.payload = "13", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 FTP status client request", 
+  udp.src = 60000, udp.payload = "09", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 e-mail info from server", 
+  udp.dst = 60000, udp.payload = "Retreaving", udp.src = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 e-mail info client request", 
+  udp.src = 60000, udp.payload = "12", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 server status from server", 
+  udp.dst = 60000, udp.payload = "Host", udp.src = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 server status client request", 
+  udp.src = 60000, udp.payload = "10", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 drive info from server", 
+  udp.dst = 60000, udp.payload = "C - ", udp.src = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 system info from server", 
+  udp.dst = 60000, udp.payload = "Comp Name", udp.src = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 drive info client request", 
+  udp.src = 60000, udp.payload = "130", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 server FTP port change from server", 
+  udp.dst = 60000, udp.payload = "FTP Server changed to", udp.src = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 cached passwords client request", 
+  udp.src = 60000, udp.payload = "16", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 RAS passwords client request", 
+  udp.src = 60000, udp.payload = "17", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 server password change client request", 
+  udp.src = 60000, udp.payload = "91", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 server password remove client request", 
+  udp.src = 60000, udp.payload = "92", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 rehash client request", 
+  udp.src = 60000, udp.payload = "911", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 server rehash client request", 
+  udp.src = 60000, udp.payload = "shutd0wnM0therF***eR", udp.dst = 3150,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 ICQ alert off client request", 
+  udp.src = 60000, udp.payload = "88", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 ICQ alert on client request", 
+  udp.src = 60000, udp.payload = "40", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 change wallpaper client request", 
+  udp.src = 60000, udp.payload = "20", udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 keylogger active on network", 
+  udp.dst = 60000, udp.payload = "KeyLogger Is Enabled On port", udp.src = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 client sending data to server on network (a)", 
+  udp.src = 60000, udp.payload = "\x00 \x23", udp.dst = 3150,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 server active on network (b)", 
+  udp.dst = 60000, udp.payload = "\x00 \x23", udp.src = 3150,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 client sending data to server on network (b)", 
+  udp.src = 60000, udp.dst = 2140,
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 wrong password", 
+  udp.dst = 60000, udp.src = 3150, udp.payload = "Wrong Password",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 visible window list client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "37",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="Matrix 2.0 client connect", 
+  udp.src = 3344, udp.dst = 3345, udp.payload = "activate",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="Matrix 2.0 server access", 
+  udp.dst = 3344, udp.src = 3345, udp.payload = "logged in",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 server active on network (a)", 
+  udp.dst = 60000, udp.src = 2140,  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 keylogger on server ON", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "KeyLogger Is Enabled On port",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 show picture client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "22",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 hide/show clock client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "32",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 hide/show desktop client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "33",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 swap mouse buttons client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "34",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 enable/disable CTRL-ALT-DEL client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "110",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 freeze mouse client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "35",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 show dialog box client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "70",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 show replyable dialog box client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "71",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 hide/show start button client request (a)", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "31",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 resolution change client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "125",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 hide/show start button client request (b)", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "04", 
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = user-defined-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 keylogger on server OFF", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "KeyLogger Shut Down",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 FTP server port client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "21",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 process list client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "64",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 close port scan client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "121",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 registry add client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "89",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 monitor on/off client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "07",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 delete file client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "41",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 kill window client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "38",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 disable window client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "23",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 enable window client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "24",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 change window title client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "60",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 hide window client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "26",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 show window client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "25",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 send text to window client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "63",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 server response", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "Ahhhh My Mouth Is Open",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 hide/show systray client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "30",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 create directory client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "39",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 all window list client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "370",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 play sound client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "36",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 run program normal client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "14",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 run program hidden client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "15",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 get NET file client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "100",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 find file client request (117)", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "117",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 find file client request (118)", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "118",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 HUP modem client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "199",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 CD-ROM open client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "02",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]
+
+[ signature="DeepThroat 3.1 CD-ROM close client request", 
+  udp.src = 60000, udp.dst = 2140, udp.payload = "03",  
+  ip.version = 4, ip.ihl = 5, ip.tos = 0, ip.src = south-american-ip, ip.dst = user-defined-ip, ip.protocol = 17 ]

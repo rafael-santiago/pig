@@ -1,0 +1,85 @@
+[ signature="dosDosLandAttack",
+  ip.version = 4,
+  ip.id = 3868,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol = 6,
+  tcp.seqno = 3868,
+  tcp.syn = 1 ]
+
+[ signature="dosUDPEchoPlusChargenBomb",
+  ip.version = 4,
+  ip.id = 3868,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol= 17,
+  udp.src = 19,
+  udp.dst = 7 ]
+
+[ signature="dosNAPTHA",
+  ip.version = 4,
+  ip.id = 413,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol= 6,
+  tcp.syn = 1,
+  tcp.seqno = 6060842 ]
+
+[ signature="dosRealAudioServer",
+  ip.version = 4,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol= 6,
+  tcp.ack = 1,
+  tcp.dst = 7070,
+  tcp.payload = "\xff\xf4 \xff\xfd \x06" ]
+
+[ signature="dosRealServerTemplate (1)",
+  ip.version = 4,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol= 6,
+  tcp.ack = 1,
+  tcp.dst = 7070,
+  tcp.payload = "/viewsource/template.html?dshdhahsdhashdhashd" ]
+
+[ signature="dosRealServerTemplate (2)",
+  ip.version = 4,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol= 6,
+  tcp.ack = 1,
+  tcp.dst = 8080,
+  tcp.payload = "/viewsource/template.html?daksdkaksdks" ]
+
+[ signature="dosBayNortelNauticaMarlin",
+  ip.version = 4,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol= 17,
+  udp.dst= 161 ]
+
+[ signature="dosAscendRoute",
+  ip.version = 4,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol= 17,
+  udp.dst= 9,
+  udp.payload = "@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@\x4e \x41 \x4d \x45 \x4e \x41 \x4d \x45" ]
+
+[ signature="dosWinnukeAttack",
+  ip.version = 4,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol= 6,
+  tcp.dst= 139,
+  tcp.urg = 1 ]
+
+[ signature="dosMSDTCattempt",
+  ip.version = 4,
+  ip.src = european-ip,
+  ip.dst = user-defined-ip,
+  ip.protocol= 6,
+  tcp.dst= 3372,
+  tcp.ack = 1,
+  tcp.payload = "---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------" ]

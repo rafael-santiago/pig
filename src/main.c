@@ -232,6 +232,9 @@ int main(int argc, char **argv) {
         signal(SIGTERM, sigint_watchdog);
         srand(time(0));
         run_pig_run(signatures, targets, timeout);
+        if (!should_be_quiet) {
+            printf("pig INFO: pig has gone.\n");
+        }
     } else {
         printf("usage: %s --signatures=file.0,file.1,(...),file.n [--timeout=<in secs> --no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n]\n", argv[0]);
     }

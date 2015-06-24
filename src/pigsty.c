@@ -133,6 +133,10 @@ pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char
         del_pigsty_entry(entry);
         return NULL;
     }
+    if (!verify_required_fields(entry)) {
+        del_pigsty_entry(entry);
+        entry = NULL;
+    }
     return entry;
 }
 
@@ -574,7 +578,7 @@ static int verify_required_datagram_fields(pigsty_conf_set_ctx *set, const int *
     for (f = 0; f < fields_size && retval == 1; f++) {
         retval = (present_fields[fields[f]] == 1);
         if (retval == 0) {
-            printf("pig error: field \"%s\" is required.\n", SIGNATURE_FIELDS[f].label);
+            printf("pig error: field \"%s\" is required.\n", SIGNATURE_FIELDS[fields[f]].label);
         }
     }
     return retval;
@@ -632,6 +636,10 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                     break;
             }
         }
+        if (retval == 0) {
+            printf("pig PANIC: on signature \"%s\".\n", ep->signature_name);
+            continue;
+        }
         //  INFO(Santiago): verifying the transport layer mandatory fields.
         transport_layer = -1;
         for (cp = ep->conf; cp != NULL && transport_layer == -1; cp = cp->next) {
@@ -641,14 +649,6 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
         }
         if (transport_layer > -1) {
             switch (transport_layer) {
-                case 6:
-                    retval = verify_required_fields_tcp(cp);
-                    break;
-
-                case 17:
-                    retval = verify_required_fields_udp(cp);
-                    break;
-
                 default:
                     retval = 1; //  INFO(Santiago): just skipping.
                     break;

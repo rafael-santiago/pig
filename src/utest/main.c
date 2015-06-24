@@ -60,7 +60,7 @@ CUTE_TEST_CASE(pigsty_file_parsing_tests)
     CUTE_CHECK("pigsty != NULL", pigsty == NULL);
     remove("test.pigsty");
 
-    test_pigsty = "[ signature = \"valid signature\", ip.version = 4, ip.tos = 5, ip.src = 127.0.0.1 ]"; //  valid pigsty entry.
+    test_pigsty = "[ signature = \"valid signature\", ip.version = 4, ip.tos = 5, ip.src = 127.0.0.1, ip.dst = 127.0.0.1, ip.protocol = 1 ]"; //  valid pigsty entry.
     write_to_file("test.pigsty", test_pigsty);
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty == NULL", pigsty != NULL);
@@ -74,7 +74,11 @@ CUTE_TEST_CASE(pigsty_file_parsing_tests)
     CUTE_CHECK("pigsty->conf->next->next == NULL", pigsty->conf->next->next != NULL);
     CUTE_CHECK("pigsty->conf->next->next->field == NULL", pigsty->conf->next->next->field != NULL);
     CUTE_CHECK("pigsty->conf->next->next->field->index != kIpv4_src", pigsty->conf->next->next->field->index == kIpv4_src);
-    CUTE_CHECK("pigsty->conf->next->next->next != NULL", pigsty->conf->next->next->next == NULL);
+    CUTE_CHECK("pigsty->conf->next->next->next->field == NULL", pigsty->conf->next->next->next->field != NULL);
+    CUTE_CHECK("pigsty->conf->next->next->next->field->index != kIpv4_dst", pigsty->conf->next->next->next->field->index == kIpv4_dst);
+    CUTE_CHECK("pigsty->conf->next->next->next->next->field == NULL", pigsty->conf->next->next->next->next->field != NULL);
+    CUTE_CHECK("pigsty->conf->next->next->next->next->field->index != kIpv4_protocol", pigsty->conf->next->next->next->next->field->index == kIpv4_protocol);
+    CUTE_CHECK("pigsty->conf->next->next->next->next->next != NULL", pigsty->conf->next->next->next->next->next == NULL);
     remove("test.pigsty");
     del_pigsty_entry(pigsty);
 
@@ -150,12 +154,13 @@ CUTE_TEST_CASE(pigsty_conf_set_ctx_tests)
     pigsty_conf_set_ctx *cp = NULL;
     pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
     CUTE_CHECK("pigsty == NULL", pigsty != NULL);
-    pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_version, "abc", 3);
+    char *data = "abc";
+    pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_version, data, strlen(data));
     pigsty->conf = add_conf_to_pigsty_conf_set(pigsty->conf, kIpv4_tos, "xyz.", 4);
     CUTE_CHECK("pigsty->conf == NULL", pigsty->conf != NULL);
     CUTE_CHECK("pigsty->conf->index != kIpv4_version", pigsty->conf->field->index == kIpv4_version);
-    CUTE_CHECK("pigsty->conf->dsize != 3", pigsty->conf->field->dsize == 3);
-    CUTE_CHECK("pigsty->conf->data != abc", strcmp(pigsty->conf->field->data,"abc") == 0);
+    CUTE_CHECK("pigsty->conf->dsize != strlen(data)", pigsty->conf->field->dsize == strlen(data));
+    CUTE_CHECK("pigsty->conf->data != data", strcmp(pigsty->conf->field->data, data) == 0);
     CUTE_CHECK("pigsty->conf->next == NULL", pigsty->conf->next != NULL);
     CUTE_CHECK("pigsty->conf->next->index != kIpv4_tos", pigsty->conf->next->field->index == kIpv4_tos);
     CUTE_CHECK("pigsty->conf->next->dsize != 4", pigsty->conf->next->field->dsize == 4);

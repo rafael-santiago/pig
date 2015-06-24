@@ -26,7 +26,8 @@ pigsty_conf_set_ctx *add_conf_to_pigsty_conf_set(pigsty_conf_set_ctx *conf,
         p = p->next;
     }
     p->field->index = field_index;
-    p->field->data = pig_newseg(dsize);
+    p->field->data = pig_newseg(dsize + 1);
+    memset(p->field->data, 0, dsize + 1);
     memcpy(p->field->data, data, dsize);
     p->field->dsize = dsize;
     return head;
