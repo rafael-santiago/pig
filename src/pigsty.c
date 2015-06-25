@@ -624,7 +624,7 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
         if (retval == 1) {
             switch(ip_version) {
                 case 4:
-                    retval = verify_required_fields_ipv4(cp);
+                    retval = verify_required_fields_ipv4(ep->conf);
                     break;
 
                 //case 6:
