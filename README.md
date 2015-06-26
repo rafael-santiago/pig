@@ -123,7 +123,7 @@ Now we want mess around with everything:
 
 ## Extra options
 
-### Defining timeouts between the signature sends
+### Defining timeouts between the signature sendings
 
 For it use the option ``--timeout=<secs>``
 
