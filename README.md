@@ -10,7 +10,7 @@ Until now it is possible to create ``IPv4`` signatures with transport layer base
 
 # How to build it?
 
-You need to use the [``Hefesto``](https://github.com/rafael-santiago/hefesto) to build ``pig``. After follow
+You need to use the [``Hefesto``](https://github.com/rafael-santiago/hefesto) to build ``pig``. After following
 the steps to put ``Hefesto`` working on your system. Move to the ``pig`` subdirectory named as ``src`` and run the following command:
 
 ``hefesto``
