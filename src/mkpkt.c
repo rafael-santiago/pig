@@ -161,6 +161,13 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
                 }
                 break;
 
+            case kIpv4_payload:
+                if (cp->field->data != NULL && cp->field->dsize > 0) {
+                    iph.payload = (unsigned char *)cp->field->data;
+                    iph.payload_size = cp->field->dsize;
+                }
+                break;
+
             default:
                 break;
 

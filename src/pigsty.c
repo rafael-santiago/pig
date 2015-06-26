@@ -91,6 +91,7 @@ static struct signature_fields SIGNATURE_FIELDS[] = {
     { "ip.checksum", kIpv4_checksum,        verify_u16},
     {      "ip.src",      kIpv4_src,  verify_ipv4_addr},
     {      "ip.dst",      kIpv4_dst,  verify_ipv4_addr},
+    {  "ip.payload",  kIpv4_payload,              NULL},
     {     "tcp.src",       kTcp_src,        verify_u16},
     {     "tcp.dst",       kTcp_dst,        verify_u16},
     {   "tcp.seqno",       kTcp_seq,        verify_u32},

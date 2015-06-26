@@ -57,6 +57,7 @@ have strong meaning for you. You must use these fields to create your further si
 |``ip.checksum`` |       Checksum     |      *IP*     |     number    |       ``ip.checksum = 0``   |
 |   ``ip.src``   |   Source address   |      *IP*     |  ip address   |    ``ip.src = 192.30.70.3`` |
 |   ``ip.dst``   |   Dest. address    |      *IP*     |  ip address   |    ``ip.dst = 192.30.70.3`` |
+| ``ip.payload`` |   IP raw payload   |      *IP*     |     string    |  ``ip.payload = "\x01\x02"``|
 |   ``tcp.src``  |    Source port     |      *TCP*    |     number    |         ``tcp.src = 80``    |
 |   ``tcp.dst``  |    Dest. port      |      *TCP*    |     number    |         ``tcp.dst = 21``    |
 | ``tcp.seqno``  |  Sequence number   |      *TCP*    |     number    |        ``tcp.seqno = 10202``|

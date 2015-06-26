@@ -132,7 +132,7 @@ static pig_target_addr_ctx *parse_targets(const char *targets) {
 }
 
 static void run_pig_run(const char *signatures, const char *targets, const char *timeout) {
-    int timeo = 10;
+    int timeo = 10000;
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0, addr_count = 0;
     pigsty_entry_ctx *signature = NULL, *sp = NULL;
@@ -141,6 +141,7 @@ static void run_pig_run(const char *signatures, const char *targets, const char 
     if (timeout != NULL) {
         timeo = atoi(timeout);
     }
+    timeo = timeo * 1000;
     if (!should_be_quiet) {
         printf("pig INFO: starting up pig engine...\n\n");
     }
@@ -156,8 +157,10 @@ static void run_pig_run(const char *signatures, const char *targets, const char 
         return;
     }
     if (targets != NULL) {
-        printf("\npig INFO: parsing the supplied targets...\n");
-        printf("pig INFO: all targets were parsed.\n");
+        if (!should_be_quiet) {
+            printf("\npig INFO: parsing the supplied targets...\n");
+            printf("pig INFO: all targets were parsed.\n");
+        }
         addr = parse_targets(targets);
     }
     if (is_targets_option_required(pigsty) && addr == NULL) {
@@ -179,7 +182,7 @@ static void run_pig_run(const char *signatures, const char *targets, const char 
             if (!should_be_quiet) {
                 printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
             }
-            sleep(timeo);
+            usleep(timeo);
         }
     }
     del_pigsty_entry(pigsty);
