@@ -277,7 +277,7 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
 		tmp_buffer = *next;
 		data = get_next_pigsty_word(tmp_buffer, next);
 		if (data != NULL) {
-		    if (verify_int(data)) {
+		    if (verify_int(data) || verify_hex(data)) {
 			fmt_data = int_to_voidp(data, &fmt_dsize);
 		    } else if (verify_ipv4_addr(data)) {
                         fmt_data = ipv4_to_voidp(data, &fmt_dsize);

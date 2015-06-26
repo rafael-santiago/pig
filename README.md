@@ -1,21 +1,21 @@
 # Pig
 
 ``Pig`` (which can be understood as ``P``acket ``i``ntruder ``g``enerator) is a ``Linux`` packet crafting tool.
-You can use ``Pig`` to test your ``IDS``/``IPS`` among other things.
+You can use ``Pig`` to test your ``IDS``/``IPS`` among other stuffs.
 
 ``Pig`` brings a bunch of well-known attack signatures ready to be used and you can expand this collection
-with more specific things to your requirements.
+with more specific things according your requirements.
 
 Until now it is possible to create ``IPv4`` signatures with transport layer based on ``TCP`` or ``UDP``.
 
 # How to build it?
 
 You need to use the [``Hefesto``](https://github.com/rafael-santiago/hefesto) to build ``pig``. After follow
-the steps to put ``Hefesto`` working on your system. Move to the ``pig`` subdirectory ``src`` and run the following command:
+the steps to put ``Hefesto`` working on your system. Move to the ``pig`` subdirectory named as ``src`` and run the following command:
 
 ``hefesto``
 
-After this command you should find the ``pig`` binary inside the subdirectory ``bin``.
+After this command you should find the ``pig`` binary under the path ``src/bin``.
 
 # The pigsty files
 
@@ -82,7 +82,7 @@ have strong meaning for you. You must use these fields to create your further si
 When creating a signature you do not need specify all data. If you specify only the most relevant packet parts
 the remaining parts will be filled with default values. The ``checksums`` are **always** recalculated.
 
-Tip: take a look in subdirectory ``pigsty``. You will find lots of signature files. It is pretty simple define new ones.
+Tip: take a look in subdirectory ``pigsty``. You will find lots of signature files and you will see that is pretty simple define new ones.
 
 ## Specifying IP addresses geographically
 
@@ -102,6 +102,11 @@ in ``ip adddress`` typed fields.
 
 You should in any ``ip address`` typed field use ``user-defined-ip`` as value. Note that you need to use the
 command line option ``--targets`` in this case. See section "``Using pig``" for more information.
+
+# Contribute sending more packet signatures
+
+If you create ``pigsty files`` that you judge be relevant beyond your own environment open a pull request in order
+to include these useful files here. Thank you in advance!
 
 # Using pig
 
@@ -128,8 +133,37 @@ Use the ``--no-echo`` option.
 
 ### Defining targets
 
-Use the ``--target`` option. You can specify a list based on exact IPs, IP masks and [``CIDRs``](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).
+Use the ``--targets`` option. You can specify a list based on exact IPs, IP masks and [``CIDRs``](https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing).
 
 Look this:
 
-``pig --signature=pigsty/local-mess.pigsty --target=192.30.70.3,192.30.70.*,192.30.70.0/9``
+``pig --signatures=pigsty/local-mess.pigsty --targets=192.30.70.3,192.30.70.*,192.30.70.0/9``
+
+## Testing from scratch
+
+Save the following data as ``"oink.pigsty"``:
+
+        [ signature   =           "oink",
+          ip.version  =                4,
+          ip.ihl      =                5,
+          ip.tos      =                0,
+          ip.src      =        127.0.0.1,
+          ip.dst      =  user-defined-ip,
+          ip.protocol =               17,
+          udp.dst     =             1008,
+          udp.src     =            32000,
+          udp.payload =        "Oink!!\n" ]
+
+On another ``tty`` run the ``netcat`` in ``UDP mode`` listen for connections on port ``1008``:
+
+``nc -u -l -p 1008``
+
+Now run ``pig`` using this ``pigsty file`` and informing as target the ``loopback``:
+
+``pig --signatures=oink.pigsty --targets=127.0.0.1``
+
+The ``netcat`` should start receive several ``oinks`` and... yes, congrats!! ``pig`` is up and running on your system! ;)
+
+Try to sniff your Network to get more information about these ``UDP packets`` that are flowing around your interfaces... Have fun!
+
+Santiago.
