@@ -1,0 +1,21 @@
+[ signature = "teardrop (fragmented protocol)",
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.id = 0x00f2,
+  ip.ttl = 64,
+  ip.protocol = 17,
+  ip.src = user-defined-ip,
+  ip.dst = 129.111.30.27,
+  ip.payload = "\x7c\xab\x4e\xe5\x00\x24\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" ]
+
+[ signature = "teardrop",
+  ip.version = 4,
+  ip.ihl = 5,
+  ip.id = 0x00f2,
+  ip.ttl = 64,
+  ip.protocol = 0x11,
+  ip.src = user-defined-ip,
+  ip.dst = 127.111.30.27,
+  udp.src = 31915,
+  udp.dst = 20197,
+  udp.payload = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" ]
