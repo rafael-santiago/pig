@@ -126,7 +126,7 @@ Now we want mess around with everything:
 
 ### Defining timeouts between the signature sendings
 
-For it use the option ``--timeout=<secs>``
+For it use the option ``--timeout=<millisecs>``
 
 ### Echo suppressing
 
