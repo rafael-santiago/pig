@@ -140,6 +140,18 @@ Look this:
 
 ``pig --signatures=pigsty/local-mess.pigsty --targets=192.30.70.3,192.30.70.*,192.30.70.0/9``
 
+### Sending only one signature and go back
+
+Maybe you need to send only one signature and so return to the caller in order to check what happened after. This kind of
+requirement is common when you use this application as support for ``system tests`` or ``unit tests``. So, if you need
+to do this you should try to use the option ``--single-test``:
+
+``pig --signature=pigsty/syn-scan.pigsty --targets=127.0.0.1 --single-test``
+
+After run this command ``pig`` will select only one signature from the file ``syn-scan.pigsty`` and try to send it and then exit.
+If some error has occurred during the process ``pig`` will exit with ``exit-code`` equals to ``1`` otherwise ``pig`` will exit
+with ``exit-code`` equals to ``0``.
+
 ## Testing from scratch
 
 Save the following data as ``"oink.pigsty"``:
