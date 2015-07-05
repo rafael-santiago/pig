@@ -140,7 +140,7 @@ Look this:
 
 ``pig --signatures=pigsty/local-mess.pigsty --targets=192.30.70.3,192.30.70.*,192.30.70.0/9``
 
-### Sending only one signature and go back
+### Sending only one signature and going back
 
 Maybe you need to send only one signature and so return to the caller in order to check what happened after. This kind of
 requirement is common when you use this application as support for ``system tests`` or ``unit tests``. So, if you need
