@@ -56,9 +56,6 @@ static char *get_option(const char *option, char *default_value, const int argc,
 }
 
 static void sigint_watchdog(int signr) {
-    if (!should_be_quiet) {
-        printf("\npig INFO: exiting... please wait...\n");
-    }
     should_exit = 1;
 }
 
@@ -248,7 +245,7 @@ int main(int argc, char **argv) {
         srand(time(0));
         run_pig_run(signatures, targets, timeout, get_option("single-test", NULL, argc, argv));
         if (!should_be_quiet) {
-            printf("pig INFO: pig has gone.\n");
+            printf("\npig INFO: exiting... please wait...\npig INFO: pig has gone.\n");
         }
     } else {
         printf("usage: %s --signatures=file.0,file.1,(...),file.n [--timeout=<in secs> --no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n]\n", argv[0]);
