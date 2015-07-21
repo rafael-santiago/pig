@@ -5,8 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_SOCK_H
-#define _PIG_SOCK_H 1
+#ifndef PIG_SOCK_H
+#define PIG_SOCK_H 1
 
 #include <stdlib.h>
 

@@ -5,8 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_MEMORY_H
-#define _PIG_MEMORY_H 1
+#ifndef PIG_MEMORY_H
+#define PIG_MEMORY_H 1
 
 #include <stdlib.h>
 

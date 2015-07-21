@@ -5,8 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_LISTS_H
-#define _PIG_LISTS_H 1
+#ifndef PIG_LISTS_H
+#define PIG_LISTS_H 1
 
 #include "types.h"
 

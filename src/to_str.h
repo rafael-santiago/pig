@@ -5,8 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_TO_STR_H
-#define _PIG_TO_STR_H 1
+#ifndef PIG_TO_STR_H
+#define PIG_TO_STR_H 1
 
 char *to_str(const char *value);
 

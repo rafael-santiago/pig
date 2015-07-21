@@ -5,8 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_NETMASK_H
-#define _PIG_NETMASK_H 1
+#ifndef PIG_NETMASK_H
+#define PIG_NETMASK_H 1
 
 #include "types.h"
 

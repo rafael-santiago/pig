@@ -1,5 +1,12 @@
-#ifndef _PIG_TCP_H
-#define _PIG_TCP_H 1
+/*                                                                                                                                                                                                                 
+ *                                Copyright (C) 2015 by Rafael Santiago                                                                                                                                            
+ *                                                                                                                                                                                                                 
+ * This is a free software. You can redistribute it and/or modify under                                                                                                                                            
+ * the terms of the GNU General Public License version 2.
+ *
+ */
+#ifndef PIG_TCP_H
+#define PIG_TCP_H 1
 
 #include <stdlib.h>
 

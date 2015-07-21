@@ -5,8 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_TO_VOIDP_H
-#define _PIG_TO_VOIDP_H 1
+#ifndef PIG_TO_VOIDP_H
+#define PIG_TO_VOIDP_H 1
 
 #include <stdlib.h>
 

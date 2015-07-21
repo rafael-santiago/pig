@@ -5,8 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_OINK_H
-#define _PIG_OINK_H 1
+#ifndef PIG_OINK_H
+#define PIG_OINK_H 1
 
 #include "types.h"
 

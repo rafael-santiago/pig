@@ -5,8 +5,8 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_MKPKT_H
-#define _PIG_MKPKT_H 1
+#ifndef PIG_MKPKT_H
+#define PIG_MKPKT_H 1
 
 #include "types.h"
 #include <stdlib.h>
