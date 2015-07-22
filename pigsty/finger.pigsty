@@ -97,3 +97,11 @@
   tcp.payload = ".",
   signature = "Finger: . query" ]
 
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "cmd_rootsh",
+  signature = "Finger: cmd_rootsh backdoor" ]
