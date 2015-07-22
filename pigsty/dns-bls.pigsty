@@ -1,0 +1,76 @@
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x0escari-elegante\x02ro\x00",
+  signature = "DNS-BLS: scari-elegante.ro" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x0dmyharlemshake\x04info\x00",
+  signature = "DNS-BLS: myharlemshake.info" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x08twinkcam\x03net\x00",
+  signature = "DNS-BLS: twinkcam.net" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x08cinnamyn\x03com\x00",
+  signature = "DNS-BLS: cinnamyn.com" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x05murik\x11portal-protection\x03net\x02ru\x00",
+  signature = "DNS-BLS: murik.portal-protection.net.ru" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x05slade\x0fsafehousenumber\x03com\x00",
+  signature = "DNS-BLS: slade.safehousenumber.com" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x05world\x0arickstudio\x02ru\x00",
+  signature = "DNS-BLS: world.rickstudio.ru" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x06portal\x0eroomshowerbord\x03com\x00",
+  signature = "DNS-BLS: portal.roomshowerbord.com" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x03api\x08wipmania\x03com",
+  signature = "DNS-BLS: api.wipmania.com" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x0clolcantpwnme\x03net\x00",
+  signature = "DNS-BLS: lolcantpwnme.net" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  udp.dst = 53,
+  udp.payload = "\x06jebena\x0aananikolic\x02su\x00",
+  signature = "DNS-BLS: jebena.ananikolic.su" ]
