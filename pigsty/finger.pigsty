@@ -1,0 +1,99 @@
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "a b c d e f",
+  signature = "Finger: account enumeration" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "search",
+  signature = "Finger: search query" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "root",
+  signature = "Finger: root query" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "\x00",
+  signature = "Finger: null request" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "\x3b",
+  signature = "Finger: remote command execution" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "\x7c",
+  signature = "Finger: remote command pipe execution" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "@@",
+  signature = "Finger: bomb" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "@",
+  signature = "Finger: redirection" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "-----\x0a",
+  signature = "Finger: cybercop query" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = "0",
+  signature = "Finger: 0 query" ]
+
+[ ip.version = 4,
+  ip.protocol = 6,
+  ip.src = user-defined-ip,
+  ip.dst = 127.0.0.1,
+  tcp.dst = 79,
+  tcp.ack = 1,
+  tcp.payload = ".",
+  signature = "Finger: . query" ]
+
