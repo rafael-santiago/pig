@@ -11,6 +11,7 @@
 #include "ip.h"
 #include "tcp.h"
 #include "udp.h"
+#include "icmp.h"
 #include "mkrnd.h"
 #include <string.h>
 
@@ -21,6 +22,8 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
 static void mk_tcp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const unsigned int src_addr[4], const unsigned int dst_addr[4], const int version);
 
 static void mk_udp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const unsigned int src_addr[4], const unsigned int dst_addr[4], const int version);
+
+static void mk_icmp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const int version);
 
 static void mk_default_ipv4(struct ip4 *hdr);
 
@@ -38,7 +41,7 @@ unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, 
         version = 4;
     }
     // else {
-    //	ip_version = get_pigsty_conf_set_data(kIpv6_version);
+    //  ip_version = get_pigsty_conf_set_data(kIpv6_version);
     //  if (ip_version != NULL) {
     //          version = 6;
     //  }
@@ -175,6 +178,10 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
     }
 
     switch (iph.protocol) {
+
+        case 1:
+            mk_icmp_dgram(&iph.payload, &iph.payload_size, conf, 4);
+            break;
 
         case 6:
             src_addr[0] = iph.src;
@@ -385,3 +392,6 @@ static void mk_udp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_
     }
 }
 
+static void mk_icmp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const int version) {
+    // TODO(Santiago): guess what...
+}

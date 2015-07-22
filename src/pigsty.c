@@ -245,9 +245,9 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
     int field_index = 0;
     token = get_next_pigsty_word(tmp_buffer, next);
     while (**next != 0 && signature_name == NULL) {
-	if (strcmp(token, "signature") == 0) {
-	    tmp_buffer = *next;
-	    signature_name = get_next_pigsty_word(tmp_buffer, next); //  =
+        if (strcmp(token, "signature") == 0) {
+            tmp_buffer = *next;
+            signature_name = get_next_pigsty_word(tmp_buffer, next); //  =
             free(signature_name);
             tmp_buffer = *next;
             token = get_next_pigsty_word(tmp_buffer, next);
@@ -259,51 +259,51 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
                 del_pigsty_entry(entries);
                 return NULL;
             }
-	}
-	tmp_buffer = *next;
-	free(token);
-	if (signature_name == NULL) {
-    	    token = get_next_pigsty_word(tmp_buffer, next);
-    	}
+        }
+        tmp_buffer = *next;
+        free(token);
+        if (signature_name == NULL) {
+            token = get_next_pigsty_word(tmp_buffer, next);
+        }
     }
     if (signature_name != NULL) {
-	entries = add_signature_to_pigsty_entry(entries, signature_name);
-	free(signature_name);
-	entry_p = get_pigsty_entry_tail(entries);
-	tmp_buffer = buffer;
-	token = get_next_pigsty_word(tmp_buffer, next);
+        entries = add_signature_to_pigsty_entry(entries, signature_name);
+        free(signature_name);
+        entry_p = get_pigsty_entry_tail(entries);
+        tmp_buffer = buffer;
+        token = get_next_pigsty_word(tmp_buffer, next);
         while (**next != 0) {
             if ((field_index = get_pigsty_field_index(token)) > -1 && field_index != kSignature) {
-		tmp_buffer = *next;
-		free(token);
-		token = get_next_pigsty_word(tmp_buffer, next); //  =
-		free(token);
-		token = NULL;
-		tmp_buffer = *next;
-		data = get_next_pigsty_word(tmp_buffer, next);
-		if (data != NULL) {
-		    if (verify_int(data) || verify_hex(data)) {
-			fmt_data = int_to_voidp(data, &fmt_dsize);
-		    } else if (verify_ipv4_addr(data)) {
+                tmp_buffer = *next;
+                free(token);
+                token = get_next_pigsty_word(tmp_buffer, next); //  =
+                free(token);
+                token = NULL;
+                tmp_buffer = *next;
+                data = get_next_pigsty_word(tmp_buffer, next);
+                if (data != NULL) {
+                    if (verify_int(data) || verify_hex(data)) {
+                        fmt_data = int_to_voidp(data, &fmt_dsize);
+                    } else if (verify_ipv4_addr(data)) {
                         fmt_data = ipv4_to_voidp(data, &fmt_dsize);
                     } else if (verify_string(data)) {
-			fmt_data = str_to_voidp(data, &fmt_dsize);
-		    }
-    		    entry_p->conf = add_conf_to_pigsty_conf_set(entry_p->conf, field_index, fmt_data, fmt_dsize);
-    		    free(fmt_data);
-    		    fmt_data = NULL;
-    		}
-		free(data);
-		data = NULL;
-	    }
-	    tmp_buffer = *next;
-	    free(token);
-	    token = get_next_pigsty_word(tmp_buffer, next);
+                        fmt_data = str_to_voidp(data, &fmt_dsize);
+                    }
+                    entry_p->conf = add_conf_to_pigsty_conf_set(entry_p->conf, field_index, fmt_data, fmt_dsize);
+                    free(fmt_data);
+                    fmt_data = NULL;
+                }
+                free(data);
+                data = NULL;
+            }
+            tmp_buffer = *next;
+            free(token);
+            token = get_next_pigsty_word(tmp_buffer, next);
             if (*token == ']') {
                 break;
             }
-	}
-	free(token);
+        }
+        free(token);
     }
     return entries;
 }
@@ -327,7 +327,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     buffer = *next;
     token = get_next_pigsty_word(buffer, next);
     while (all_ok && **next != 0 && token != NULL) {
-	switch (state) {
+        switch (state) {
             case 0:  //  field existence verifying
                 field_index = get_pigsty_field_index(token);
                 if (field_index == -1) {
@@ -343,26 +343,26 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
                 state = 1;
                 break;
 
-    	    case 1:
-    		all_ok = (strcmp(token, "=") == 0);
-    		if (!all_ok) {
+            case 1:
+                all_ok = (strcmp(token, "=") == 0);
+                if (!all_ok) {
                     printf("pig PANIC: expecting \"=\" token.\n");
-    		    free(token);
-    		    return 0;
-    		}
-    		state = 2;
-    		break;
+                    free(token);
+                    return 0;
+                }
+                state = 2;
+                break;
 
             case 2:  //  field data verifying
-        	if (SIGNATURE_FIELDS[field_index].verifier != NULL) {
+                if (SIGNATURE_FIELDS[field_index].verifier != NULL) {
                     all_ok = SIGNATURE_FIELDS[field_index].verifier(token);
-	            if (!all_ok) {
+                    if (!all_ok) {
                         printf("pig PANIC: field \"%s\" has invalid data (\"%s\").\n", SIGNATURE_FIELDS[field_index].label, token);
-    	        	free(token);
-                	return 0;
-            	    }
-            	}
-            	state = 3;
+                        free(token);
+                        return 0;
+                    }
+                }
+                state = 3;
                 break;
 
             case 3:  //  next or end verifying
@@ -411,9 +411,9 @@ static int verify_string(const char *buffer) {
 static int verify_u1(const char *buffer) {
     int retval = -1;
     if (verify_hex(buffer)) {
-	retval = strtoul(buffer + 2, NULL, 16);
+        retval = strtoul(buffer + 2, NULL, 16);
     } else if (verify_int(buffer)) {
-	retval = atoi(buffer);
+        retval = atoi(buffer);
     }
     return (retval == 0x0 || retval == 0x1);
 }
@@ -421,9 +421,9 @@ static int verify_u1(const char *buffer) {
 static int verify_u3(const char *buffer) {
     int retval = -1;
     if (verify_hex(buffer)) {
-	retval = strtoul(buffer + 2, NULL, 16);
+        retval = strtoul(buffer + 2, NULL, 16);
     } else if (verify_int(buffer)) {
-	retval = atoi(buffer);
+        retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0x7);
 }
@@ -431,9 +431,9 @@ static int verify_u3(const char *buffer) {
 static int verify_u4(const char *buffer) {
     int retval = -1;
     if (verify_hex(buffer)) {
-	retval = strtoul(buffer + 2, NULL, 16);
+        retval = strtoul(buffer + 2, NULL, 16);
     } else if (verify_int(buffer)) {
-	retval = atoi(buffer);
+        retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0xf);
 }
@@ -441,9 +441,9 @@ static int verify_u4(const char *buffer) {
 static int verify_u6(const char *buffer) {
     int retval = -1;
     if (verify_hex(buffer)) {
-	retval = strtoul(buffer + 2, NULL, 16);
+        retval = strtoul(buffer + 2, NULL, 16);
     } else if (verify_int(buffer)) {
-	retval = atoi(buffer);
+        retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0x3f);
 }
@@ -451,9 +451,9 @@ static int verify_u6(const char *buffer) {
 static int verify_u8(const char *buffer) {
     int retval = -1;
     if (verify_hex(buffer)) {
-	retval = strtoul(buffer + 2, NULL, 16);
+        retval = strtoul(buffer + 2, NULL, 16);
     } else if (verify_int(buffer)) {
-	retval = atoi(buffer);
+        retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0xff);
 }
@@ -461,9 +461,9 @@ static int verify_u8(const char *buffer) {
 static int verify_u13(const char *buffer) {
     int retval = -1;
     if (verify_hex(buffer)) {
-	retval = strtoul(buffer + 2, NULL, 16);
+        retval = strtoul(buffer + 2, NULL, 16);
     } else if (verify_int(buffer)) {
-	retval = atoi(buffer);
+        retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0x1fff);
 }
@@ -471,9 +471,9 @@ static int verify_u13(const char *buffer) {
 static int verify_u16(const char *buffer) {
     int retval = -1;
     if (verify_hex(buffer)) {
-	retval = strtoul(buffer + 2, NULL, 16);
+        retval = strtoul(buffer + 2, NULL, 16);
     } else if (verify_int(buffer)) {
-	retval = atoi(buffer);
+        retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0xffff);
 }
@@ -481,9 +481,9 @@ static int verify_u16(const char *buffer) {
 static int verify_u32(const char *buffer) {
     int retval = -1;
     if (verify_hex(buffer)) {
-	retval = strtoul(buffer + 2, NULL, 16);
+        retval = strtoul(buffer + 2, NULL, 16);
     } else if (verify_int(buffer)) {
-	retval = atoi(buffer);
+        retval = atoi(buffer);
     }
     return (retval >= 0x0 && retval <= 0xffffffff);
 }
@@ -503,23 +503,23 @@ int verify_ipv4_addr(const char *buffer) {
     }
     memset(oct, 0, sizeof(oct));
     for (b = buffer; *b != 0 && retval; b++) {
-	if (*b != '.' && !isdigit(*b)) {
-	    return 0;
-	}
-	if (*b == '.' || *(b + 1) == 0) {
-	    if (*(b + 1) == 0) {
-		oct[o] = *b;
-	    }
-	    if (*b == '.') {
-		dots_nr++;
-	    }
-	    retval = (atoi(oct) >= 0 && atoi(oct) <= 255);
-	    o = -1;
-	    memset(oct, 0, sizeof(oct));
-	} else {
-	    oct[o] = *b;
-	}
-	o = (o + 1) % sizeof(oct);
+        if (*b != '.' && !isdigit(*b)) {
+            return 0;
+        }
+        if (*b == '.' || *(b + 1) == 0) {
+            if (*(b + 1) == 0) {
+                oct[o] = *b;
+            }
+            if (*b == '.') {
+                dots_nr++;
+            }
+            retval = (atoi(oct) >= 0 && atoi(oct) <= 255);
+            o = -1;
+            memset(oct, 0, sizeof(oct));
+        } else {
+            oct[o] = *b;
+        }
+        o = (o + 1) % sizeof(oct);
     }
     return (retval && dots_nr == 3);
 }
@@ -663,31 +663,35 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
             }
         } else {
             for (cp = ep->conf; cp != NULL && retval == 1; cp = cp->next) {
-                retval = !(cp->field->index == kTcp_src      ||
-                           cp->field->index == kTcp_dst      ||
-                           cp->field->index == kTcp_seq      ||
-                           cp->field->index == kTcp_ackno    ||
-                           cp->field->index == kTcp_size     ||
-                           cp->field->index == kTcp_reserv   ||
-                           cp->field->index == kTcp_urg      ||
-                           cp->field->index == kTcp_ack      ||
-                           cp->field->index == kTcp_psh      ||
-                           cp->field->index == kTcp_rst      ||
-                           cp->field->index == kTcp_syn      ||
-                           cp->field->index == kTcp_fin      ||
-                           cp->field->index == kTcp_wsize    ||
-                           cp->field->index == kTcp_checksum ||
-                           cp->field->index == kTcp_urgp     ||
-                           cp->field->index == kTcp_payload  ||
-                           cp->field->index == kUdp_src      ||
-                           cp->field->index == kUdp_dst      ||
-                           cp->field->index == kUdp_size     ||
-                           cp->field->index == kUdp_checksum ||
-                           cp->field->index == kUdp_payload  ||
-                           cp->field->index == kUdp_src);
+                retval = !(cp->field->index == kTcp_src       ||
+                           cp->field->index == kTcp_dst       ||
+                           cp->field->index == kTcp_seq       ||
+                           cp->field->index == kTcp_ackno     ||
+                           cp->field->index == kTcp_size      ||
+                           cp->field->index == kTcp_reserv    ||
+                           cp->field->index == kTcp_urg       ||
+                           cp->field->index == kTcp_ack       ||
+                           cp->field->index == kTcp_psh       ||
+                           cp->field->index == kTcp_rst       ||
+                           cp->field->index == kTcp_syn       ||
+                           cp->field->index == kTcp_fin       ||
+                           cp->field->index == kTcp_wsize     ||
+                           cp->field->index == kTcp_checksum  ||
+                           cp->field->index == kTcp_urgp      ||
+                           cp->field->index == kTcp_payload   ||
+                           cp->field->index == kUdp_src       ||
+                           cp->field->index == kUdp_dst       ||
+                           cp->field->index == kUdp_size      ||
+                           cp->field->index == kUdp_checksum  ||
+                           cp->field->index == kUdp_payload   ||
+                           cp->field->index == kUdp_src       ||
+                           cp->field->index == kIcmp_type     ||
+                           cp->field->index == kIcmp_code     ||
+                           cp->field->index == kIcmp_checksum ||
+                           cp->field->index == kIcmp_payload);
             }
             if (retval == 0) {
-                printf("pig PANIC: signature %s: tcp/udp fields informed in a non tcp or udp packet.\n", ep->signature_name);
+                printf("pig PANIC: signature %s: tcp/udp/icmp fields informed in a non tcp, udp or icmp packet.\n", ep->signature_name);
             }
         }
     }
