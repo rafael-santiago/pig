@@ -14,8 +14,8 @@ struct icmp {
     unsigned char type;
     unsigned char code;
     unsigned short chsum;
-    unsigned char *data;
-    size_t dsize;
+    unsigned char *payload;
+    size_t payload_size;
 };
 
 void parse_icmp_dgram(struct icmp **hdr, const unsigned char *buf, size_t bsize);

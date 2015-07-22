@@ -10,14 +10,15 @@
 
 #include <stdlib.h>
 
-#define PIG_VERSION "0.0.1"
+#define PIG_VERSION "0.0.2"
 
 typedef enum _pig_fields {
     kIpv4_version = 0, kIpv4_ihl, kIpv4_tos, kIpv4_tlen, kIpv4_id, kIpv4_flags,
     kIpv4_offset, kIpv4_ttl, kIpv4_protocol, kIpv4_checksum, kIpv4_src, kIpv4_dst, kIpv4_payload,
     kTcp_src, kTcp_dst, kTcp_seq, kTcp_ackno, kTcp_size, kTcp_reserv, kTcp_urg, kTcp_ack,
     kTcp_psh, kTcp_rst, kTcp_syn, kTcp_fin, kTcp_wsize, kTcp_checksum, kTcp_urgp, kTcp_payload,
-    kUdp_src, kUdp_dst, kUdp_size, kUdp_checksum, kUdp_payload, kSignature, kRefresh, kRandom, kUnk, kMaxPigFields
+    kUdp_src, kUdp_dst, kUdp_size, kUdp_checksum, kUdp_payload, kIcmp_type, kIcmp_code, kIcmp_checksum,
+    kIcmp_payload, kSignature, kRefresh, kRandom, kUnk, kMaxPigFields
 }pig_field_t;
 
 typedef struct _pigsty_field {
