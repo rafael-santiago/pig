@@ -36,6 +36,9 @@ void parse_icmp_dgram(struct icmp **hdr, const unsigned char *buf, size_t bsize)
 unsigned char *mk_icmp_buffer(const struct icmp *hdr, size_t *bsize) {
     unsigned char *retval = NULL;
     size_t p = 0;
+    if (bsize == NULL) {
+        return NULL;
+    }
     retval = (unsigned char *) pig_newseg(hdr->payload_size + 4);
     retval[0] = hdr->type;
     retval[1] = hdr->code;
@@ -44,6 +47,7 @@ unsigned char *mk_icmp_buffer(const struct icmp *hdr, size_t *bsize) {
     for (p = 0; p < hdr->payload_size; p++) {
         retval[4 + p] = hdr->payload[p];
     }
+    *bsize = 4 + hdr->payload_size;
     return retval;
 }
 

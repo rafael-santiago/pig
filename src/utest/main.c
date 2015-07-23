@@ -15,6 +15,7 @@
 #include "../udp.h"
 #include "../tcp.h"
 #include "../netmask.h"
+#include "../icmp.h"
 #include <cutest.h>
 #include <stdlib.h>
 #include <string.h>
@@ -234,7 +235,7 @@ CUTE_TEST_CASE(udp_packet_making_tests)
     CUTE_CHECK_NEQ("packet == NULL", packet, NULL);
     CUTE_CHECK_EQ("packet_size != 8", packet_size, 8);
     for (p = 0; p < packet_size; p++) {
-	CUTE_CHECK_EQ("packet[p] != expected_packet[p]", packet[p], expected_packet[p]);
+        CUTE_CHECK_EQ("packet[p] != expected_packet[p]", packet[p], expected_packet[p]);
     }
     udp_hdr_p = &udp_hdr_parsed;
     parse_udp_dgram(&udp_hdr_p, packet, packet_size);
@@ -284,6 +285,35 @@ CUTE_TEST_CASE(tcp_packet_making_tests)
     CUTE_CHECK_EQ("tcp_hdr.payload != NULL", tcp_hdr_parsed.payload, NULL);
     CUTE_CHECK_EQ("tcp_hdr.payload_size != 0", tcp_hdr_parsed.payload_size, 0);
     free(packet);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(icmp_packet_making_tests)
+    struct icmp icmp_hdr, *icmp_hdr_p = NULL;
+    unsigned char *expected_packet = "\x00\x00\x54\xde\x00\x01\x00\x7d\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69";
+    unsigned char *packet = NULL;
+    size_t packet_size = 0, p = 0;
+    icmp_hdr.type = 0;
+    icmp_hdr.code = 0;
+    icmp_hdr.chsum = 0x54de;
+    icmp_hdr.payload = "\x00\x01\x00\x7d\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69";
+    icmp_hdr.payload_size = 36;
+    packet = mk_icmp_buffer(&icmp_hdr, &packet_size);
+    CUTE_CHECK_EQ("packet_size != 40", packet_size, 40);
+    for (p = 0; p < packet_size; p++) {
+        CUTE_CHECK_EQ("packet[i] != expected_packet[i]", packet[p], expected_packet[p]);
+    }
+    icmp_hdr_p = &icmp_hdr;
+    memset(&icmp_hdr, 0, sizeof(struct icmp));
+    parse_icmp_dgram(&icmp_hdr_p, packet, packet_size);
+    CUTE_CHECK_EQ("icmp_hdr.type != 0", icmp_hdr.type, 0);
+    CUTE_CHECK_EQ("icmp_hdr.code != 0", icmp_hdr.code, 0);
+    CUTE_CHECK_NEQ("icmp.payload == NULL", icmp_hdr.payload, NULL);
+    CUTE_CHECK_EQ("icmp.payload_size != 36", icmp_hdr.payload_size, 36);
+    for (p = 4; p < packet_size; p++) {
+        CUTE_CHECK_EQ("icmp.payload[i] != expected_packet[i]", icmp_hdr.payload[p - 4], expected_packet[p]);
+    }
+    free(packet);
+    free(icmp_hdr.payload);
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(ip4_chsum_evaluation_tests)
@@ -356,20 +386,31 @@ CUTE_TEST_CASE(tcp_chsum_evaluation_tests)
     uhdr.urgp = 0x0;
     uhdr.payload_size = 223;
     uhdr.payload = "\x48\x54\x54\x50\x2f\x31\x2e\x31\x20\x32\x30\x30\x20\x4f\x4b\x0d\x0a\x54\x72\x61"
-		   "\x6e\x73\x66\x65\x72\x2d\x45\x6e\x63\x6f\x64\x69\x6e\x67\x3a\x20\x63\x68\x75\x6e"
-		   "\x6b\x65\x64\x0d\x0a\x44\x61\x74\x65\x3a\x20\x46\x72\x69\x2c\x20\x32\x30\x20\x4a"
-		   "\x75\x6e\x20\x32\x30\x31\x34\x20\x31\x36\x3a\x31\x38\x3a\x31\x38\x20\x47\x4d\x54"
-		   "\x0d\x0a\x53\x65\x72\x76\x65\x72\x3a\x20\x57\x61\x72\x70\x2f\x32\x2e\x31\x2e\x33"
-		   "\x2e\x33\x0d\x0a\x41\x63\x63\x65\x73\x73\x2d\x43\x6f\x6e\x74\x72\x6f\x6c\x2d\x41"
-		   "\x6c\x6c\x6f\x77\x2d\x4f\x72\x69\x67\x69\x6e\x3a\x20\x68\x74\x74\x70\x3a\x2f\x2f"
-		   "\x78\x6b\x63\x64\x2e\x63\x6f\x6d\x0d\x0a\x41\x63\x63\x65\x73\x73\x2d\x43\x6f\x6e"
-		   "\x74\x72\x6f\x6c\x2d\x41\x6c\x6c\x6f\x77\x2d\x43\x72\x65\x64\x65\x6e\x74\x69\x61"
-		   "\x6c\x73\x3a\x20\x74\x72\x75\x65\x0d\x0a\x43\x6f\x6e\x74\x65\x6e\x74\x2d\x54\x79"
-		   "\x70\x65\x3a\x20\x74\x65\x78\x74\x2f\x70\x6c\x61\x69\x6e\x0d\x0a\x0d\x0a\x30\x0d"
-		   "\x0a\x0d\x0a";
+                   "\x6e\x73\x66\x65\x72\x2d\x45\x6e\x63\x6f\x64\x69\x6e\x67\x3a\x20\x63\x68\x75\x6e"
+                   "\x6b\x65\x64\x0d\x0a\x44\x61\x74\x65\x3a\x20\x46\x72\x69\x2c\x20\x32\x30\x20\x4a"
+                   "\x75\x6e\x20\x32\x30\x31\x34\x20\x31\x36\x3a\x31\x38\x3a\x31\x38\x20\x47\x4d\x54"
+                   "\x0d\x0a\x53\x65\x72\x76\x65\x72\x3a\x20\x57\x61\x72\x70\x2f\x32\x2e\x31\x2e\x33"
+                   "\x2e\x33\x0d\x0a\x41\x63\x63\x65\x73\x73\x2d\x43\x6f\x6e\x74\x72\x6f\x6c\x2d\x41"
+                   "\x6c\x6c\x6f\x77\x2d\x4f\x72\x69\x67\x69\x6e\x3a\x20\x68\x74\x74\x70\x3a\x2f\x2f"
+                   "\x78\x6b\x63\x64\x2e\x63\x6f\x6d\x0d\x0a\x41\x63\x63\x65\x73\x73\x2d\x43\x6f\x6e"
+                   "\x74\x72\x6f\x6c\x2d\x41\x6c\x6c\x6f\x77\x2d\x43\x72\x65\x64\x65\x6e\x74\x69\x61"
+                   "\x6c\x73\x3a\x20\x74\x72\x75\x65\x0d\x0a\x43\x6f\x6e\x74\x65\x6e\x74\x2d\x54\x79"
+                   "\x70\x65\x3a\x20\x74\x65\x78\x74\x2f\x70\x6c\x61\x69\x6e\x0d\x0a\x0d\x0a\x30\x0d"
+                   "\x0a\x0d\x0a";
     expected_chsum = 0x4e24;
     uhdr.chsum = eval_tcp_ip4_chsum(uhdr, 0x6b066222, 0xc0a8070a);
     CUTE_CHECK_EQ("uhdr.chsum != expected_chsum", uhdr.chsum, expected_chsum);
+CUTE_TEST_CASE_END
+
+CUTE_TEST_CASE(icmp_chsum_evaluation_tests)
+    struct icmp icmp_hdr;
+    unsigned short expected_chsum = 0x54de;
+    icmp_hdr.type = 0;
+    icmp_hdr.code = 0;
+    icmp_hdr.chsum = 0x00;
+    icmp_hdr.payload = "\x00\x01\x00\x7d\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69";
+    icmp_hdr.payload_size = 36;
+    CUTE_CHECK("eval_icmp_chsum() != expected_chsum", eval_icmp_chsum(icmp_hdr) == expected_chsum);
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(netmask_get_range_type_tests)
@@ -496,9 +537,11 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(ip_packet_making_tests);
     CUTE_RUN_TEST(udp_packet_making_tests);
     CUTE_RUN_TEST(tcp_packet_making_tests);
+    CUTE_RUN_TEST(icmp_packet_making_tests);
     CUTE_RUN_TEST(ip4_chsum_evaluation_tests);
     CUTE_RUN_TEST(udp_chsum_evaluation_tests);
     CUTE_RUN_TEST(tcp_chsum_evaluation_tests);
+    CUTE_RUN_TEST(icmp_chsum_evaluation_tests);
     CUTE_RUN_TEST(netmask_get_range_type_tests);
 CUTE_TEST_CASE_END
 
