@@ -9,11 +9,6 @@
 #include "memory.h"
 #include <string.h>
 
-struct icmp_data_parser_calltable {
-    unsigned char type;
-    unsigned char *(*parse)(const unsigned char *buf, const size_t bsize, size_t *dsize);
-};
-
 static unsigned char *icmp_payload_parser(const unsigned char *buf, const size_t bsize, size_t *payload_size);
 
 void parse_icmp_dgram(struct icmp **hdr, const unsigned char *buf, size_t bsize) {
