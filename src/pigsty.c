@@ -205,7 +205,7 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
     char *end_bp = NULL;
     char *retval = NULL;
     bp = end_bp = skip_pigsty_blank(bp);
-    if (*bp != '=') {
+    if (*bp != '=' && *bp != ','  && *bp != '[') {
         while (!is_pigsty_blank(*end_bp) && *end_bp != 0) {
             if (*end_bp == '\"') {
                 end_bp++;
@@ -304,6 +304,8 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
             }
         }
         free(token);
+    } else {
+        printf("pig PANIC: signature field missing.\n");
     }
     return entries;
 }

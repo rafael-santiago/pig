@@ -82,9 +82,15 @@ CUTE_TEST_CASE(pigsty_file_parsing_tests)
     CUTE_CHECK("pigsty->conf->next->next->next->next->next != NULL", pigsty->conf->next->next->next->next->next == NULL);
     remove("test.pigsty");
     del_pigsty_entry(pigsty);
+    pigsty = NULL;
+    test_pigsty = "[ip.version = 4, ip.protocol = 1, icmp.code = 4, icmp.type = 3, ip.src = 10.2.2.2, ip.dst = 172.21.0.50 ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
 
-    /*test_pigsty = "[ ip.version = 4, ip.src = 10.2.2.2, ip.dst = 172.21.0.50, ip.id = 0x3ba3,"
-                  "ip.ttl = 63, ip.protocol = 1, icmp.type = 3, icmp.code = 4,"
+    test_pigsty = "[ ip.version = 4, ip.src = 10.2.2.2, ip.dst = 172.21.0.50, ip.id = 0x3ba3,"
+                  "ip.ttl = 63, ip.protocol = 1, icmp.type = 3, icmp.code = 4, "
                   "icmp.payload = \"\\x05\\x9e\\x45\\x00\\x05\\xf2\\x0a\\xf1\\x40\\x00\\x7f\\x06\\xb6\\x23"
                   "\\xac\\x15\\x00\\x32\\xc0\\xa8\\xc8\\x01\\xd9\\xc8\\x00\\x58\\x7f\\x07\\xa3\\x1b\\xb6\\xd4"
                   "\\xd0\\xa0\\x50\\x18\\x01\\x00\\x3a\\xd6\\x00\\x00\\x00\\x00\\x05\\xc6\\x6c\\x82\\x05\\xc2"
@@ -115,12 +121,13 @@ CUTE_TEST_CASE(pigsty_file_parsing_tests)
                   "\\x6b\\x79\\x87\\x38\\xf9\\x51\\x96\\x3e\\x64\\x49\\x6a\\x1e\\x97\\x83\\x90\\x14\\xa7\\x3d"
                   "\\x1e\\xe9\\x69\\x6a\\xa6\\x75\\x85\\x51\\x4b\\x39\\xbb\\x87\\x73\\x17\\x7c\\x53\\xa7\\x65"
                   "\\xd7\\xbe\\x4d\\x4b\\x98\\x34\\xd3\\x84\\xc1\\x25\\x21\\x41\\x5c\\x49\\x11\\x92\\xfb\\x01"
-                  "\\xfc\\x32\\x2b\\x51\\x80\\x29\\x62\\x2f\\x0e\\xf1\\xcd\\x2d\\x09\\x4e\\x6O\" ]";
+                  "\\xfc\\x32\\x2b\\x51\\x80\\x29\\x62\\x2f\\x0e\\xf1\\xcd\\x2d\\x09\\x4e\\x6O\","
+                  "signature = \"icmp echo\" ]";
     write_to_file("test.pigsty", test_pigsty);
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty == NULL", pigsty != NULL);
     remove("test.pigsty");
-    del_pigsty_entry(pigsty);*/
+    del_pigsty_entry(pigsty);
 
 CUTE_TEST_CASE_END
 
