@@ -85,3 +85,67 @@
   udp.dst = 53,
   udp.payload = "\x06jebena\x0aananikolic\x02su\x00",
   signature = "DNS-BLS: jebena.ananikolic.su" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  ip.protocol = 17,
+  udp.dst = 53,
+  udp.payload = "\x04rewt\x02ru\x00",
+  signature = "DNS-BLS: domain.rewt.ru" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  ip.protocol = 17,
+  udp.dst = 53,
+  udp.payload = "\x0b24131192124\x03com\x00",
+  signature = "DNS-BLS: 24131192124.com" ]
+  
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  ip.protocol = 17,
+  udp.dst = 53,
+  udp.payload = "\x07mercury\x04yori\x02pl\x00",
+  signature = "DNS-BLS: mercury.yori.pl" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  ip.protocol = 17,
+  udp.dst = 53,
+  udp.payload = "\x05suppp\x0ccantlinea\x03biz\x00",
+  signature = "DNS-BLS: suppp.cantvenlinea.biz" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  ip.protocol = 17,
+  udp.dst = 53,
+  udp.payload = "\x01f\x08eastmoon\x02pl\x00",
+  signature = "DNS-BLS: f.eastmoon.pl" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  ip.protocol = 17,
+  udp.dst = 53,
+  udp.payload = "\x01s\x08eastmoon\x02pl\x00",
+  signature = "DNS-BLS: s.eastmoon.pl" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  ip.protocol = 17,
+  udp.dst = 53,
+  udp.payload = "\x07gigasbh\x03org",
+  signature = "DNS-BLS: gigasbh.org" ]
+
+[ ip.version = 4,
+  ip.src = user-defined-ip,
+  ip.dst = north-american-ip,
+  ip.protocol = 17,
+  udp.dst = 53,
+  udp.payload = "\x05xixbh\x03com",
+  signature = "DNS-BLS: xixbh.org" ]
