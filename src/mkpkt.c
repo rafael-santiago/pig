@@ -312,13 +312,14 @@ static void mk_tcp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_
         }
     }
 
-    tcph.chsum = 0;
-    switch (version) {
+    if (tcph.chsum == 0) {
+        switch (version) {
 
-        case 4:
-            tcph.chsum = eval_tcp_ip4_chsum(tcph, src_addr[0], dst_addr[0]);
-            break;
+            case 4:
+                tcph.chsum = eval_tcp_ip4_chsum(tcph, src_addr[0], dst_addr[0]);
+                break;
 
+        }
     }
 
     (*buf) = mk_tcp_buffer(&tcph, buf_size);
@@ -377,13 +378,14 @@ static void mk_udp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_
         }
     }
 
-    udph.chsum = 0;
-    switch (version) {
+    if (udph.chsum == 0) {
+        switch (version) {
 
-        case 4:
-            udph.chsum = eval_udp_chsum(udph, src_addr[0], dst_addr[0], udph.len);
-            break;
+            case 4:
+                udph.chsum = eval_udp_chsum(udph, src_addr[0], dst_addr[0], udph.len);
+                break;
 
+        }
     }
 
     (*buf) = mk_udp_buffer(&udph, buf_size);
@@ -393,5 +395,48 @@ static void mk_udp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_
 }
 
 static void mk_icmp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const int version) {
-    // TODO(Santiago): guess what...
+    struct icmp icmph;
+    pigsty_conf_set_ctx *cp = NULL;
+    memset(&icmph, 0, sizeof(icmph));
+    for (cp = conf; cp != NULL; cp = cp->next) {
+        switch (cp->field->index) {
+
+            case kIcmp_type:
+                icmph.type = *(unsigned char *)cp->field->data;
+                break;
+
+            case kIcmp_code:
+                icmph.code = *(unsigned char *)cp->field->data;
+                break;
+
+            case kIcmp_checksum:
+                icmph.chsum = *(unsigned short *)cp->field->data;
+                break;
+
+            case kIcmp_payload:
+                icmph.payload = (unsigned char *)pig_newseg(cp->field->dsize);
+                memcpy(icmph.payload, cp->field->data, cp->field->dsize);
+                icmph.payload_size = cp->field->dsize;
+                break;
+
+            default:
+                break;
+
+        }
+    }
+
+    if (icmph.chsum == 0) {
+        switch (version) {
+
+            case 4:
+                icmph.chsum = eval_icmp_chsum(icmph);
+                break;
+
+        }
+    }
+
+    (*buf) = mk_icmp_buffer(&icmph, buf_size);
+    if (icmph.payload != NULL) {
+        free(icmph.payload);
+    }
 }
