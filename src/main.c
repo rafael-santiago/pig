@@ -248,7 +248,7 @@ int main(int argc, char **argv) {
             printf("\npig INFO: exiting... please wait...\npig INFO: pig has gone.\n");
         }
     } else {
-        printf("usage: %s --signatures=file.0,file.1,(...),file.n [--timeout=<in secs> --no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n]\n", argv[0]);
+        printf("usage: %s --signatures=file.0,file.1,(...),file.n [--timeout=<in msecs> --no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n]\n", argv[0]);
     }
     return 0;
 }
