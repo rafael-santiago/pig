@@ -23,7 +23,7 @@ static void sigint_watchdog(int signr);
 
 static pigsty_entry_ctx *load_signatures(const char *signatures);
 
-static int run_pig_run(const char *signatures, const char *targets, const char *timeout, const char *single_test);
+static int run_pig_run(const char *signatures, const char *targets, const char *timeout, const char *single_test, const char *gw_addr, const char *loiface);
 
 static int is_targets_option_required(const pigsty_entry_ctx *entries);
 
@@ -128,14 +128,16 @@ static pig_target_addr_ctx *parse_targets(const char *targets) {
     return addr;
 }
 
-static int run_pig_run(const char *signatures, const char *targets, const char *timeout, const char *single_test) {
+static int run_pig_run(const char *signatures, const char *targets, const char *timeout, const char *single_test, const char *gw_addr, const char *loiface) {
     int timeo = 10000;
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0, addr_count = 0;
     pigsty_entry_ctx *signature = NULL, *sp = NULL;
     pig_target_addr_ctx *addr = NULL, *addr_p = NULL;
+    pig_hwaddr_ctx *hwaddr = NULL;
     int sockfd = -1;
     int retval = 0;
+    unsigned char *gw_hwaddr = NULL;
     if (timeout != NULL) {
         timeo = atoi(timeout);
     }
@@ -177,7 +179,7 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
             if (signature == NULL) {
                 continue; //  WARN(Santiago): It should never happen. However... Sometimes... The World tends to be a rather weird place.
             }
-            if (oink(signature, addr, sockfd) != -1) {
+            if (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, loiface) != -1) {
                 if (!should_be_quiet) {
                     printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
                 }
@@ -186,7 +188,7 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
             signature = get_pigsty_entry_by_index(rand() % signatures_count, pigsty);
         }
     } else {
-        retval = (oink(signature, addr, sockfd) != -1 ? 0 : 1);
+        retval = (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, loiface) != -1 ? 0 : 1);
         if (retval == 0) {
             if (!should_be_quiet) {
                 printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
@@ -195,6 +197,7 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
     }
     del_pigsty_entry(pigsty);
     del_pig_target_addr(addr);
+    del_pig_hwaddr(hwaddr);
     deinit_raw_socket(sockfd);
     return retval;
 }
@@ -219,6 +222,8 @@ int main(int argc, char **argv) {
     char *timeout = NULL;
     char *tp = NULL;
     char *targets = NULL;
+    char *gw_addr = NULL;
+    char *loiface = NULL;
     if (get_option("version", NULL, argc, argv) != NULL) {
         printf("pig v%s\n", PIG_VERSION);
         return 0;
@@ -243,7 +248,7 @@ int main(int argc, char **argv) {
         signal(SIGINT, sigint_watchdog);
         signal(SIGTERM, sigint_watchdog);
         srand(time(0));
-        run_pig_run(signatures, targets, timeout, get_option("single-test", NULL, argc, argv));
+        run_pig_run(signatures, targets, timeout, get_option("single-test", NULL, argc, argv), gw_addr, loiface);
         if (!should_be_quiet) {
             printf("\npig INFO: exiting... please wait...\npig INFO: pig has gone.\n");
         }

@@ -62,4 +62,6 @@ void del_pig_hwaddr(pig_hwaddr_ctx *hwaddr);
 
 unsigned char *get_ph_addr_from_pig_hwaddr(const unsigned int nt_addr[4], const pig_hwaddr_ctx *hwaddr);
 
+pig_hwaddr_ctx *get_pig_hwaddr_tail(pig_hwaddr_ctx *hwaddr);
+
 #endif

@@ -13,8 +13,6 @@
 
 static pigsty_conf_set_ctx *get_pigsty_conf_set_tail(pigsty_conf_set_ctx *conf);
 
-static pig_hwaddr_ctx *get_pig_hwaddr_tail(pig_hwaddr_ctx *hwaddr);
-
 pigsty_conf_set_ctx *add_conf_to_pigsty_conf_set(pigsty_conf_set_ctx *conf,
                                                  const pig_field_t field_index,
                                                  const void *data, size_t dsize) {
@@ -262,7 +260,7 @@ unsigned char *get_ph_addr_from_pig_hwaddr(const unsigned int nt_addr[4], const 
     return retval;
 }
 
-static pig_hwaddr_ctx *get_pig_hwaddr_tail(pig_hwaddr_ctx *hwaddr) {
+pig_hwaddr_ctx *get_pig_hwaddr_tail(pig_hwaddr_ctx *hwaddr) {
     pig_hwaddr_ctx *p = NULL;
     if (hwaddr == NULL) {
         return NULL;
