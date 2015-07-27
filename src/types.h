@@ -54,4 +54,11 @@ typedef struct _pig_target_addr {
     struct _pig_target_addr *next;
 }pig_target_addr_ctx;
 
+typedef struct _pig_hwaddr {
+    int ip_v;
+    unsigned char ph_addr[6];
+    unsigned int nt_addr[4];
+    struct _pig_hwaddr *next;
+}pig_hwaddr_ctx;
+
 #endif

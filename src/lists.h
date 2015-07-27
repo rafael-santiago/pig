@@ -19,6 +19,8 @@
 #define new_pig_target_addr(t) ( (t) = (pig_target_addr_ctx *) pig_newseg(sizeof(pig_target_addr_ctx)),\
                                  (t)->next = NULL, (t)->asize = 0, (t)->addr = NULL, (t)->type = kNone, (t)->v = 0, (t)->cidr_range = 0 )
 
+#define new_pig_hwaddr(h) ( (h) = (pig_hwaddr_ctx *) pig_newseg(sizeof(pig_hwaddr_ctx)),\
+                            (h)->next = NULL, memset(&(h)->nt_addr[0], 0, sizeof((h)->nt_addr)), memset(&(h)->ph_addr[0], 0, sizeof((h)->ph_addr)), (h)->ip_v = 0 )
 
 pigsty_conf_set_ctx *add_conf_to_pigsty_conf_set(pigsty_conf_set_ctx *conf,
                                                  const pig_field_t field_index,
@@ -53,5 +55,11 @@ size_t get_pig_target_addr_count(pig_target_addr_ctx *addrs);
 //pig_target_addr_ctx *get_pig_target_addr_by_index(const size_t index, pig_target_addr_ctx *addrs);
 
 unsigned int get_ipv4_pig_target_by_index(const size_t index, pig_target_addr_ctx *addrs);
+
+pig_hwaddr_ctx *add_hwaddr_to_pig_hwaddr(pig_hwaddr_ctx *hwaddr, const unsigned char ph_addr[6], const unsigned int nt_addr[4], const int version);
+
+void del_pig_hwaddr(pig_hwaddr_ctx *hwaddr);
+
+unsigned char *get_ph_addr_from_pig_hwaddr(const unsigned int nt_addr[4], const pig_hwaddr_ctx *hwaddr);
 
 #endif

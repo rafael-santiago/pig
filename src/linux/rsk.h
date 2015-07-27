@@ -5,12 +5,12 @@
  * the terms of the GNU General Public License version 2.
  *
  */
-#ifndef _PIG_LINUX_RSK_H
-#define _PIG_LINUX_RSK_H 1
+#ifndef PIG_LINUX_RSK_H
+#define PIG_LINUX_RSK_H 1
 
 #include <stdlib.h>
 
-int lin_rsk_create();
+int lin_rsk_create(const char *iface);
 
 void lin_rsk_close(const int sockfd);
 

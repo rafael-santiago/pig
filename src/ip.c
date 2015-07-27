@@ -117,3 +117,25 @@ unsigned short eval_ip4_chsum(const struct ip4 hdr) {
     }
     return (unsigned short)(~retval);
 }
+
+unsigned char *addr2byte(const char *addr, size_t len) {
+    unsigned char *retval = (unsigned char *) pig_newseg(len + 1), *r;
+    char oct[20];
+    size_t a, o;
+    memset(retval, 0, len);
+    r = retval;
+    for (a = o = 0; addr[a] != 0; a++, o++) {
+        if (addr[a] == '.' || addr[a+1] == 0) {
+            if (addr[a+1] == 0) {
+                oct[o++] = addr[a];
+            }
+            oct[o] = 0;
+            *r = (unsigned char)atoi(oct);
+            r++;
+            o = -1;
+        } else {
+            oct[o] = addr[a];
+        }
+    }
+    return retval;
+}

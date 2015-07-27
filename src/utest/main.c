@@ -569,6 +569,19 @@ CUTE_TEST_CASE(pig_target_addr_ctx_tests)
     del_pig_target_addr(addr);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(pig_hwaddr_ctx_tests)
+    pig_hwaddr_ctx *hwaddr = NULL;
+    unsigned char *p = NULL;
+    unsigned int nt_addr[4] = { 0x7f000001, 0x000000, 0x000000, 0x000000 };
+    hwaddr = add_hwaddr_to_pig_hwaddr(hwaddr, "\xde\xad\xbe\xef\x12\x34", nt_addr, 4);
+    CUTE_CHECK("hwaddr == NULL", hwaddr != NULL);
+    p = get_ph_addr_from_pig_hwaddr(nt_addr, hwaddr);
+    CUTE_CHECK("p == NULL", p != NULL);
+    nt_addr[0] = nt_addr[0] << 8;
+    p = get_ph_addr_from_pig_hwaddr(nt_addr, hwaddr);
+    del_pig_hwaddr(hwaddr);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -580,6 +593,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(pigsty_entry_ctx_tests);
     CUTE_RUN_TEST(pigsty_conf_set_ctx_tests);
     CUTE_RUN_TEST(pig_target_addr_ctx_tests);
+    CUTE_RUN_TEST(pig_hwaddr_ctx_tests);
     CUTE_RUN_TEST(ip_packet_making_tests);
     CUTE_RUN_TEST(udp_packet_making_tests);
     CUTE_RUN_TEST(tcp_packet_making_tests);

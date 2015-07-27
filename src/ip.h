@@ -32,5 +32,6 @@ unsigned char *mk_ip4_buffer(const struct ip4 *hdr, size_t *bsize);
 
 unsigned short eval_ip4_chsum(const struct ip4 hdr);
 
+unsigned char *addr2byte(const char *addr, size_t len);
 
 #endif

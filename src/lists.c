@@ -13,6 +13,8 @@
 
 static pigsty_conf_set_ctx *get_pigsty_conf_set_tail(pigsty_conf_set_ctx *conf);
 
+static pig_hwaddr_ctx *get_pig_hwaddr_tail(pig_hwaddr_ctx *hwaddr);
+
 pigsty_conf_set_ctx *add_conf_to_pigsty_conf_set(pigsty_conf_set_ctx *conf,
                                                  const pig_field_t field_index,
                                                  const void *data, size_t dsize) {
@@ -200,6 +202,7 @@ size_t get_pig_target_addr_count(pig_target_addr_ctx *addrs) {
     }
     return c;
 }
+
 unsigned int get_ipv4_pig_target_by_index(const size_t index, pig_target_addr_ctx *addrs) {
     size_t i = 0;
     pig_target_addr_ctx *ap = NULL;
@@ -214,4 +217,56 @@ unsigned int get_ipv4_pig_target_by_index(const size_t index, pig_target_addr_ct
         ipv4_addr = mk_rnd_ipv4_by_mask(ap);
     }
     return ipv4_addr;
+}
+
+pig_hwaddr_ctx *add_hwaddr_to_pig_hwaddr(pig_hwaddr_ctx *hwaddr, const unsigned char ph_addr[6], const unsigned int nt_addr[4], const int version) {
+    pig_hwaddr_ctx *head = hwaddr, *p = NULL;
+    if (head != NULL) {
+        p = get_pig_hwaddr_tail(hwaddr);
+        new_pig_hwaddr(p->next);
+        p = p->next;
+    } else {
+        new_pig_hwaddr(head);
+        p = head;
+    }
+    p->ip_v = version;
+    p->ph_addr[0] = ph_addr[0];
+    p->ph_addr[1] = ph_addr[1];
+    p->ph_addr[2] = ph_addr[2];
+    p->ph_addr[3] = ph_addr[3];
+    p->nt_addr[0] = nt_addr[0];
+    if (p->ip_v == 6) {
+        p->nt_addr[1] = nt_addr[1];
+        p->nt_addr[2] = nt_addr[2];
+        p->nt_addr[3] = nt_addr[3];
+    }
+    return head;
+}
+
+void del_pig_hwaddr(pig_hwaddr_ctx *hwaddr) {
+    pig_hwaddr_ctx *t = NULL, *p = NULL;
+    for (t = p = hwaddr; t; p = t) {
+        t = p->next;
+        free(p);
+    }
+}
+
+unsigned char *get_ph_addr_from_pig_hwaddr(const unsigned int nt_addr[4], const pig_hwaddr_ctx *hwaddr) {
+    unsigned char *retval = NULL;
+    const pig_hwaddr_ctx *p = NULL;
+    for (p = hwaddr; p != NULL && retval == NULL; p = p->next) {
+        if (memcmp(p->nt_addr, nt_addr, sizeof(p->nt_addr)) == 0) {
+            retval = (unsigned char *)&p->ph_addr[0];
+        }
+    }
+    return retval;
+}
+
+static pig_hwaddr_ctx *get_pig_hwaddr_tail(pig_hwaddr_ctx *hwaddr) {
+    pig_hwaddr_ctx *p = NULL;
+    if (hwaddr == NULL) {
+        return NULL;
+    }
+    for (p = hwaddr; p->next != NULL; p = p->next);
+    return p;
 }

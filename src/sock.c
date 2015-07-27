@@ -12,7 +12,7 @@
 
 int init_raw_socket() {
 #ifdef __linux
-    return lin_rsk_create();
+    return lin_rsk_create("eth0");
 #else
     return -1;
 #endif
