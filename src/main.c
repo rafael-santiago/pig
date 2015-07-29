@@ -9,6 +9,8 @@
 #include "pigsty.h"
 #include "lists.h"
 #include "oink.h"
+#include "linux/native_arp.h"
+#include "arp.h"
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
@@ -137,7 +139,8 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
     pig_hwaddr_ctx *hwaddr = NULL;
     int sockfd = -1;
     int retval = 0;
-    unsigned char *gw_hwaddr = NULL;
+    unsigned char *gw_hwaddr = NULL, *temp = NULL;
+    in_addr_t gw_in_addr = 0;
     if (timeout != NULL) {
         timeo = atoi(timeout);
     }
@@ -173,27 +176,42 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
     if (!should_be_quiet) {
         printf("\npig INFO: done (%d signature(s) read).\n\n", signatures_count);
     }
-    signature = get_pigsty_entry_by_index(rand() % signatures_count, pigsty);
-    if (single_test == NULL) {
-        while (!should_exit) {
-            if (signature == NULL) {
-                continue; //  WARN(Santiago): It should never happen. However... Sometimes... The World tends to be a rather weird place.
+    if (gw_addr != NULL && loiface != NULL) {
+        printf("pig INFO: getting the gateway's physical address...\n");
+        gw_in_addr = inet_addr(gw_addr);
+        temp = get_mac_by_addr(gw_in_addr, loiface, 2);
+        if (!should_be_quiet && temp != NULL) {
+            gw_hwaddr = mac2byte(temp, strlen(temp));
+            printf("pig INFO: the gateway's physical address < %s >\n\n", temp);
+            free(temp);
+        }
+    }
+    if (gw_hwaddr != NULL) {
+        signature = get_pigsty_entry_by_index(rand() % signatures_count, pigsty);
+        if (single_test == NULL) {
+            while (!should_exit) {
+                if (signature == NULL) {
+                    continue; //  WARN(Santiago): It should never happen. However... Sometimes... The World tends to be a rather weird place.
+                }
+                if (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, loiface) != -1) {
+                    if (!should_be_quiet) {
+                        printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
+                    }
+                    usleep(timeo);
+                }
+                signature = get_pigsty_entry_by_index(rand() % signatures_count, pigsty);
             }
-            if (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, loiface) != -1) {
+        } else {
+            retval = (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, loiface) != -1 ? 0 : 1);
+            if (retval == 0) {
                 if (!should_be_quiet) {
                     printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
                 }
-                usleep(timeo);
             }
-            signature = get_pigsty_entry_by_index(rand() % signatures_count, pigsty);
         }
+        free(gw_hwaddr);
     } else {
-        retval = (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, loiface) != -1 ? 0 : 1);
-        if (retval == 0) {
-            if (!should_be_quiet) {
-                printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
-            }
-        }
+        printf("\npig PANIC: unable to get the gateway physical address.\n");
     }
     del_pigsty_entry(pigsty);
     del_pig_target_addr(addr);
@@ -232,6 +250,16 @@ int main(int argc, char **argv) {
         signatures = get_option("signatures", NULL, argc, argv);
         if (signatures == NULL) {
             printf("pig ERROR: --signatures option is missing.\n");
+            return 1;
+        }
+        gw_addr = get_option("gateway", NULL, argc, argv);
+        if (gw_addr == NULL) {
+            printf("pig ERROR: --gateway option is missing.\n");
+            return 1;
+        }
+        loiface = get_option("lo-iface", NULL, argc, argv);
+        if (loiface == NULL) {
+            printf("pig ERROR: --lo-iface option is missing.\n");
             return 1;
         }
         timeout = get_option("timeout", NULL, argc, argv);

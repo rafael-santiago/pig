@@ -60,7 +60,7 @@ int lin_rsk_sendto(const char *buffer, size_t buffer_size, const int sockfd) {
     if (((buffer[0] & 0xf0) >> 4) != 4) {
         return -1;
     }
-    if (buffer_size < 20) { //  WARN(Santiago): It must be at least a valid IP packet even if it brings an alien inside ;)
+    if (buffer_size < 34) { //  WARN(Santiago): It must be at least a valid ETH + IP packet even if the IP brings an alien inside ;)
         return -1;
     }
     return sendto(sockfd, buffer, buffer_size, 0, NULL, 0);

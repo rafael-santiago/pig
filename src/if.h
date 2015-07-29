@@ -9,6 +9,7 @@
 #define PIG_IF_H 1
 
 char *get_iface_mac(const char *iface);
+
 char *get_iface_ip(const char *iface);
 
 #endif
