@@ -40,7 +40,7 @@ void parse_ip4_dgram(struct ip4 **hdr, const unsigned char *buf, size_t bsize) {
               ((unsigned int)buf[18] <<  8) | buf[19];
     payload_offset = (ip->ihl * 4);
     if (payload_offset < bsize) {
-        ip->payload = (unsigned char *) pig_newseg(payload_offset + 1);
+        ip->payload = (unsigned char *) pig_newseg(bsize - payload_offset + 1);
         ip->payload_size = bsize - payload_offset;
         for (p = 0; p < ip->payload_size; p++) {
             ip->payload[p] = buf[payload_offset + p];
