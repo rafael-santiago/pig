@@ -25,7 +25,7 @@ static void sigint_watchdog(int signr);
 
 static pigsty_entry_ctx *load_signatures(const char *signatures);
 
-static int run_pig_run(const char *signatures, const char *targets, const char *timeout, const char *single_test, const char *gw_addr, const char *loiface);
+static int run_pig_run(const char *signatures, const char *targets, const char *timeout, const char *single_test, const char *gw_addr, const char *nt_mask, const char *loiface);
 
 static int is_targets_option_required(const pigsty_entry_ctx *entries);
 
@@ -130,7 +130,7 @@ static pig_target_addr_ctx *parse_targets(const char *targets) {
     return addr;
 }
 
-static int run_pig_run(const char *signatures, const char *targets, const char *timeout, const char *single_test, const char *gw_addr, const char *loiface) {
+static int run_pig_run(const char *signatures, const char *targets, const char *timeout, const char *single_test, const char *gw_addr, const char *nt_mask, const char *loiface) {
     int timeo = 10000;
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0, addr_count = 0;
@@ -139,6 +139,7 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
     pig_hwaddr_ctx *hwaddr = NULL;
     int sockfd = -1;
     int retval = 0;
+    unsigned int nt_mask_addr[4] = { 0, 0, 0, 0 };
     unsigned char *gw_hwaddr = NULL, *temp = NULL;
     in_addr_t gw_in_addr = 0;
     if (timeout != NULL) {
@@ -151,13 +152,13 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
     sockfd = init_raw_socket();
     if (sockfd == -1) {
         printf("pig PANIC: unable to create the socket.\npig ERROR: aborted.\n");
-        return;
+        return 1;
     }
     pigsty = load_signatures(signatures);
     if (pigsty == NULL) {
         printf("pig ERROR: aborted.\n");
         deinit_raw_socket(sockfd);
-        return;
+        return 1;
     }
     if (targets != NULL) {
         if (!should_be_quiet) {
@@ -170,19 +171,34 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
         printf("pig PANIC: --targets option is required by some loaded signatures.\n");
         deinit_raw_socket(sockfd);
         del_pigsty_entry(pigsty);
-        return;
+        return 1;
     }
     signatures_count = get_pigsty_entry_count(pigsty);
     if (!should_be_quiet) {
         printf("\npig INFO: done (%d signature(s) read).\n\n", signatures_count);
     }
+    if (nt_mask == NULL) {
+        printf("\npig PANIC: --net-mask option is required.\n");
+        deinit_raw_socket(sockfd);
+        del_pigsty_entry(pigsty);
+        return 1;
+    }
+    //  WARN(Santiago): by now IPv4 only.
+    if (verify_ipv4_addr(nt_mask) == 0) {
+        printf("pig PANIC: --net-mask has an invalid ip address.\n");
+        deinit_raw_socket(sockfd);
+        del_pigsty_entry(pigsty);
+        return 1;
+    }
+    nt_mask_addr[0] = htonl(inet_addr(nt_mask));
     if (gw_addr != NULL && loiface != NULL) {
-        printf("pig INFO: getting the gateway's physical address...\n");
         gw_in_addr = inet_addr(gw_addr);
         temp = get_mac_by_addr(gw_in_addr, loiface, 2);
         if (!should_be_quiet && temp != NULL) {
             gw_hwaddr = mac2byte(temp, strlen(temp));
-            printf("pig INFO: the gateway's physical address < %s >\n\n", temp);
+            printf("pig INFO: the gateway's physical address is \"%s\"...\n"
+                   "pig INFO: the local interface is \"%s\"...\n"
+                   "pig INFO: the network mask is \"%s\"...\n\n", temp, loiface, nt_mask);
             free(temp);
         }
     }
@@ -193,7 +209,7 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
                 if (signature == NULL) {
                     continue; //  WARN(Santiago): It should never happen. However... Sometimes... The World tends to be a rather weird place.
                 }
-                if (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, loiface) != -1) {
+                if (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, loiface) != -1) {
                     if (!should_be_quiet) {
                         printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
                     }
@@ -202,7 +218,7 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
                 signature = get_pigsty_entry_by_index(rand() % signatures_count, pigsty);
             }
         } else {
-            retval = (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, loiface) != -1 ? 0 : 1);
+            retval = (oink(signature, &hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, loiface) != -1 ? 0 : 1);
             if (retval == 0) {
                 if (!should_be_quiet) {
                     printf("pig INFO: a packet based on signature \"%s\" was sent.\n", signature->signature_name);
@@ -211,7 +227,7 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
         }
         free(gw_hwaddr);
     } else {
-        printf("\npig PANIC: unable to get the gateway physical address.\n");
+        printf("\npig PANIC: unable to get the gateway's physical address.\n");
     }
     del_pigsty_entry(pigsty);
     del_pig_target_addr(addr);
@@ -242,6 +258,8 @@ int main(int argc, char **argv) {
     char *targets = NULL;
     char *gw_addr = NULL;
     char *loiface = NULL;
+    char *nt_mask = NULL;
+    int exit_code = 1;
     if (get_option("version", NULL, argc, argv) != NULL) {
         printf("pig v%s\n", PIG_VERSION);
         return 0;
@@ -255,6 +273,11 @@ int main(int argc, char **argv) {
         gw_addr = get_option("gateway", NULL, argc, argv);
         if (gw_addr == NULL) {
             printf("pig ERROR: --gateway option is missing.\n");
+            return 1;
+        }
+        nt_mask = get_option("net-mask", NULL, argc, argv);
+        if (nt_mask == NULL) {
+            printf("pig ERROR: --net-mask option is missing.\n");
             return 1;
         }
         loiface = get_option("lo-iface", NULL, argc, argv);
@@ -276,12 +299,12 @@ int main(int argc, char **argv) {
         signal(SIGINT, sigint_watchdog);
         signal(SIGTERM, sigint_watchdog);
         srand(time(0));
-        run_pig_run(signatures, targets, timeout, get_option("single-test", NULL, argc, argv), gw_addr, loiface);
-        if (!should_be_quiet) {
+        exit_code = run_pig_run(signatures, targets, timeout, get_option("single-test", NULL, argc, argv), gw_addr, nt_mask, loiface);
+        if (!should_be_quiet && exit_code == 0) {
             printf("\npig INFO: exiting... please wait...\npig INFO: pig has gone.\n");
         }
     } else {
         printf("usage: %s --signatures=file.0,file.1,(...),file.n [--timeout=<in msecs> --no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n]\n", argv[0]);
     }
-    return 0;
+    return exit_code;
 }
