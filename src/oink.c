@@ -18,7 +18,7 @@
 
 #define PIG_ARP_TRIES_NR 1
 
-#define pig_get_net_mask_from_addr(a, m) ( (a) & (m) )
+#define pig_get_net_mask_from_addr(a, m) ( ( (a) & (m) ) )
 
 static void fill_up_mac_addresses(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface);
 
