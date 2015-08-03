@@ -57,7 +57,7 @@ void lin_rsk_close(const int sockfd) {
 }
 
 int lin_rsk_sendto(const char *buffer, size_t buffer_size, const int sockfd) {
-    if (((buffer[0] & 0xf0) >> 4) != 4) {
+    if (((buffer[14] & 0xf0) >> 4) != 4) {
         return -1;
     }
     if (buffer_size < 34) { //  WARN(Santiago): It must be at least a valid ETH + IP packet even if the IP brings an alien inside ;)
