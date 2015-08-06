@@ -232,7 +232,8 @@ pig_hwaddr_ctx *add_hwaddr_to_pig_hwaddr(pig_hwaddr_ctx *hwaddr, const unsigned 
     p->ph_addr[1] = ph_addr[1];
     p->ph_addr[2] = ph_addr[2];
     p->ph_addr[3] = ph_addr[3];
-    p->nt_addr[0] = nt_addr[0];
+    p->ph_addr[4] = ph_addr[4];
+    p->ph_addr[5] = ph_addr[5];
     if (p->ip_v == 6) {
         p->nt_addr[1] = nt_addr[1];
         p->nt_addr[2] = nt_addr[2];

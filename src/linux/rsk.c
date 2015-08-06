@@ -35,7 +35,9 @@ static int get_iface_index(const char *iface) {
 
 int lin_rsk_create(const char *iface) {
     struct timeval tv;
+    int yes = 1;
     int sk = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
+    setsockopt(sk, SOL_SOCKET, IP_HDRINCL, (int *)&yes, sizeof(yes));
     memset(&tv, 0, sizeof(tv));
     tv.tv_sec = 1;
     setsockopt(sk, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));

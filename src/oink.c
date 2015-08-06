@@ -72,6 +72,7 @@ static void fill_up_mac_addresses(struct ethernet_frame *eth, const struct ip4 i
         mac = (unsigned char *)gw_hwaddr;
     }
     memcpy(eth->src_hw_addr, mac, sizeof(eth->src_hw_addr));
+    mac = NULL;
     //  Now, getting the dest MAC address.
     nt_addr[0] = iph.dst;
     if (should_route(nt_addr, nt_mask, loiface)) {
@@ -95,7 +96,7 @@ static void fill_up_mac_addresses(struct ethernet_frame *eth, const struct ip4 i
         //  WARN(Santiago): using the gateway's physical MAC.
         mac = (unsigned char *)gw_hwaddr;
     }
-    memcpy(eth->dest_hw_addr, mac, sizeof(eth->dest_hw_addr));
+    memcpy(eth->dest_hw_addr, mac, 6);
 }
 
 int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_target_addr_ctx *addrs, const int sockfd, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface) {
