@@ -37,10 +37,10 @@ static should_route(const unsigned int addr[4], const unsigned int nt_mask[4], c
             free(temp);
         }
     }
-    return (pig_get_net_mask_from_addr(addr[0], nt_mask[0]) == pig_get_net_mask_from_addr(lo_addr[0], nt_mask[0])) &&
-           (pig_get_net_mask_from_addr(addr[1], nt_mask[1]) == pig_get_net_mask_from_addr(lo_addr[1], nt_mask[1])) &&
-           (pig_get_net_mask_from_addr(addr[2], nt_mask[2]) == pig_get_net_mask_from_addr(lo_addr[2], nt_mask[2])) &&
-           (pig_get_net_mask_from_addr(addr[3], nt_mask[3]) == pig_get_net_mask_from_addr(lo_addr[3], nt_mask[3]));
+    return !((pig_get_net_mask_from_addr(addr[0], nt_mask[0]) == pig_get_net_mask_from_addr(lo_addr[0], nt_mask[0])) &&
+             (pig_get_net_mask_from_addr(addr[1], nt_mask[1]) == pig_get_net_mask_from_addr(lo_addr[1], nt_mask[1])) &&
+             (pig_get_net_mask_from_addr(addr[2], nt_mask[2]) == pig_get_net_mask_from_addr(lo_addr[2], nt_mask[2])) &&
+             (pig_get_net_mask_from_addr(addr[3], nt_mask[3]) == pig_get_net_mask_from_addr(lo_addr[3], nt_mask[3])));
 }
 
 static void fill_up_mac_addresses(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface) {
@@ -50,7 +50,7 @@ static void fill_up_mac_addresses(struct ethernet_frame *eth, const struct ip4 i
     in_addr_t addr;
     //  Getting the src MAC address.
     nt_addr[0] = iph.src;
-    if (should_route(nt_addr, nt_mask, loiface)) {
+    if (!should_route(nt_addr, nt_mask, loiface)) {
         mac = get_ph_addr_from_pig_hwaddr(nt_addr, hwa_p);
         if (mac == NULL) {
             addr = htonl(iph.src);
@@ -75,7 +75,7 @@ static void fill_up_mac_addresses(struct ethernet_frame *eth, const struct ip4 i
     mac = NULL;
     //  Now, getting the dest MAC address.
     nt_addr[0] = iph.dst;
-    if (should_route(nt_addr, nt_mask, loiface)) {
+    if (!should_route(nt_addr, nt_mask, loiface)) {
         mac = get_ph_addr_from_pig_hwaddr(nt_addr, hwa_p);
         if (mac == NULL) {
             addr = htonl(iph.dst);
