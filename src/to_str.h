@@ -8,6 +8,8 @@
 #ifndef PIG_TO_STR_H
 #define PIG_TO_STR_H 1
 
-char *to_str(const char *value);
+#include <stdlib.h>
+
+char *to_str(const char *value, size_t *dsize);
 
 #endif

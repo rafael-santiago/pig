@@ -10,13 +10,13 @@
 #include <string.h>
 #include <ctype.h>
 
-#define getnibv(n) ( isxdigit((n)) ? toupper((n)) - 55 : (n) - 48 )
+#define getnibv(n) ( !isdigit((n)) ? toupper((n)) - 55 : (n) - 48 )
 
-char *to_str(const char *value) {
+char *to_str(const char *value, size_t *dsize) {
     const char *vp = value, *vp_end = NULL;
     char *retval = NULL, *rp = NULL;
     unsigned char byte = 0;
-    if (vp == NULL) {
+    if (vp == NULL || dsize == NULL) {
 	return NULL;
     }
     retval = pig_newseg(strlen(value) + 1);
@@ -62,5 +62,6 @@ char *to_str(const char *value) {
 	}
 	vp++;
     }
+    *dsize = (rp - retval);
     return retval;
 }

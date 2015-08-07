@@ -28,8 +28,7 @@ void *str_to_voidp(const char *data, size_t *dsize) {
     if (data == NULL || dsize == NULL) {
         return NULL;
     }
-    retval = to_str(data);
-    *dsize = strlen(retval);
+    retval = to_str(data, dsize);
     return retval;
 }
 

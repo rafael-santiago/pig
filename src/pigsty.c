@@ -243,6 +243,7 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
     size_t fmt_dsize = 0;
     pigsty_entry_ctx *entry_p = NULL;
     int field_index = 0;
+    size_t sz = 0;
     token = get_next_pigsty_word(tmp_buffer, next);
     while (**next != 0 && signature_name == NULL) {
         if (strcmp(token, "signature") == 0) {
@@ -251,7 +252,7 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
             free(signature_name);
             tmp_buffer = *next;
             token = get_next_pigsty_word(tmp_buffer, next);
-            signature_name = to_str(token);
+            signature_name = to_str(token, &sz);
             if (get_pigsty_entry_signature_name(signature_name, entries) != NULL) {
                 printf("pig PANIC: packet signature \"%s\" redeclared.\n", signature_name);
                 free(signature_name);

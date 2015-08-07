@@ -142,23 +142,24 @@ CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(to_str_tests)
     char *retval = NULL;
-    CUTE_CHECK("to_str() != NULL", to_str(NULL) == NULL);
-    retval = to_str("\"\\n\\r\\t\"");
+    size_t sz = 0;
+    CUTE_CHECK("to_str() != NULL", to_str(NULL, &sz) == NULL);
+    retval = to_str("\"\\n\\r\\t\"", &sz);
     CUTE_CHECK("to_str() != \"\\n\\r\\t\"", strcmp(retval, "\n\r\t") == 0);
     free(retval);
-    retval = to_str("\"r\\nr\\nn\\ne\\n\"");
+    retval = to_str("\"r\\nr\\nn\\ne\\n\"", &sz);
     CUTE_CHECK("to_str() != \"r\\nr\\nn\\ne\\n\"", strcmp(retval, "r\nr\nn\ne\n") == 0);
     free(retval);
-    retval = to_str("\"\x61\x62\x63\"");
+    retval = to_str("\"\x61\x62\x63\"", &sz);
     CUTE_CHECK("to_str() != \"abc\"", strcmp(retval, "abc") == 0);
     free(retval);
-    retval = to_str("\"\x61\x62\x6362\"");
+    retval = to_str("\"\x61\x62\x6362\"", &sz);
     CUTE_CHECK("to_str() != \"abb\"", strcmp(retval, "abb") == 0);
     free(retval);
-    retval = to_str("\"\x9tab!\"");
+    retval = to_str("\"\x9tab!\"", &sz);
     CUTE_CHECK("to_str() != \"\\ttab!\"", strcmp(retval, "\ttab!") == 0);
     free(retval);
-    retval = to_str("\"well behaved string.\"");
+    retval = to_str("\"well behaved string.\"", &sz);
     CUTE_CHECK("to_str() != \"well behaved string.\"", strcmp(retval, "well behaved string.") == 0);
     free(retval);
 CUTE_TEST_CASE_END
