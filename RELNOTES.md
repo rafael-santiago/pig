@@ -49,3 +49,5 @@
 - Packet sending [``commit-id``: #6bc106].
 
 - Ethernet frame composition [``commit-id``: #95ca99].
+
+- Binary payload parsing [``commit-id``: #b9605c].
