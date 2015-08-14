@@ -14,6 +14,7 @@
 #include "../ip.h"
 #include "../udp.h"
 #include "../tcp.h"
+#include "../eth.h"
 #include "../netmask.h"
 #include "../icmp.h"
 #include <cutest.h>
@@ -591,6 +592,59 @@ CUTE_TEST_CASE(pig_hwaddr_ctx_tests)
     del_pig_hwaddr(hwaddr);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(eth_frame_making_tests)
+    unsigned char *expected_frame = "\xba\xba\xca\xde\xad\xbe\xde\xad\xbe\xef\xde\xad\x08\x00";
+    unsigned char *working_buffer = NULL;
+    size_t wbsz = 0, wb = 0;
+    struct ethernet_frame eth_frm;
+    struct ethernet_frame *eth_frm_p = NULL;
+
+    eth_frm.dest_hw_addr[0] = 0xba;
+    eth_frm.dest_hw_addr[1] = 0xba;
+    eth_frm.dest_hw_addr[2] = 0xca;
+    eth_frm.dest_hw_addr[3] = 0xde;
+    eth_frm.dest_hw_addr[4] = 0xad;
+    eth_frm.dest_hw_addr[5] = 0xbe;
+
+    eth_frm.src_hw_addr[0] = 0xde;
+    eth_frm.src_hw_addr[1] = 0xad;
+    eth_frm.src_hw_addr[2] = 0xbe;
+    eth_frm.src_hw_addr[3] = 0xef;
+    eth_frm.src_hw_addr[4] = 0xde;
+    eth_frm.src_hw_addr[5] = 0xad;
+
+    eth_frm.ether_type = 0x0800;
+
+    eth_frm.payload = NULL;
+    eth_frm.payload_size = 0;
+
+    working_buffer = mk_ethernet_frame(&wbsz, eth_frm);
+
+    for (wb = 0; wb < wbsz; wb++) {
+        CUTE_CHECK("working_buffer[w] != expected_frame[w]", working_buffer[wb] == expected_frame[wb]);
+    }
+
+    memset(&eth_frm, 0, sizeof(eth_frm));
+
+    eth_frm_p = parse_ethernet_frame(working_buffer, wbsz);
+
+    CUTE_CHECK("eth_frm_p == NULL", eth_frm_p != NULL);
+
+    CUTE_CHECK("eth_frm_p->payload != NULL", eth_frm_p->payload == NULL);
+
+    free(working_buffer);
+
+    working_buffer = mk_ethernet_frame(&wbsz, *eth_frm_p);
+
+    for (wb = 0; wb < wbsz; wb++) {
+        CUTE_CHECK("working_buffer[w] != expected_frame[w]", working_buffer[wb] == expected_frame[wb]);
+    }
+
+    free(eth_frm_p);
+
+    free(working_buffer);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -603,6 +657,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(pigsty_conf_set_ctx_tests);
     CUTE_RUN_TEST(pig_target_addr_ctx_tests);
     CUTE_RUN_TEST(pig_hwaddr_ctx_tests);
+    CUTE_RUN_TEST(eth_frame_making_tests);
     CUTE_RUN_TEST(ip_packet_making_tests);
     CUTE_RUN_TEST(udp_packet_making_tests);
     CUTE_RUN_TEST(tcp_packet_making_tests);
