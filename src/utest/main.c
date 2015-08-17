@@ -17,6 +17,7 @@
 #include "../eth.h"
 #include "../netmask.h"
 #include "../icmp.h"
+#include "../arp.h"
 #include <cutest.h>
 #include <stdlib.h>
 #include <string.h>
@@ -645,6 +646,56 @@ CUTE_TEST_CASE(eth_frame_making_tests)
     free(working_buffer);
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(arp_packet_making_tests)
+    struct arp arph;
+    struct arp *arph_p = NULL;
+    unsigned char *expected_packet = "\x00\x01\x08\x00\x06\x04\x00\x01\xde\xad\xbe\xef\xde\x00\x7f\x00\x00\x01\xde\xad\xbe\xef\xde\x00\x7f\x00\x00\x01";
+    size_t expected_packet_sz = 28;
+    unsigned char *packet = NULL;
+    size_t packet_sz = 0, p = 0;
+
+    arph.hwtype = ARP_HW_TYPE_ETHERNET;
+    arph.ptype = ARP_PROTO_TYPE_IP;
+    arph.hw_addr_len = 6;
+    arph.pt_addr_len = 4;
+    arph.opcode = ARP_OPCODE_REQUEST;
+    arph.src_hw_addr = "\xde\xad\xbe\xef\xde\x00";
+    arph.src_pt_addr = "\x7f\x00\x00\x01";
+    arph.dest_hw_addr = "\xde\xad\xbe\xef\xde\x00";
+    arph.dest_pt_addr = "\x7f\x00\x00\x01";
+
+    packet = mk_arp_dgram(&packet_sz, arph);
+
+    CUTE_CHECK("packet == NULL", packet != NULL);
+    CUTE_CHECK("packet_sz != expected_packet_sz", packet_sz == expected_packet_sz);
+
+    for (p = 0; p < packet_sz; p++) {
+        CUTE_CHECK("packet[p] != expected_packet[p]", packet[p] == expected_packet[p]);
+    }
+
+    free(packet);
+
+    arph_p = parse_arp_dgram(expected_packet, expected_packet_sz);
+
+    CUTE_CHECK("arph_p == NULL", arph_p != NULL);
+    packet = mk_arp_dgram(&packet_sz, *arph_p);
+    CUTE_CHECK("packet == NULL", packet != NULL);
+    CUTE_CHECK("packet_sz != expected_packet_sz", packet_sz == expected_packet_sz);
+
+    for (p = 0; p < packet_sz; p++) {
+        CUTE_CHECK("packet[p] != expected_packet[p]", packet[p] == expected_packet[p]);
+    }
+
+    free(packet);
+
+    free(arph_p->src_hw_addr);
+    free(arph_p->src_pt_addr);
+    free(arph_p->dest_hw_addr);
+    free(arph_p->dest_pt_addr);
+    free(arph_p);
+
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -658,6 +709,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(pig_target_addr_ctx_tests);
     CUTE_RUN_TEST(pig_hwaddr_ctx_tests);
     CUTE_RUN_TEST(eth_frame_making_tests);
+    CUTE_RUN_TEST(arp_packet_making_tests);
     CUTE_RUN_TEST(ip_packet_making_tests);
     CUTE_RUN_TEST(udp_packet_making_tests);
     CUTE_RUN_TEST(tcp_packet_making_tests);
