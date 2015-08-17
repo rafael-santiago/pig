@@ -42,7 +42,7 @@ static char *get_option(const char *option, char *default_value, const int argc,
             return "1";
         }
     }
-    strcat(temp, "=");
+    strncat(temp, "=", sizeof(temp) - 1);
     for (a = 0; a < argc; a++) {
         if (strstr(argv[a], temp) == argv[a]) {
             return argv[a] + strlen(temp);
