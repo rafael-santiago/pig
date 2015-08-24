@@ -37,7 +37,7 @@ int lin_rsk_create(const char *iface) {
     struct timeval tv;
     int yes = 1;
     int sk = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL));
-    setsockopt(sk, SOL_SOCKET, IP_HDRINCL, (int *)&yes, sizeof(yes));
+    setsockopt(sk, IPPROTO_IP, IP_HDRINCL, &yes, sizeof(yes));
     memset(&tv, 0, sizeof(tv));
     tv.tv_sec = 1;
     setsockopt(sk, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
@@ -54,6 +54,18 @@ int lin_rsk_create(const char *iface) {
     return sk;
 }
 
+int lin_rsk_lo_create() {
+    int yes = 1;
+    int sk = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
+    if (sk != -1) {
+        if (setsockopt(sk, IPPROTO_IP, IP_HDRINCL, &yes, sizeof(yes)) == -1) {
+            lin_rsk_close(sk);
+            return -1;
+        }
+    }
+    return sk;
+}
+
 void lin_rsk_close(const int sockfd) {
     close(sockfd);
 }
@@ -66,4 +78,36 @@ int lin_rsk_sendto(const char *buffer, size_t buffer_size, const int sockfd) {
         return -1;
     }
     return sendto(sockfd, buffer, buffer_size, 0, NULL, 0);
+}
+
+int lin_rsk_lo_sendto(const char *buffer, size_t buffer_size, const int sockfd) {
+    struct sockaddr_in sk_in = { 0 };
+    unsigned int ipv4_addr = 0;
+    unsigned short dst_port = 0;
+    size_t offset = 0;
+    if (((buffer[0] & 0xf0) >> 4) != 4) {
+        return -1;
+    }
+    if (buffer_size < 20) {  // WARN(Santiago): It must be at least a valid IP packet even if it brings an alien inside ;)
+        return -1;
+    }
+    ipv4_addr = (((unsigned short) buffer[16]) << 24) |
+                (((unsigned short) buffer[17]) << 16) |
+                (((unsigned short) buffer[18]) <<  8) |
+                ((unsigned short) buffer[19]);
+    offset = 4 * (buffer[0] & 0x0f);
+    switch (buffer[9]) {
+        case  6:
+        case 17:
+            dst_port = (((unsigned short)buffer[offset + 2]) << 8) | buffer[offset + 3];
+            break;
+
+        default:
+            dst_port = 0;
+            break;
+    }
+    sk_in.sin_family = AF_INET;
+    sk_in.sin_addr.s_addr = htonl(ipv4_addr);
+    sk_in.sin_port = htons(dst_port);
+    return sendto(sockfd, buffer, buffer_size, 0, (struct sockaddr *)&sk_in, sizeof(sk_in));
 }

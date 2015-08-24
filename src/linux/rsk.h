@@ -12,8 +12,12 @@
 
 int lin_rsk_create(const char *iface);
 
+int lin_rsk_lo_create();
+
 void lin_rsk_close(const int sockfd);
 
 int lin_rsk_sendto(const char *buffer, size_t buffer_size, const int sockfd);
+
+int lin_rsk_lo_sendto(const char *buffer, size_t buffer_size, const int sockfd);
 
 #endif

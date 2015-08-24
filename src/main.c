@@ -149,7 +149,7 @@ static int run_pig_run(const char *signatures, const char *targets, const char *
     if (!should_be_quiet) {
         printf("pig INFO: starting up pig engine...\n\n");
     }
-    sockfd = init_raw_socket();
+    sockfd = init_raw_socket(loiface);
     if (sockfd == -1) {
         printf("pig PANIC: unable to create the socket.\npig ERROR: aborted.\n");
         return 1;

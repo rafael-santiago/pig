@@ -10,7 +10,9 @@
 
 #include <stdlib.h>
 
-int init_raw_socket();
+int init_raw_socket(const char *iface);
+
+int init_loopback_raw_socket();
 
 int inject(const unsigned char *packet, const size_t packet_size, const int sockfd);
 

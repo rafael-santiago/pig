@@ -33,6 +33,10 @@ char *get_mac_by_addr(in_addr_t addr, const char *loiface, const int max_tries) 
     struct in_addr sin_addr;
     struct timeval tv;
 
+    if (strcmp(loiface, "lo") == 0) {
+        return NULL;  //  INFO(Santiago): this is software instead of hardware and does not make sense.
+    }
+
     sin_addr.s_addr = addr;
 
     memset(&tv, 0, sizeof(tv));

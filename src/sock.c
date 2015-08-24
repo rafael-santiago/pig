@@ -10,9 +10,17 @@
 #include "linux/rsk.h"
 #endif
 
-int init_raw_socket() {
+int init_raw_socket(const char *iface) {
 #ifdef __linux
-    return lin_rsk_create("eth0");
+    return lin_rsk_create(iface);
+#else
+    return -1;
+#endif
+}
+
+int init_loopback_raw_socket() {
+#ifdef __linux
+    return lin_rsk_lo_create();
 #else
     return -1;
 #endif
@@ -27,6 +35,14 @@ void deinit_raw_socket(const int sockfd) {
 int inject(const unsigned char *packet, const size_t packet_size, const int sockfd) {
 #ifdef __linux
     return lin_rsk_sendto(packet, packet_size, sockfd);
+#else
+    return -1;
+#endif
+}
+
+int inject_lo(const unsigned char *packet, const size_t packet_size, const int sockfd) {
+#ifdef __linux
+    return lin_rsk_lo_sendto(packet, packet_size, sockfd);
 #else
     return -1;
 #endif
