@@ -63,7 +63,13 @@ CUTE_TEST_CASE(pigsty_file_parsing_tests)
     CUTE_CHECK("pigsty != NULL", pigsty == NULL);
     remove("test.pigsty");
 
-    test_pigsty = "[ signature = \"valid signature\", ip.version = 4, ip.tos = 5, ip.src = 127.0.0.1, ip.dst = 127.0.0.1, ip.protocol = 1 ]"; //  valid pigsty entry.
+    test_pigsty = "[ signature = \"mixed field signature\", ip.version = 4, ip.tos = 5, ip.src = 127.0.0.1, ip.dst = 127.0.0.1, ip.protocol = 6, tcp.src = 80, udp.src = 53, icmp.code = 1 ]"; //  valid pigsty entry.
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+
+    test_pigsty = "[ signature = \"valid signature\", ip.version = 4, ip.tos = 5, ip.src = 127.0.0.1, ip.dst = 127.0.0.1, ip.protocol = 20 ]"; //  valid pigsty entry.
     write_to_file("test.pigsty", test_pigsty);
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty == NULL", pigsty != NULL);

@@ -122,9 +122,12 @@ static struct signature_fields SIGNATURE_FIELDS[] = {
 
 static const size_t SIGNATURE_FIELDS_SIZE = sizeof(SIGNATURE_FIELDS) / sizeof(SIGNATURE_FIELDS[0]);
 
+static int g_line_nr = 1;
+
 pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char *filepath) {
     char *data = get_pigsty_file_data(filepath);
     if (data != NULL) {
+        g_line_nr = 1;
         if (!compile_pigsty_buffer(data)) {
             printf("pig PANIC: invalid signature detected, fix it and try again.\n");
             del_pigsty_entry(entry);
@@ -188,6 +191,9 @@ static char *skip_pigsty_comment(char *buffer) {
     while (*b != '\n' && *b != 0) {
         b++;
     }
+    if (*b == '\n') {
+        g_line_nr++;
+    }
     return b;
 }
 
@@ -195,7 +201,11 @@ static char *skip_pigsty_blank(char *buffer) {
     char *b = buffer;
     while (is_pigsty_blank(*b)) {
         b++;
-        if (is_pigsty_comment(*b)) b = skip_pigsty_comment(b);
+        if(*b == '\n') {
+            g_line_nr++;
+        } else if (is_pigsty_comment(*b)) {
+            b = skip_pigsty_comment(b);
+        }
     }
     return b;
 }
@@ -213,19 +223,30 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
                     end_bp++;
                     if (*end_bp == '\\') {
                         end_bp += 2;
+                    } else if (*end_bp == '\n') {
+                        g_line_nr++;
                     }
                 }
-                end_bp++;
+                if (*end_bp != 0) {
+                    end_bp++;
+                } else {
+                    end_bp--;
+                }
                 break;
             } else {
                 end_bp++;
                 if (*end_bp == '=' || *end_bp == ',' || *end_bp == ']') {
                     break;
+                } else if (*end_bp == '\n') {
+                    g_line_nr++;
                 }
             }
         }
     } else {
         end_bp = bp + 1;
+        if (*end_bp == '\n') {
+            g_line_nr++;
+        }
     }
     *next = end_bp;
     retval = (char *) pig_newseg(end_bp - bp + 1);
@@ -305,7 +326,7 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
             }
         }
         free(token);
-    } else {
+    } else if (**next != 0) {
         printf("pig PANIC: signature field missing.\n");
     }
     return entries;
@@ -322,7 +343,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
         return 1;
     }
     if (*token != '[') {
-        printf("pig PANIC: signature not well opened.\n");
+        printf("pig PANIC: at line %d: signature not well opened.\n", g_line_nr);
         free(token);
         return 0;
     }
@@ -334,12 +355,12 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
             case 0:  //  field existence verifying
                 field_index = get_pigsty_field_index(token);
                 if (field_index == -1) {
-                    printf("pig PANIC: unknown field \"%s\".\n", token);
+                    printf("pig PANIC: at line %d: unknown field \"%s\".\n", g_line_nr, token);
                     return 0;
                 }
                 if (field_map[field_index] == 1) {
                     free(token);
-                    printf("pig PANIC: field \"%s\" redeclared.\n", SIGNATURE_FIELDS[field_index].label);
+                    printf("pig PANIC: at line %d: field \"%s\" redeclared.\n", g_line_nr, SIGNATURE_FIELDS[field_index].label);
                     return 0;
                 }
                 field_map[field_index] = 1;
@@ -349,7 +370,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
             case 1:
                 all_ok = (strcmp(token, "=") == 0);
                 if (!all_ok) {
-                    printf("pig PANIC: expecting \"=\" token.\n");
+                    printf("pig PANIC: at line %d: expecting \"=\" token.\n", g_line_nr);
                     free(token);
                     return 0;
                 }
@@ -360,7 +381,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
                 if (SIGNATURE_FIELDS[field_index].verifier != NULL) {
                     all_ok = SIGNATURE_FIELDS[field_index].verifier(token);
                     if (!all_ok) {
-                        printf("pig PANIC: field \"%s\" has invalid data (\"%s\").\n", SIGNATURE_FIELDS[field_index].label, token);
+                        printf("pig PANIC: at line %d: field \"%s\" has invalid data (\"%s\").\n", g_line_nr, SIGNATURE_FIELDS[field_index].label, token);
                         free(token);
                         return 0;
                     }
@@ -372,7 +393,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
                 all_ok = (*token == ',' || *token == ']');
                 state = 0;
                 if (!all_ok) {
-                    printf("pig PANIC: missing \",\" or \"]\".\n");
+                    printf("pig PANIC: at line %d: missing \",\" or \"]\".\n", g_line_nr);
                     all_ok = 0;
                 }
                 break;
@@ -617,6 +638,8 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
     int retval = 1;
     int ip_version = 0;
     int transport_layer = 0;
+    int ifield_floor = 0, ifield_ceil = 0;
+    int tfield_floor = 0, tfield_ceil = 0;
     for (ep = entry; ep != NULL && retval == 1; ep = ep->next) {
         //  INFO(Santiago): verifying the IP mandatory fields.
         ip_version = 0;
@@ -632,6 +655,8 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
         if (retval == 1) {
             switch(ip_version) {
                 case 4:
+                    ifield_floor = kIpv4_version;
+                    ifield_ceil = kIpv4_payload;
                     retval = verify_required_fields_ipv4(ep->conf);
                     break;
 
@@ -657,14 +682,37 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
         }
         if (transport_layer > -1) {
             switch (transport_layer) {
+                case 1:
+                    tfield_floor = kIcmp_type;
+                    tfield_ceil = kIcmp_payload;
+                    retval = 0;
+                    break;
+                case 6:
+                    tfield_floor = kTcp_src;
+                    tfield_ceil = kTcp_payload;
+                    retval = 0;
+                    break;
+                case 17:
+                    tfield_floor = kUdp_src;
+                    tfield_ceil = kUdp_payload;
+                    retval = 0;
+                    break;
                 default:
                     retval = 1; //  INFO(Santiago): just skipping.
                     break;
             }
             if (retval == 0) {
-                printf("pig PANIC: signature %s: required field missing.\n", ep->signature_name);
+                retval = 1;
+                for (cp = ep->conf; cp != NULL && retval; cp = cp->next) {
+                    retval = (cp->field->index >= tfield_floor && cp->field->index <= tfield_ceil) ||
+                             (cp->field->index >= ifield_floor && cp->field->index <= ifield_ceil);
+                }
+                if (retval == 0) {
+                    printf("pig PANIC: signature %s: field mismatching. Did you mixed up some protocol fields?\n", ep->signature_name);
+                }
             }
         } else {
+            //  WARN(Santiago): in normal conditions it should never happen because until now "ip.protocol" is a mandatory field.
             for (cp = ep->conf; cp != NULL && retval == 1; cp = cp->next) {
                 retval = !(cp->field->index == kTcp_src       ||
                            cp->field->index == kTcp_dst       ||
