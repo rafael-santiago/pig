@@ -26,7 +26,7 @@
 
 - ``Issue#3``: Fix signal handler [``commit-id``: #2b6a8f].
 
-## Version: 0.0.2 - rc
+## Version: 0.0.2
 
 ### Features
 
@@ -37,6 +37,10 @@
 - Including three new mandatory options: ``--gateway``, ``--net-mask`` and ``--lo-iface``.
 
 - Including this release notes (``RELNOTES.md``).
+
+- Loopback packets handling.
+
+- Improvements on pigsty parser and compiler.
 
 ### Bugfixes
 
@@ -51,3 +55,5 @@
 - Ethernet frame composition [``commit-id``: #95ca99].
 
 - Binary payload parsing [``commit-id``: #b9605c].
+
+- Good manner: stripping off the evil strcat [``commit-id``: #7f9a80].
