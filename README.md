@@ -8,6 +8,16 @@ with more specific things according your requirements.
 
 Until now it is possible to create ``IPv4`` signatures with transport layer based on ``TCP``, ``UDP`` and ``ICMP``.
 
+# How to clone this repo?
+
+It is pretty simple:
+
+``git clone https://github.com/rafael-santiago/pig pig``
+
+``cd pig``
+
+``git submodule update --init``
+
 # How to build it?
 
 You need to use the [``Hefesto``](https://github.com/rafael-santiago/hefesto) to build ``pig``. After following
