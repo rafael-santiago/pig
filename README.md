@@ -12,11 +12,11 @@ Until now it is possible to create ``IPv4`` signatures with transport layer base
 
 It is pretty simple:
 
-``git clone https://github.com/rafael-santiago/pig pig``
-
-``cd pig``
-
-``git submodule update --init``
+```
+git clone https://github.com/rafael-santiago/pig pig
+cd pig
+git submodule update --init
+```
 
 # How to build it?
 
@@ -32,16 +32,18 @@ After this command you should find the ``pig`` binary under the path ``src/bin``
 ``Pigsty files`` are plain text files where you can define a set of packet signatures. There is a specific syntax to be
 followed. Look out an example of a pigsty file:
 
-        [ signature   =      "Hello",
-          ip.version  =            4,
-          ip.ihl      =            5,
-          ip.tos      =            0,
-          ip.src      = 192.30.70.10,
-          ip.dst      =  192.30.70.3,
-          ip.protocol =           17,
-          udp.dst     =         1008,
-          udp.src     =        32000,
-          udp.payload =    "Hello!!" ]
+```
+[ signature   =      "Hello",
+  ip.version  =            4,
+  ip.ihl      =            5,
+  ip.tos      =            0,
+  ip.src      = 192.30.70.10,
+  ip.dst      =  192.30.70.3,
+  ip.protocol =           17,
+  udp.dst     =         1008,
+  udp.src     =        32000,
+  udp.payload =    "Hello!!" ]
+```
 
 Basically, all signature data must goes between square brackets: ``[`` ... ``]``.
 
@@ -136,11 +138,15 @@ Do you want to know more about each option, huh?... So let's go:
 
 Supposing that we want to generate ``DDos`` based traffic:
 
-``pig --signatures=pigsty/ddos.pigsty --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0``
+```
+pig --signatures=pigsty/ddos.pigsty --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+```
 
 Now we want to messing around with everything:
 
-``pig --signatures=pigsty/ddos.pigsty,pigsty/attackresponses.pigsty,pigsty/badtraffic.pigsty,pigsty/backdoors.pigsty --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0``
+```
+pig --signatures=pigsty/ddos.pigsty,pigsty/attackresponses.pigsty,pigsty/badtraffic.pigsty,pigsty/backdoors.pigsty --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+```
 
 ## Extra options
 
@@ -158,7 +164,9 @@ Use the ``--targets`` option. You can specify a list based on exact IPs, IP mask
 
 Look this:
 
-``pig --signatures=pigsty/local-mess.pigsty --targets=192.30.70.3,192.30.70.*,192.30.70.0/9 --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0``
+```
+pig --signatures=pigsty/local-mess.pigsty --targets=192.30.70.3,192.30.70.*,192.30.70.0/9 --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+```
 
 ### Sending only one signature and going back
 
@@ -166,7 +174,9 @@ Maybe you need to send only one signature and so return to the caller in order t
 requirement is common when you use this application as support for ``system tests`` or ``unit tests``. So, if you need
 to do this you should try to use the option ``--single-test``:
 
-``pig --signature=pigsty/syn-scan.pigsty --targets=127.0.0.1 --single-test --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0``
+```
+pig --signature=pigsty/syn-scan.pigsty --targets=127.0.0.1 --single-test --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+```
 
 After run this command ``pig`` will select only one signature from the file ``syn-scan.pigsty`` and try to send it and then exit.
 If some error has occurred during the process ``pig`` will exit with ``exit-code`` equals to ``1`` otherwise ``pig`` will exit
@@ -176,24 +186,30 @@ with ``exit-code`` equals to ``0``.
 
 Save the following data as ``"oink.pigsty"``:
 
-        [ signature   =           "oink",
-          ip.version  =                4,
-          ip.ihl      =                5,
-          ip.tos      =                0,
-          ip.src      =        127.0.0.1,
-          ip.dst      =  user-defined-ip,
-          ip.protocol =               17,
-          udp.dst     =             1008,
-          udp.src     =            32000,
-          udp.payload =        "Oink!!\n" ]
+```
+[ signature   =           "oink",
+  ip.version  =                4,
+  ip.ihl      =                5,
+  ip.tos      =                0,
+  ip.src      =        127.0.0.1,
+  ip.dst      =  user-defined-ip,
+  ip.protocol =               17,
+  udp.dst     =             1008,
+  udp.src     =            32000,
+  udp.payload =        "Oink!!\n" ]
+```
 
 On another ``tty`` run the ``netcat`` in ``UDP mode`` listen for connections on port ``1008``:
 
-``nc -u -l -p 1008``
+```
+nc -u -l -p 1008
+```
 
 Now run ``pig`` using this ``pigsty file`` and informing as target the ``loopback``:
 
-``pig --signatures=oink.pigsty --targets=127.0.0.1 --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0``
+```
+pig --signatures=oink.pigsty --targets=127.0.0.1 --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+```
 
 The ``netcat`` should start receive several ``oinks`` and... yes, congrats!! ``pig`` is up and running on your system! ;)
 
