@@ -12,12 +12,15 @@
 #include "tcp.h"
 #include "udp.h"
 #include "icmp.h"
+#include "arp.h"
 #include "mkrnd.h"
 #include <string.h>
 
 static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
 
 //static void mk_ipv6_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf);
+
+static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
 
 static void mk_tcp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const unsigned int src_addr[4], const unsigned int dst_addr[4], const int version);
 
@@ -31,13 +34,25 @@ static void mk_default_tcp(struct tcp *hdr);
 
 static void mk_default_udp(struct udp *hdr);
 
+static int is_arp_packet(const pigsty_conf_set_ctx *conf);
+
+static int is_arp_packet(const pigsty_conf_set_ctx *conf) {
+    const pigsty_conf_set_ctx *cp = NULL;
+    int is_arp = 1;
+    for (cp = conf; cp != NULL && is_arp; cp = cp->next) {
+        is_arp = (cp->field->index >= kArp_hwtype &&
+                  cp->field->index <= kArp_pdst);
+    }
+    return is_arp;
+}
+
 unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, size_t *pktsize) {
     unsigned char *retval = NULL;
     int version = 0;
-    pigsty_field_ctx *ip_version = NULL, *protocol = NULL;
-    ip_version = get_pigsty_conf_set_field(kIpv4_version, conf);
-    size_t offset = 0;
-    if (ip_version != NULL) {
+    pigsty_field_ctx *fp = NULL, *protocol = NULL;
+    fp = get_pigsty_conf_set_field(kIpv4_version, conf);
+    size_t pkt_size = 0;
+    if (fp != NULL) {
         version = 4;
     }
     // else {
@@ -46,9 +61,31 @@ unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, 
     //          version = 6;
     //  }
     // }
-    if (version == 4) {
-        retval = (unsigned char *) pig_newseg(0xffff);
-        mk_ipv4_dgram(retval, pktsize, conf, addrs);
+    switch (version) {
+        case 4:
+            retval = (unsigned char *) pig_newseg(0xffff);
+            mk_ipv4_dgram(retval, pktsize, conf, addrs);
+            break;
+
+        default:
+            if (is_arp_packet(conf)) {
+                pkt_size = 8;
+                fp = get_pigsty_conf_set_field(kArp_hwlen, conf);
+                if (fp == NULL) {
+                    pkt_size += 255; //  WARN(Santiago): It should never happen!!
+                } else {
+                    pkt_size += (*(unsigned char *)fp->data) * 2;
+                }
+                fp = get_pigsty_conf_set_field(kArp_plen, conf);
+                if (fp == NULL) {
+                    pkt_size += 255; //  WARN(Santiago): It should never happen too!!
+                } else {
+                    pkt_size += (*(unsigned char *)fp->data) * 2;
+                }
+                retval = (unsigned char *) pig_newseg(pkt_size);
+                mk_usr_arp_dgram(retval, pktsize, conf, addrs);
+            }
+            break;
     }
     return retval;
 }
@@ -212,6 +249,63 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
 
 //static void mk_ipv6_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf) {
 //}
+
+static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs) {
+    pigsty_conf_set_ctx *cp = NULL;
+    struct arp arph;
+    arph.hw_addr_len = 0;
+    arph.pt_addr_len = 0;
+    arph.src_hw_addr = NULL;
+    arph.dest_hw_addr = NULL;
+    arph.src_pt_addr = NULL;
+    arph.dest_pt_addr = NULL;
+    for (cp = conf; cp != NULL; cp = cp->next) {
+        switch (cp->field->index) {
+
+            case kArp_hwtype:
+                arph.hwtype = *(unsigned short *)cp->field->data;
+                break;
+
+            case kArp_ptype:
+                arph.ptype = *(unsigned short *)cp->field->data;
+                break;
+
+            case kArp_hwlen:
+                arph.hw_addr_len = *(unsigned char *)cp->field->data;
+                break;
+
+            case kArp_plen:
+                arph.pt_addr_len = *(unsigned char *)cp->field->data;
+                break;
+
+            case kArp_opcode:
+                arph.opcode = *(unsigned short *)cp->field->data;
+                break;
+
+            case kArp_hwsrc:
+                arph.src_hw_addr = mac2byte(cp->field->data, cp->field->dsize);
+                break;
+
+            case kArp_psrc:
+                break;
+
+            case kArp_hwdst:
+                arph.dest_hw_addr = mac2byte(cp->field->data, cp->field->dsize);
+                break;
+
+            case kArp_pdst:
+                break;
+
+            default:
+                break;
+
+        }
+    }
+    free(arph.src_hw_addr);
+    free(arph.dest_hw_addr);
+    free(arph.src_pt_addr);
+    free(arph.dest_pt_addr);
+}
 
 static void mk_default_tcp(struct tcp *hdr) {
     do {

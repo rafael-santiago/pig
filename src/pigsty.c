@@ -117,6 +117,15 @@ static struct signature_fields SIGNATURE_FIELDS[] = {
     {    "icmp.code",     kIcmp_code,         verify_u8},
     {"icmp.checksum", kIcmp_checksum,        verify_u16},
     { "icmp.payload",  kIcmp_payload,     verify_string},
+    {   "arp.hwtype",    kArp_hwtype,        verify_u16},
+    {    "arp.ptype",     kArp_ptype,        verify_u16},
+    {    "arp.hwlen",     kArp_hwlen,         verify_u8},
+    {     "arp.plen",      kArp_plen,         verify_u8},
+    {   "arp.opcode",    kArp_opcode,        verify_u16},
+    {    "arp.hwsrc",     kArp_hwsrc,     verify_string},
+    {     "arp.psrc",      kArp_psrc,     verify_string},
+    {    "arp.hwdst",     kArp_hwdst,     verify_string},
+    {     "arp.pdst",      kArp_pdst,     verify_string},
     {    "signature",     kSignature,     verify_string}
 };
 
