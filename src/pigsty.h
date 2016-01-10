@@ -14,4 +14,6 @@ pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char
 
 int verify_ipv4_addr(const char *buffer);
 
+int is_arp_packet(const pigsty_conf_set_ctx *conf);
+
 #endif

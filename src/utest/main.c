@@ -96,6 +96,8 @@ CUTE_TEST_CASE(pigsty_file_parsing_tests)
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty != NULL", pigsty == NULL);
     remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
 
     test_pigsty = "[ ip.version = 4, ip.src = 10.2.2.2, ip.dst = 172.21.0.50, ip.id = 0x3ba3,"
                   "ip.ttl = 63, ip.protocol = 1, icmp.type = 3, icmp.code = 4, "
@@ -136,6 +138,97 @@ CUTE_TEST_CASE(pigsty_file_parsing_tests)
     CUTE_CHECK("pigsty == NULL", pigsty != NULL);
     remove("test.pigsty");
     del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ arp.hwtype = 0xf0001, arp.ptype = 0x0001, arp.hwlen = 1, arp.plen = 1, arp.opcode = 0x0000,"
+                  "  arp.hwsrc = \"00:00:00:00:00:00\", arp.psrc = \"127.0.0.1\", arp.hwdst = \"00:00:00:00:00:00\","
+                  "  arp.pdst = \"\\x7f\\x00\\x00\\x01\", signature = \"arp crafting test\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ arp.hwtype = 0x0001, arp.ptype = 0xf0001, arp.hwlen = 1, arp.plen = 1, arp.opcode = 0x0000,"
+                  "  arp.hwsrc = \"00:00:00:00:00:00\", arp.psrc = \"127.0.0.1\", arp.hwdst = \"00:00:00:00:00:00\","
+                  "  arp.pdst = \"\\x7f\\x00\\x00\\x01\", signature = \"arp crafting test\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ arp.hwtype = 0x0001, arp.ptype = 0x0001, arp.hwlen = 256, arp.plen = 1, arp.opcode = 0x0000,"
+                  "  arp.hwsrc = \"00:00:00:00:00:00\", arp.psrc = \"127.0.0.1\", arp.hwdst = \"00:00:00:00:00:00\","
+                  "  arp.pdst = \"\\x7f\\x00\\x00\\x01\", signature = \"arp crafting test\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ arp.hwtype = 0x0001, arp.ptype = 0x0001, arp.hwlen = 1, arp.plen = 256, arp.opcode = 0x0000,"
+                  "  arp.hwsrc = \"00:00:00:00:00:00\", arp.psrc = \"127.0.0.1\", arp.hwdst = \"00:00:00:00:00:00\","
+                  "  arp.pdst = \"\\x7f\\x00\\x00\\x01\", signature = \"arp crafting test\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ arp.hwtype = 0x0001, arp.ptype = 0x0001, arp.hwlen = 1, arp.plen = 1, arp.opcode = 0xf0011,"
+                  "  arp.hwsrc = \"00:00:00:00:00:00\", arp.psrc = \"127.0.0.1\", arp.hwdst = \"00:00:00:00:00:00\","
+                  "  arp.pdst = \"\\x7f\\x00\\x00\\x01\", signature = \"arp crafting test\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ arp.hwtype = 0x0001, arp.ptype = 0x0001, arp.hwlen = 1, arp.plen = 1, arp.opcode = 0x0001,"
+                  "  arp.hwsrc = \"00:00:00:00:00:0x\", arp.psrc = \"127.0.0.1\", arp.hwdst = \"00:00:00:00:00:00\","
+                  "  arp.pdst = \"\\x7f\\x00\\x00\\x01\", signature = \"arp crafting test\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ arp.hwtype = 0x0001, arp.ptype = 0x0001, arp.hwlen = 1, arp.plen = 1, arp.opcode = 0x0001,"
+                  "  arp.hwsrc = \"00:00:00:00:00:00\", arp.psrc = 127.0.0.256\", arp.hwdst = \"00:00:00:00:00:00\","
+                  "  arp.pdst = \"\\x7f\\x00\\x00\\x01\", signature = \"arp crafting test\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ arp.hwtype = 0x0001, arp.ptype = 0x0001, arp.hwlen = 1, arp.plen = 1, arp.opcode = 0x0001,"
+                  "  arp.hwsrc = \"00:00:00:00:00:00\", arp.psrc = \"\", arp.hwdst = \"00:00:00:00:00:00:00\","
+                  "  arp.pdst = \"\\x7f\\x00\\x00\\x01\", signature = \"arp crafting test\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ arp.hwtype = 0x0001, arp.ptype = 0x0001, arp.hwlen = 1, arp.plen = 1, arp.opcode = 0x0001,"
+                  "  arp.hwsrc = \"00:00:00:00:00:00\", arp.psrc = \"\", arp.hwdst = \"00:00:00:00:00:00\","
+                  "  arp.pdst = \"\\x7f\\x00\\x00\\x01\", signature = \"arp crafting test\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty == NULL", pigsty != NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
 
 CUTE_TEST_CASE_END
 
