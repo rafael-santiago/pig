@@ -11,6 +11,6 @@
 #include "types.h"
 #include <stdlib.h>
 
-unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, size_t *pktsize);
+unsigned char *mk_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, size_t *pktsize);
 
 #endif

@@ -35,7 +35,7 @@ static void mk_default_tcp(struct tcp *hdr);
 
 static void mk_default_udp(struct udp *hdr);
 
-unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, size_t *pktsize) {
+unsigned char *mk_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, size_t *pktsize) {
     unsigned char *retval = NULL;
     int version = 0;
     pigsty_field_ctx *fp = NULL, *protocol = NULL;
