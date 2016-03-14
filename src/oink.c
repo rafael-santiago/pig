@@ -166,6 +166,8 @@ int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_t
             free(eth.payload);
             arp_header_free(arph);
             free(arph);
+            retval = inject(packet, packet_size, sockfd);
+            free(packet);
         }
     } else {
         if (!is_lo) {

@@ -335,6 +335,7 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
                     } else if (verify_ipv4_addr(data)) {
                         fmt_data = ipv4_to_voidp(data, &fmt_dsize);
                     } else if (verify_mac_addr(data)) {
+                        data[strlen(data) - 1] = 0;
                         fmt_data = mac2byte(data + 1, 6);
                         fmt_dsize = 6;
                     } else if (verify_string(data)) {
@@ -630,6 +631,10 @@ static int verify_mac_addr(const char *buffer) {
     if (bp == NULL) {
         return 0;
     }
+    if (strcmp(buffer, "hw-src-addr") == 0 ||
+        strcmp(buffer, "hw-dst-addr") == 0) {
+        return 1;
+    }
     if (verify_string(buffer) == 0) {
         return 0;
     }
@@ -655,6 +660,10 @@ static int verify_mac_addr(const char *buffer) {
 }
 
 static int verify_arp_paddr(const char *buffer) {
+    if (strcmp(buffer, "proto-src-addr") == 0 ||
+        strcmp(buffer, "proto-dst-addr") == 0) {
+        return 1;
+    }
     return (verify_ipv4_addr(buffer) == 1 || verify_string(buffer) == 1);
 }
 

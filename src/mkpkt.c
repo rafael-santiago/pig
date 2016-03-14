@@ -249,6 +249,7 @@ static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_s
     arph.dest_hw_addr = NULL;
     arph.src_pt_addr = NULL;
     arph.dest_pt_addr = NULL;
+    unsigned char *temp = NULL;
     for (cp = conf; cp != NULL; cp = cp->next) {
         switch (cp->field->index) {
 
@@ -291,7 +292,12 @@ static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_s
 
             case kArp_psrc:
                 arph.src_pt_addr = (unsigned char *) pig_newseg(cp->field->dsize);
-                memcpy(arph.src_pt_addr, cp->field->data, cp->field->dsize);
+                if (cp->field->dsize == 4) {
+                    arph.src_pt_addr[0] = ((unsigned char *)cp->field->data)[3];
+                    arph.src_pt_addr[1] = ((unsigned char *)cp->field->data)[2];
+                    arph.src_pt_addr[2] = ((unsigned char *)cp->field->data)[1];
+                    arph.src_pt_addr[3] = ((unsigned char *)cp->field->data)[0];
+                }
                 break;
 
             case kArp_hwdst:
@@ -301,7 +307,12 @@ static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_s
 
             case kArp_pdst:
                 arph.dest_pt_addr = (unsigned char *) pig_newseg(cp->field->dsize);
-                memcpy(arph.dest_pt_addr, cp->field->data, cp->field->dsize);
+                if (cp->field->dsize == 4) {
+                    arph.dest_pt_addr[0] = ((unsigned char *)cp->field->data)[3];
+                    arph.dest_pt_addr[1] = ((unsigned char *)cp->field->data)[2];
+                    arph.dest_pt_addr[2] = ((unsigned char *)cp->field->data)[1];
+                    arph.dest_pt_addr[3] = ((unsigned char *)cp->field->data)[0];
+                }
                 break;
 
             default:
@@ -309,10 +320,10 @@ static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_s
 
         }
     }
-    free(arph.src_hw_addr);
-    free(arph.dest_hw_addr);
-    free(arph.src_pt_addr);
-    free(arph.dest_pt_addr);
+    temp = mk_arp_dgram(buf_size, arph);
+    memcpy(buf, temp, *buf_size);
+    free(temp);
+    arp_header_free(&arph);
 }
 
 static void mk_default_tcp(struct tcp *hdr) {
