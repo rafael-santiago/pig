@@ -18,6 +18,7 @@
 #include "../netmask.h"
 #include "../icmp.h"
 #include "../arp.h"
+#include "../options.h"
 #include <cutest.h>
 #include <stdlib.h>
 #include <string.h>
@@ -795,6 +796,37 @@ CUTE_TEST_CASE(arp_packet_making_tests)
 
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(get_options_tests)
+    char *argv[] = {
+        "--cmd0=one",
+        "--cmd1=two",
+        "--cmd2=three",
+        "--cmd3",
+    };
+    int argc = sizeof(argv) / sizeof(argv[0]);
+    register_options(argc, argv);
+    char *option = NULL;
+    option = get_option("cmd0", NULL);
+    CUTE_CHECK("--cmd0 == NULL", option != NULL);
+    CUTE_CHECK("--cmd0 != one", strcmp(option, "one") == 0);
+    option = get_option("cmd1", NULL);
+    CUTE_CHECK("--cmd1 == NULL", option != NULL);
+    CUTE_CHECK("--cmd1 != two", strcmp(option, "two") == 0);
+    option = get_option("cmd2", NULL);
+    CUTE_CHECK("--cmd2 == NULL", option != NULL);
+    CUTE_CHECK("--cmd2 != two", strcmp(option, "three") == 0);
+    option = get_option("cmd3", NULL);
+    CUTE_CHECK("--cmd3 == NULL", option != NULL);
+    CUTE_CHECK("--cmd3 != 1", strcmp(option, "1") == 0);
+    CUTE_CHECK("--cmd4 != NULL", get_option("cmd4", NULL) == NULL);
+    register_options(10, NULL);
+    CUTE_CHECK("boommmm!!!", get_option("boom", NULL) == NULL);
+    register_options(0, NULL);
+    CUTE_CHECK("boommmm!!!", get_option("boom", NULL) == NULL);
+    register_options(-1, NULL);
+    CUTE_CHECK("boommmm!!!", get_option("boom", NULL) == NULL);
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -818,6 +850,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(tcp_chsum_evaluation_tests);
     CUTE_RUN_TEST(icmp_chsum_evaluation_tests);
     CUTE_RUN_TEST(netmask_get_range_type_tests);
+    CUTE_RUN_TEST(get_options_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(run_tests)

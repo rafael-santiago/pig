@@ -11,6 +11,7 @@
 #include "oink.h"
 #include "linux/native_arp.h"
 #include "arp.h"
+#include "options.h"
 #include <stdio.h>
 #include <string.h>
 #include <signal.h>
@@ -19,8 +20,6 @@ static int should_exit = 0;
 
 static int should_be_quiet = 0;
 
-static char *get_option(const char *option, char *default_value, const int argc, char **argv);
-
 static void sigint_watchdog(int signr);
 
 static pigsty_entry_ctx *load_signatures(const char *signatures);
@@ -28,34 +27,6 @@ static pigsty_entry_ctx *load_signatures(const char *signatures);
 static int run_pig_run(const char *signatures, const char *targets, const char *timeout, const char *single_test, const char *gw_addr, const char *nt_mask, const char *loiface);
 
 static int is_targets_option_required(const pigsty_entry_ctx *entries);
-
-static char *get_option(const char *option, char *default_value, const int argc, char **argv) {
-    static char retval[8192];
-    int a;
-    char temp[8192] = "";
-    memset(temp, 0, sizeof(temp));
-    temp[0] = '-';
-    temp[1] = '-';
-    strncpy(&temp[2], option, sizeof(temp) - 1);
-    for (a = 0; a < argc; a++) {
-        if (strcmp(argv[a], temp) == 0) {
-            return "1";
-        }
-    }
-    strncat(temp, "=", sizeof(temp) - 1);
-    for (a = 0; a < argc; a++) {
-        if (strstr(argv[a], temp) == argv[a]) {
-            return argv[a] + strlen(temp);
-        }
-    }
-    memset(retval, 0, sizeof(retval));
-    if (default_value != NULL) {
-        strncpy(retval, default_value, sizeof(retval) - 1);
-    } else {
-        return NULL;
-    }
-    return retval;
-}
 
 static void sigint_watchdog(int signr) {
     should_exit = 1;
@@ -260,32 +231,33 @@ int main(int argc, char **argv) {
     char *loiface = NULL;
     char *nt_mask = NULL;
     int exit_code = 1;
-    if (get_option("version", NULL, argc, argv) != NULL) {
+    register_options(argc, argv);
+    if (get_option("version", NULL) != NULL) {
         printf("pig v%s\n", PIG_VERSION);
         return 0;
     }
     if (argc > 1) {
-        signatures = get_option("signatures", NULL, argc, argv);
+        signatures = get_option("signatures", NULL);
         if (signatures == NULL) {
             printf("pig ERROR: --signatures option is missing.\n");
             return 1;
         }
-        gw_addr = get_option("gateway", NULL, argc, argv);
+        gw_addr = get_option("gateway", NULL);
         if (gw_addr == NULL) {
             printf("pig ERROR: --gateway option is missing.\n");
             return 1;
         }
-        nt_mask = get_option("net-mask", NULL, argc, argv);
+        nt_mask = get_option("net-mask", NULL);
         if (nt_mask == NULL) {
             printf("pig ERROR: --net-mask option is missing.\n");
             return 1;
         }
-        loiface = get_option("lo-iface", NULL, argc, argv);
+        loiface = get_option("lo-iface", NULL);
         if (loiface == NULL) {
             printf("pig ERROR: --lo-iface option is missing.\n");
             return 1;
         }
-        timeout = get_option("timeout", NULL, argc, argv);
+        timeout = get_option("timeout", NULL);
         if (timeout != NULL) {
             for (tp = timeout; *tp != 0; tp++) {
                 if (!isdigit(*tp)) {
@@ -294,12 +266,12 @@ int main(int argc, char **argv) {
                 }
             }
         }
-        should_be_quiet = (get_option("no-echo", NULL, argc, argv) != NULL);
-        targets = get_option("targets", NULL, argc, argv);
+        should_be_quiet = (get_option("no-echo", NULL) != NULL);
+        targets = get_option("targets", NULL);
         signal(SIGINT, sigint_watchdog);
         signal(SIGTERM, sigint_watchdog);
         srand(time(0));
-        exit_code = run_pig_run(signatures, targets, timeout, get_option("single-test", NULL, argc, argv), gw_addr, nt_mask, loiface);
+        exit_code = run_pig_run(signatures, targets, timeout, get_option("single-test", NULL), gw_addr, nt_mask, loiface);
         if (!should_be_quiet && exit_code == 0) {
             printf("\npig INFO: exiting... please wait...\npig INFO: pig has gone.\n");
         }
