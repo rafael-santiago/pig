@@ -14,6 +14,7 @@
 #include "if.h"
 #include "lists.h"
 #include "pigsty.h"
+#include "options.h"
 #include "linux/native_arp.h"
 #include <string.h>
 
@@ -154,7 +155,7 @@ int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_t
     int retval = -1;
     int sockfd_lo = -1;
     eth.payload = mk_pkt(signature->conf, (pig_target_addr_ctx *)addrs, &eth.payload_size);
-    is_lo = is_lopkt(eth.payload, eth.payload_size);
+    is_lo = (gw_hwaddr == NULL && is_lopkt(eth.payload, eth.payload_size));
     if (is_arp_packet(signature->conf)) {
         //  WARN(Santiago): It is pretty silly send arp data from a loopback interface.
         //                  I will not write this stupidity.
