@@ -11,6 +11,7 @@
 #include "to_int.h"
 #include "to_voidp.h"
 #include "to_str.h"
+#include "options.h"
 #include "arp.h"
 #include <stdio.h>
 #include <string.h>
@@ -335,9 +336,29 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
                     } else if (verify_ipv4_addr(data)) {
                         fmt_data = ipv4_to_voidp(data, &fmt_dsize);
                     } else if (verify_mac_addr(data)) {
+                        if (strcmp(data, "hw-src-addr") == 0 ||
+                            strcmp(data, "hw-dst-addr") == 0) {
+                            token = data;
+                            data = get_option(data, NULL);
+                        }
                         data[strlen(data) - 1] = 0;
                         fmt_data = mac2byte(data + 1, 6);
                         fmt_dsize = 6;
+                        if (token != NULL) {
+                            data = token;
+                            token = NULL;
+                        }
+                    } else if (verify_arp_paddr(data)) {
+                        if (strcmp(data, "proto-src-addr") == 0 ||
+                            strcmp(data, "proto-dst-addr") == 0) {
+                            token = data;
+                            data = get_option(data, NULL);
+                        }
+                        fmt_data = ipv4_to_voidp(data, &fmt_dsize);
+                        if (token != NULL) {
+                            data = token;
+                            token = NULL;
+                        }
                     } else if (verify_string(data)) {
                         fmt_data = str_to_voidp(data, &fmt_dsize);
                     }
@@ -545,9 +566,14 @@ static int verify_u32(const char *buffer) {
 int verify_ipv4_addr(const char *buffer) {
     int retval = 1;
     const char *b = buffer;
+    const char *b_end = NULL;
     int dots_nr = 0;
     char oct[255];
     size_t o = 0;
+    if (buffer == NULL) {
+        return 0;
+    }
+    b_end = b + strlen(b);
     if (strcmp(buffer, "north-american-ip") == 0 ||
         strcmp(buffer, "south-american-ip") == 0 ||
         strcmp(buffer, "asian-ip") == 0          ||
@@ -562,6 +588,9 @@ int verify_ipv4_addr(const char *buffer) {
         }
         if (*b == '.' || *(b + 1) == 0) {
             if (*(b + 1) == 0) {
+                if (*b == '.') {
+                    return 0;
+                }
                 oct[o] = *b;
             }
             if (*b == '.') {
@@ -628,17 +657,17 @@ static int verify_hex(const char *buffer) {
 static int verify_mac_addr(const char *buffer) {
     int hex_oct_ct = 0;
     const char *bp = buffer;
+    if (strcmp(buffer, "hw-src-addr") == 0 ||
+        strcmp(buffer, "hw-dst-addr") == 0) {
+        bp = (const char *)get_option(buffer, NULL);
+    }
     if (bp == NULL) {
         return 0;
     }
-    if (strcmp(buffer, "hw-src-addr") == 0 ||
-        strcmp(buffer, "hw-dst-addr") == 0) {
-        return 1;
-    }
-    if (verify_string(buffer) == 0) {
+    if (verify_string(bp) == 0) {
         return 0;
     }
-    if ((strlen(buffer) - 1) % 3) {
+    if ((strlen(bp) - 1) % 3) {
         return 0;
     }
     for (bp++; *bp != 0; bp += 3) {
@@ -660,11 +689,12 @@ static int verify_mac_addr(const char *buffer) {
 }
 
 static int verify_arp_paddr(const char *buffer) {
+    const char *bp = buffer;
     if (strcmp(buffer, "proto-src-addr") == 0 ||
         strcmp(buffer, "proto-dst-addr") == 0) {
-        return 1;
+        bp = (const char *)get_option(buffer, NULL);
     }
-    return (verify_ipv4_addr(buffer) == 1 || verify_string(buffer) == 1);
+    return (verify_ipv4_addr(bp) == 1 || verify_string(bp) == 1);
 }
 
 static int verify_required_datagram_fields(pigsty_conf_set_ctx *set, const int *fields, const size_t fields_size) {
