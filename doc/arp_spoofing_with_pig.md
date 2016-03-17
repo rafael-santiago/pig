@@ -33,7 +33,7 @@ another host is the host that him is looking for. Confuse?
 
 ```
 Host A -> Broadcasts an ARP request(who has the address "192.30.70.3"?)
-(Host B has it but in this moment Host H is flooding the network with ARP replys saying that him got it...)
+(Host B has it but in this moment Host H is flooding the network with ARP replies saying that him got it...)
 Host H -> Reply an ARP request (I have it my MAC is "f0:0b:a0:f0:0b:a0")
 Host H -> Reply an ARP request (I have it my MAC is "f0:0b:a0:f0:0b:a0")
 Host H -> Reply an ARP request (I have it my MAC is "f0:0b:a0:f0:0b:a0")
@@ -52,7 +52,7 @@ Host A -> Okay! Host H gots it... this operation was so easy and quick... the li
 ...
 ```
 
-Did you see the shy ``Host B`` reply lost in the sea of replys from ``Host H``???
+Did you see the shy ``Host B`` reply lost in the sea of replies from ``Host H``???
 
 Here is the idea. The art of deceiving.
 
