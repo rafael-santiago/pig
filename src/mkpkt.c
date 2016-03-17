@@ -12,12 +12,16 @@
 #include "tcp.h"
 #include "udp.h"
 #include "icmp.h"
+#include "arp.h"
 #include "mkrnd.h"
+#include "pigsty.h"
 #include <string.h>
 
 static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
 
 //static void mk_ipv6_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf);
+
+static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
 
 static void mk_tcp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const unsigned int src_addr[4], const unsigned int dst_addr[4], const int version);
 
@@ -31,13 +35,13 @@ static void mk_default_tcp(struct tcp *hdr);
 
 static void mk_default_udp(struct udp *hdr);
 
-unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, size_t *pktsize) {
+unsigned char *mk_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, size_t *pktsize) {
     unsigned char *retval = NULL;
     int version = 0;
-    pigsty_field_ctx *ip_version = NULL, *protocol = NULL;
-    ip_version = get_pigsty_conf_set_field(kIpv4_version, conf);
-    size_t offset = 0;
-    if (ip_version != NULL) {
+    pigsty_field_ctx *fp = NULL, *protocol = NULL;
+    fp = get_pigsty_conf_set_field(kIpv4_version, conf);
+    size_t pkt_size = 0;
+    if (fp != NULL) {
         version = 4;
     }
     // else {
@@ -46,9 +50,31 @@ unsigned char *mk_ip_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, 
     //          version = 6;
     //  }
     // }
-    if (version == 4) {
-        retval = (unsigned char *) pig_newseg(0xffff);
-        mk_ipv4_dgram(retval, pktsize, conf, addrs);
+    switch (version) {
+        case 4:
+            retval = (unsigned char *) pig_newseg(0xffff);
+            mk_ipv4_dgram(retval, pktsize, conf, addrs);
+            break;
+
+        default:
+            if (is_arp_packet(conf)) {
+                pkt_size = 8;
+                fp = get_pigsty_conf_set_field(kArp_hwlen, conf);
+                if (fp == NULL) {
+                    pkt_size += 255; //  WARN(Santiago): It should never happen!!
+                } else {
+                    pkt_size += (*(unsigned char *)fp->data) * 2;
+                }
+                fp = get_pigsty_conf_set_field(kArp_plen, conf);
+                if (fp == NULL) {
+                    pkt_size += 255; //  WARN(Santiago): It should never happen too!!
+                } else {
+                    pkt_size += (*(unsigned char *)fp->data) * 2;
+                }
+                retval = (unsigned char *) pig_newseg(pkt_size);
+                mk_usr_arp_dgram(retval, pktsize, conf, addrs);
+            }
+            break;
     }
     return retval;
 }
@@ -212,6 +238,112 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
 
 //static void mk_ipv6_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf) {
 //}
+
+static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs) {
+    pigsty_conf_set_ctx *cp = NULL;
+    pigsty_field_ctx *fp = NULL;
+    struct arp arph;
+    arph.hw_addr_len = 0;
+    arph.pt_addr_len = 0;
+    arph.src_hw_addr = NULL;
+    arph.dest_hw_addr = NULL;
+    arph.src_pt_addr = NULL;
+    arph.dest_pt_addr = NULL;
+    unsigned char *temp = NULL;
+    unsigned int ipv4_addr = 0;
+    size_t addrs_count = 0, addr_index = 0;
+    for (cp = conf; cp != NULL; cp = cp->next) {
+        switch (cp->field->index) {
+
+            case kArp_hwtype:
+                arph.hwtype = *(unsigned short *)cp->field->data;
+                break;
+
+            case kArp_ptype:
+                arph.ptype = *(unsigned short *)cp->field->data;
+                break;
+
+            case kArp_hwlen:
+                arph.hw_addr_len = *(unsigned char *)cp->field->data;
+                fp = get_pigsty_conf_set_field(kArp_hwsrc, conf);
+                if (fp != NULL) {
+                    if (fp->dsize != arph.hw_addr_len) {
+                        arph.hw_addr_len = fp->dsize;
+                    }
+                }
+                break;
+
+            case kArp_plen:
+                fp = get_pigsty_conf_set_field(kArp_psrc, conf);
+                arph.pt_addr_len = *(unsigned char *)cp->field->data;
+                /*fp = get_pigsty_conf_set_field(kArp_psrc, conf);
+                if (fp != NULL) {
+                    if (fp->dsize != arph.pt_addr_len) {
+                        arph.pt_addr_len = fp->dsize;
+                    }
+                }*/
+                break;
+
+            case kArp_opcode:
+                arph.opcode = *(unsigned short *)cp->field->data;
+                break;
+
+            case kArp_hwsrc:
+                arph.src_hw_addr = (unsigned char *) pig_newseg(cp->field->dsize);
+                memcpy(arph.src_hw_addr, cp->field->data, cp->field->dsize);
+                break;
+
+            case kArp_psrc:
+                fp = get_pigsty_conf_set_field(kArp_plen, conf);
+                arph.src_pt_addr = (unsigned char *) pig_newseg(*(unsigned char *)fp->data);
+                if (cp->field->dsize == 4) {
+                    arph.src_pt_addr[0] = ((unsigned char *)cp->field->data)[3];
+                    arph.src_pt_addr[1] = ((unsigned char *)cp->field->data)[2];
+                    arph.src_pt_addr[2] = ((unsigned char *)cp->field->data)[1];
+                    arph.src_pt_addr[3] = ((unsigned char *)cp->field->data)[0];
+                } else {
+                    if (strcmp(cp->field->data, "european-ip") == 0) {
+                        ipv4_addr = mk_rnd_european_ipv4();
+                    } else if (strcmp(cp->field->data, "asian-ip") == 0) {
+                        ipv4_addr = mk_rnd_asian_ipv4();
+                    } else if (strcmp(cp->field->data, "south-american-ip") == 0) {
+                        ipv4_addr = mk_rnd_south_american_ipv4();
+                    } else if (strcmp(cp->field->data, "north-american-ip") == 0) {
+                        ipv4_addr = mk_rnd_north_american_ipv4();
+                    } else if (strcmp(cp->field->data, "user-defined-ip") == 0) {
+                        addrs_count = get_pig_target_addr_count(addrs);
+                        addr_index = rand() % addrs_count;
+                        ipv4_addr = get_ipv4_pig_target_by_index(addr_index, addrs);
+                    }
+                }
+                break;
+
+            case kArp_hwdst:
+                arph.dest_hw_addr = (unsigned char *) pig_newseg(cp->field->dsize);
+                memcpy(arph.dest_hw_addr, cp->field->data, cp->field->dsize);
+                break;
+
+            case kArp_pdst:
+                fp = get_pigsty_conf_set_field(kArp_plen, conf);
+                arph.dest_pt_addr = (unsigned char *) pig_newseg(*(unsigned char *)fp->data);
+                if (cp->field->dsize == 4) {
+                    arph.dest_pt_addr[0] = ((unsigned char *)cp->field->data)[3];
+                    arph.dest_pt_addr[1] = ((unsigned char *)cp->field->data)[2];
+                    arph.dest_pt_addr[2] = ((unsigned char *)cp->field->data)[1];
+                    arph.dest_pt_addr[3] = ((unsigned char *)cp->field->data)[0];
+                }
+                break;
+
+            default:
+                break;
+
+        }
+    }
+    temp = mk_arp_dgram(buf_size, arph);
+    memcpy(buf, temp, *buf_size);
+    free(temp);
+    arp_header_free(&arph);
+}
 
 static void mk_default_tcp(struct tcp *hdr) {
     do {

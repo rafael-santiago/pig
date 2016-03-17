@@ -11,6 +11,8 @@
 #include "to_int.h"
 #include "to_voidp.h"
 #include "to_str.h"
+#include "options.h"
+#include "arp.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -56,6 +58,10 @@ static int verify_u16(const char *buffer);
 
 static int verify_u32(const char *buffer);
 
+static int verify_mac_addr(const char *buffer);
+
+static int verify_arp_paddr(const char *buffer);
+
 static int get_pigsty_field_index(const char *field);
 
 static int verify_int(const char *buffer);
@@ -75,6 +81,8 @@ static int verify_required_fields_ipv6(pigsty_conf_set_ctx *ip6_set);
 static int verify_required_fields_tcp(pigsty_conf_set_ctx *tcp_set);
 
 static int verify_required_fields_udp(pigsty_conf_set_ctx *udp_set);
+
+static int verify_required_fields_arp(pigsty_conf_set_ctx *arp_set);
 
 static int verify_required_datagram_fields(pigsty_conf_set_ctx *set, const int *fields, const size_t fields_size);
 
@@ -117,6 +125,15 @@ static struct signature_fields SIGNATURE_FIELDS[] = {
     {    "icmp.code",     kIcmp_code,         verify_u8},
     {"icmp.checksum", kIcmp_checksum,        verify_u16},
     { "icmp.payload",  kIcmp_payload,     verify_string},
+    {   "arp.hwtype",    kArp_hwtype,        verify_u16},
+    {    "arp.ptype",     kArp_ptype,        verify_u16},
+    {    "arp.hwlen",     kArp_hwlen,         verify_u8},
+    {     "arp.plen",      kArp_plen,         verify_u8},
+    {   "arp.opcode",    kArp_opcode,        verify_u16},
+    {    "arp.hwsrc",     kArp_hwsrc,   verify_mac_addr},
+    {     "arp.psrc",      kArp_psrc,  verify_arp_paddr},
+    {    "arp.hwdst",     kArp_hwdst,   verify_mac_addr},
+    {     "arp.pdst",      kArp_pdst,  verify_arp_paddr},
     {    "signature",     kSignature,     verify_string}
 };
 
@@ -141,7 +158,7 @@ pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char
         del_pigsty_entry(entry);
         return NULL;
     }
-    if (!verify_required_fields(entry)) {
+    if (verify_required_fields(entry) == 0) {
         del_pigsty_entry(entry);
         entry = NULL;
     }
@@ -157,6 +174,16 @@ static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *ent
         entry = mk_pigsty_entry_from_compiled_buffer(entry, data, &next_data);
     }
     return entry;
+}
+
+int is_arp_packet(const pigsty_conf_set_ctx *conf) {
+    const pigsty_conf_set_ctx *cp = NULL;
+    int is_arp = 1;
+    for (cp = conf; cp != NULL && is_arp; cp = cp->next) {
+        is_arp = (cp->field->index >= kArp_hwtype &&
+                  cp->field->index <= kArp_pdst);
+    }
+    return is_arp;
 }
 
 static char *get_pigsty_file_data(const char *filepath) {
@@ -308,6 +335,30 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
                         fmt_data = int_to_voidp(data, &fmt_dsize);
                     } else if (verify_ipv4_addr(data)) {
                         fmt_data = ipv4_to_voidp(data, &fmt_dsize);
+                    } else if (verify_mac_addr(data)) {
+                        if (strcmp(data, "hw-src-addr") == 0 ||
+                            strcmp(data, "hw-dst-addr") == 0) {
+                            token = data;
+                            data = get_option(data, NULL);
+                        }
+                        data[strlen(data) - 1] = 0;
+                        fmt_data = mac2byte(data + 1, 6);
+                        fmt_dsize = 6;
+                        if (token != NULL) {
+                            data = token;
+                            token = NULL;
+                        }
+                    } else if (verify_arp_paddr(data)) {
+                        if (strcmp(data, "proto-src-addr") == 0 ||
+                            strcmp(data, "proto-dst-addr") == 0) {
+                            token = data;
+                            data = get_option(data, NULL);
+                        }
+                        fmt_data = ipv4_to_voidp(data, &fmt_dsize);
+                        if (token != NULL) {
+                            data = token;
+                            token = NULL;
+                        }
                     } else if (verify_string(data)) {
                         fmt_data = str_to_voidp(data, &fmt_dsize);
                     }
@@ -515,9 +566,14 @@ static int verify_u32(const char *buffer) {
 int verify_ipv4_addr(const char *buffer) {
     int retval = 1;
     const char *b = buffer;
+    const char *b_end = NULL;
     int dots_nr = 0;
     char oct[255];
     size_t o = 0;
+    if (buffer == NULL) {
+        return 0;
+    }
+    b_end = b + strlen(b);
     if (strcmp(buffer, "north-american-ip") == 0 ||
         strcmp(buffer, "south-american-ip") == 0 ||
         strcmp(buffer, "asian-ip") == 0          ||
@@ -532,6 +588,9 @@ int verify_ipv4_addr(const char *buffer) {
         }
         if (*b == '.' || *(b + 1) == 0) {
             if (*(b + 1) == 0) {
+                if (*b == '.') {
+                    return 0;
+                }
                 oct[o] = *b;
             }
             if (*b == '.') {
@@ -595,6 +654,49 @@ static int verify_hex(const char *buffer) {
     return 1;
 }
 
+static int verify_mac_addr(const char *buffer) {
+    int hex_oct_ct = 0;
+    const char *bp = buffer;
+    if (strcmp(buffer, "hw-src-addr") == 0 ||
+        strcmp(buffer, "hw-dst-addr") == 0) {
+        bp = (const char *)get_option(buffer, NULL);
+    }
+    if (bp == NULL) {
+        return 0;
+    }
+    if (verify_string(bp) == 0) {
+        return 0;
+    }
+    if ((strlen(bp) - 1) % 3) {
+        return 0;
+    }
+    for (bp++; *bp != 0; bp += 3) {
+        if (!isxdigit(*bp)) {
+            return 0;
+        }
+        if (!isxdigit(*(bp+1))) {
+            return 0;
+        }
+        if (*(bp + 2) == ':') {
+            hex_oct_ct++;
+        } else if (*(bp + 2) == '"') {
+            break;
+        } else {
+            return 0;
+        }
+    }
+    return (hex_oct_ct == 5);
+}
+
+static int verify_arp_paddr(const char *buffer) {
+    const char *bp = buffer;
+    if (strcmp(buffer, "proto-src-addr") == 0 ||
+        strcmp(buffer, "proto-dst-addr") == 0) {
+        bp = (const char *)get_option(buffer, NULL);
+    }
+    return (verify_ipv4_addr(bp) == 1 || verify_string(bp) == 1);
+}
+
 static int verify_required_datagram_fields(pigsty_conf_set_ctx *set, const int *fields, const size_t fields_size) {
     size_t f;
     int retval = 1;
@@ -632,14 +734,21 @@ static int verify_required_fields_udp(pigsty_conf_set_ctx *udp_set) {
     return verify_required_datagram_fields(udp_set, udp_required_fields, sizeof(udp_required_fields) / sizeof(udp_required_fields[0]));
 }
 
+static int verify_required_fields_arp(pigsty_conf_set_ctx *arp_set) {
+    int arp_required_fields[] = { kArp_hwtype, kArp_ptype, kArp_hwlen, kArp_plen, kArp_opcode,
+                                  kArp_hwsrc, kArp_psrc, kArp_hwdst, kArp_pdst };
+    return verify_required_datagram_fields(arp_set, arp_required_fields, sizeof(arp_required_fields) / sizeof(arp_required_fields[0]));
+}
+
 static int verify_required_fields(pigsty_entry_ctx *entry) {
     pigsty_entry_ctx *ep;
     pigsty_conf_set_ctx *cp;
-    int retval = 1;
+    int retval = 1, is_arp = 0;
     int ip_version = 0;
     int transport_layer = 0;
     int ifield_floor = 0, ifield_ceil = 0;
     int tfield_floor = 0, tfield_ceil = 0;
+    char *hint = NULL;
     for (ep = entry; ep != NULL && retval == 1; ep = ep->next) {
         //  INFO(Santiago): verifying the IP mandatory fields.
         ip_version = 0;
@@ -648,9 +757,11 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                 ip_version = *(int *)cp->field->data;
             }
         }
-        if (ip_version == 0) {
-            printf("pig PANIC: signature %s: ip.version missing.\n", ep->signature_name);
-            retval = 0;
+        if (!(is_arp = is_arp_packet(entry->conf))) {
+            if (ip_version == 0) {
+                printf("pig PANIC: signature %s: ip.version missing.\n", ep->signature_name);
+                retval = 0;
+            }
         }
         if (retval == 1) {
             switch(ip_version) {
@@ -665,7 +776,13 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                 //    break;
 
                 default:
-                    retval = 0; //  INFO(Santiago): in practice it should not happen.
+                    if (is_arp) {
+                        ifield_floor = kArp_hwtype;
+                        ifield_ceil = kArp_pdst;
+                        retval = verify_required_fields_arp(ep->conf);
+                    } else {
+                        retval = 0;
+                    }
                     break;
             }
         }
@@ -712,37 +829,18 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                 }
             }
         } else {
-            //  WARN(Santiago): in normal conditions it should never happen because until now "ip.protocol" is a mandatory field.
             for (cp = ep->conf; cp != NULL && retval == 1; cp = cp->next) {
-                retval = !(cp->field->index == kTcp_src       ||
-                           cp->field->index == kTcp_dst       ||
-                           cp->field->index == kTcp_seq       ||
-                           cp->field->index == kTcp_ackno     ||
-                           cp->field->index == kTcp_size      ||
-                           cp->field->index == kTcp_reserv    ||
-                           cp->field->index == kTcp_urg       ||
-                           cp->field->index == kTcp_ack       ||
-                           cp->field->index == kTcp_psh       ||
-                           cp->field->index == kTcp_rst       ||
-                           cp->field->index == kTcp_syn       ||
-                           cp->field->index == kTcp_fin       ||
-                           cp->field->index == kTcp_wsize     ||
-                           cp->field->index == kTcp_checksum  ||
-                           cp->field->index == kTcp_urgp      ||
-                           cp->field->index == kTcp_payload   ||
-                           cp->field->index == kUdp_src       ||
-                           cp->field->index == kUdp_dst       ||
-                           cp->field->index == kUdp_size      ||
-                           cp->field->index == kUdp_checksum  ||
-                           cp->field->index == kUdp_payload   ||
-                           cp->field->index == kUdp_src       ||
-                           cp->field->index == kIcmp_type     ||
-                           cp->field->index == kIcmp_code     ||
-                           cp->field->index == kIcmp_checksum ||
-                           cp->field->index == kIcmp_payload);
+                if (is_arp) {
+                    retval = (cp->field->index >= kArp_hwtype && cp->field->index <= kArp_pdst);
+                }
             }
             if (retval == 0) {
-                printf("pig PANIC: signature %s: tcp/udp/icmp fields informed in a non tcp, udp or icmp packet.\n", ep->signature_name);
+                if (is_arp) {
+                    hint = " (it seems an ARP signature)";
+                } else {
+                    hint = "";
+                }
+                printf("pig PANIC: signature %s: field mismatching. Did you mixed up some protocol fields?%s\n", ep->signature_name, hint);
             }
         }
     }

@@ -1,0 +1,12 @@
+[
+    arp.hwtype = 0x1,
+    arp.ptype = 0x0800,
+    arp.hwlen = 0x6,
+    arp.plen = 0x4,
+    arp.opcode = 0x2,
+    arp.hwsrc = hw-src-addr,
+    arp.psrc = proto-src-addr,
+    arp.hwdst = hw-dst-addr,
+    arp.pdst = proto-dst-addr,
+    signature = "ARP spoofing"
+]

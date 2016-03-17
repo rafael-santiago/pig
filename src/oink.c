@@ -13,6 +13,8 @@
 #include "ip.h"
 #include "if.h"
 #include "lists.h"
+#include "pigsty.h"
+#include "options.h"
 #include "linux/native_arp.h"
 #include <string.h>
 
@@ -20,7 +22,9 @@
 
 #define pig_get_net_mask_from_addr(a, m) ( ( (a) & (m) ) )
 
-static void fill_up_mac_addresses(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface);
+static void fill_up_mac_addresses_by_ipinfo(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface);
+
+static void fill_up_mac_addresses_by_arpinfo(struct ethernet_frame *eth, const struct arp *arph);
 
 static int should_route(const unsigned int addr[4], const unsigned int nt_mask[4], const char *loiface);
 
@@ -72,7 +76,7 @@ static int should_route(const unsigned int addr[4], const unsigned int nt_mask[4
              (pig_get_net_mask_from_addr(addr[3], nt_mask[3]) == pig_get_net_mask_from_addr(lo_addr[3], nt_mask[3])));
 }
 
-static void fill_up_mac_addresses(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface) {
+static void fill_up_mac_addresses_by_ipinfo(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface) {
     unsigned int nt_addr[4] = { 0, 0, 0, 0 };
     pig_hwaddr_ctx *hwa_p = (*hwaddr);
     unsigned char *mac = NULL, *temp = NULL;
@@ -128,34 +132,66 @@ static void fill_up_mac_addresses(struct ethernet_frame *eth, const struct ip4 i
     memcpy(eth->dest_hw_addr, mac, 6);
 }
 
+static void fill_up_mac_addresses_by_arpinfo(struct ethernet_frame *eth, const struct arp *arph) {
+    if (eth == NULL || arph == NULL) {
+        return;
+    }
+    memset(eth->src_hw_addr, 0xff, sizeof(eth->src_hw_addr));
+    memset(eth->dest_hw_addr, 0xff, sizeof(eth->dest_hw_addr));
+    if (arph->hw_addr_len != 6) {
+        return;
+    }
+    memcpy(eth->src_hw_addr, arph->src_hw_addr, 6);
+    memcpy(eth->dest_hw_addr, arph->dest_hw_addr, 6);
+}
+
 int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_target_addr_ctx *addrs, const int sockfd, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface) {
     unsigned char *packet = NULL;
     struct ethernet_frame eth;
     struct ip4 iph, *iph_p = &iph;
+    struct arp *arph;
     size_t packet_size = 0;
+    int is_lo = 0;
     int retval = -1;
     int sockfd_lo = -1;
-    eth.payload = mk_ip_pkt(signature->conf, (pig_target_addr_ctx *)addrs, &eth.payload_size);
-    if (!is_lopkt(eth.payload, eth.payload_size)) {
-        parse_ip4_dgram(&iph_p, eth.payload, eth.payload_size);
-        eth.ether_type = ETHER_TYPE_IP;
-        fill_up_mac_addresses(&eth, iph, hwaddr, gw_hwaddr, nt_mask, loiface);
-        if (iph.payload != NULL) {
-            free(iph.payload);
-        }
-        packet = mk_ethernet_frame(&packet_size, eth);
-        free(eth.payload);
-        if (packet != NULL) {
+    eth.payload = mk_pkt(signature->conf, (pig_target_addr_ctx *)addrs, &eth.payload_size);
+    is_lo = (gw_hwaddr == NULL && is_lopkt(eth.payload, eth.payload_size));
+    if (is_arp_packet(signature->conf)) {
+        //  WARN(Santiago): It is pretty silly send arp data from a loopback interface.
+        //                  I will not write this stupidity.
+        if (!is_lo) {
+            arph = parse_arp_dgram(eth.payload, eth.payload_size);
+            eth.ether_type = ETHER_TYPE_ARP;
+            fill_up_mac_addresses_by_arpinfo(&eth, arph);
+            packet = mk_ethernet_frame(&packet_size, eth);
+            free(eth.payload);
+            arp_header_free(arph);
+            free(arph);
             retval = inject(packet, packet_size, sockfd);
             free(packet);
         }
     } else {
-        sockfd_lo = init_loopback_raw_socket();
-        if (sockfd_lo != -1) {
-            retval = inject_lo(eth.payload, eth.payload_size, sockfd_lo);
-            deinit_raw_socket(sockfd_lo);
+        if (!is_lo) {
+            parse_ip4_dgram(&iph_p, eth.payload, eth.payload_size);
+            eth.ether_type = ETHER_TYPE_IP;
+            fill_up_mac_addresses_by_ipinfo(&eth, iph, hwaddr, gw_hwaddr, nt_mask, loiface);
+            if (iph.payload != NULL) {
+                free(iph.payload);
+            }
+            packet = mk_ethernet_frame(&packet_size, eth);
+            free(eth.payload);
+            if (packet != NULL) {
+                retval = inject(packet, packet_size, sockfd);
+                free(packet);
+            }
+        } else {
+            sockfd_lo = init_loopback_raw_socket();
+            if (sockfd_lo != -1) {
+                retval = inject_lo(eth.payload, eth.payload_size, sockfd_lo);
+                deinit_raw_socket(sockfd_lo);
+            }
+            free(eth.payload);
         }
-        free(eth.payload);
     }
     return retval;
 }
