@@ -58,7 +58,7 @@ Here is the idea. The art of deceiving.
 
 >"Repeat a lie a thousand times and it becomes the truth."
 
-Unfortunately the ``ARP`` protocol implements this World *modus operandi*. In this case I would said that ``ARP`` is ``World compliant``.
+Unfortunately the ``ARP`` protocol implements this World *modus operandi*. In this case I would say that ``ARP`` is ``World compliant``.
 
 ## Making your little pig become a liar
 
