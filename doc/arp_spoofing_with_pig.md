@@ -56,7 +56,7 @@ Did you see the shy ``Host B`` reply lost in the sea of replys from ``Host H``??
 
 Here is the idea. The art of deceiving.
 
->Repeat a lie a thousand times and it becomes the truth.
+>"Repeat a lie a thousand times and it becomes the truth."
 
 Unfortunately the ``ARP`` protocol implements this World *modus operandi*. In this case I would said that ``ARP`` is ``World compliant``.
 
@@ -141,7 +141,7 @@ pig INFO: a packet based on signature "TARDIS force field" was sent.
 
 Now we need a litlle silence (in order to create suspense)
 
-![The Good, the Ugly, the Bad and the Cat](https://github.com/rafael-santiago/pig/blob/master/etc/the-good-the-ugly-the-bad-and-the-cat.jpg)
+![The Good, the Ugly, the Bad and the Cat](https://github.com/rafael-santiago/pig/blob/master/etc/the-good-the-ugly-the-bad-and-the-cat.gif)
 
 So?? Is it working???? ahn?
 
