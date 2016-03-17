@@ -7,6 +7,7 @@ You can use ``Pig`` to test your ``IDS``/``IPS`` among other stuffs.
 with more specific things according your requirements.
 
 Until now it is possible to create ``IPv4`` signatures with transport layer based on ``TCP``, ``UDP`` and ``ICMP``.
+You can also create signatures based on ``ARP`` protocol.
 
 # How to clone this repo?
 
@@ -54,47 +55,55 @@ have strong meaning for you. You must use these fields to create your further si
 
 **Table 1**: The ``pig`` signature fields.
 
-|    **Field**    |   **Stands for**   |  **Protocol** | **Data type** |     **Sample definition**   |
-|:---------------:|:------------------:|:-------------:|:-------------:|:---------------------------:|
-| ``signature``   | The signature name |       -       |     string    | ``signature = "Udp flood"`` |
-|``ip.version``   |    IP version      |      *IP*     |     number    |      ``ip.version = 4``     |
-|  ``ip.ihl``     | Internet Header Len|      *IP*     |     number    |         ``ip.ihl = 5``      |
-|  ``ip.tos``     |    Type of service |      *IP*     |     number    |         ``ip.tos = 0 ``     |
-| ``ip.tlen``     |     Total Length   |      *IP*     |     number    |         ``ip.tlen = 20``    |
-|  ``ip.id``      |       Packet ID    |      *IP*     |     number    |       ``ip.id = 0xbeef``    |
-| ``ip.flags``    |       IP Flags     |      *IP*     |     number    |       ``ip.flags = 4``      |
-| ``ip.offset``   |   Fragment offset  |      *IP*     |     number    |       ``ip.offset = 0``     |
-|  ``ip.ttl``     |   Time to live     |      *IP*     |     number    |          ``ip.ttl = 64``    |
-|``ip.protocol``  |       Protocol     |      *IP*     |     number    |       ``ip.protocol = 6``   |
-|``ip.checksum``  |       Checksum     |      *IP*     |     number    |       ``ip.checksum = 0``   |
-|   ``ip.src``    |   Source address   |      *IP*     |  ip address   |    ``ip.src = 192.30.70.3`` |
-|   ``ip.dst``    |   Dest. address    |      *IP*     |  ip address   |    ``ip.dst = 192.30.70.3`` |
-| ``ip.payload``  |   IP raw payload   |      *IP*     |     string    |  ``ip.payload = "\x01\x02"``|
-|   ``tcp.src``   |    Source port     |      *TCP*    |     number    |         ``tcp.src = 80``    |
-|   ``tcp.dst``   |    Dest. port      |      *TCP*    |     number    |         ``tcp.dst = 21``    |
-| ``tcp.seqno``   |  Sequence number   |      *TCP*    |     number    |        ``tcp.seqno = 10202``|
-| ``tcp.ackno``   | Acknowledge number |      *TCP*    |     number    |       ``tcp.ackno = 10200`` |
-|  ``tcp.size``   |     TCP Length     |      *TCP*    |     number    |       ``tcp.size = 4``      |
-|``tcp.reserv``   | TCP reserv. field  |      *TCP*    |     number    |       ``tcp.reserv = 0``    |
-|   ``tcp.urg``   |  TCP urg. flag     |      *TCP*    |       bit     |       ``tcp.urg = 0``       |
-|   ``tcp.ack``   |  TCP ack. flag     |      *TCP*    |       bit     |       ``tcp.ack = 1``       |
-|   ``tcp.psh``   |  TCP psh. flag     |      *TCP*    |       bit     |       ``tcp.psh = 0``       |
-|   ``tcp.rst``   |  TCP psh. flag     |      *TCP*    |       bit     |       ``tcp.rst = 0``       |
-|   ``tcp.syn``   |  TCP syn. flag     |      *TCP*    |       bit     |       ``tcp.syn = 0``       |
-|   ``tcp.fin``   |  TCP fin. flag     |      *TCP*    |       bit     |       ``tcp.fin = 0``       |
-|  ``tcp.wsize``  |  TCP window size   |      *TCP*    |     number    |       ``tcp.wsize = 0``     |
-|``tcp.checksum`` |    Checksum        |      *TCP*    |     number    |       ``tcp.checksum = 0``  |
-|``tcp.urgp``     |  Urgent pointer    |      *TCP*    |     number    |      ``tcp.urgp = 0``       |
-|``tcp.payload``  |      Payload       |      *TCP*    |     string    | ``tcp.payload = "\x01abc"`` |
-|   ``udp.src``   |    Source port     |      *UDP*    |     number    |        ``udp.src = 53``     |
-|   ``udp.dst``   |    Dest. port      |      *UDP*    |     number    |        ``udp.dst = 7``      |
-|   ``udp.size``  |     UDP Length     |      *UDP*    |     number    |       ``udp.size = 8``      |
-|``udp.checksum`` |      Checksum      |      *UDP*    |     number    |       ``udp.checksum = 0``  |
-|``udp.payload``  |      Payload       |      *UDP*    |     number    |    ``udp.payload = "boo!"`` |
-| ``icmp.type``   |     ICMP type      |     *ICMP*    |     number    |       ``icmp.type = 0``     |
-| ``icmp.code``   |     ICMP code      |     *ICMP*    |     number    |        ``icmp.code = 0``    |
-|``icmp.checksum``|     Checksum       |     *ICMP*    |     number    |    ``icmp.checksum = 0``    |
-|``icmp.payload`` |     Payload        |     *ICMP*    |     string    |  ``icmp.payload = "ping!"`` |
+|    **Field**    |   **Stands for**   |  **Protocol** | **Data type** |      **Sample definition**       |
+|:---------------:|:------------------:|:-------------:|:-------------:|:--------------------------------:|
+| ``signature``   | The signature name |       -       |     string    | ``signature = "Udp flood"``      |
+|``ip.version``   |    IP version      |      *IP*     |     number    |      ``ip.version = 4``          |
+|  ``ip.ihl``     | Internet Header Len|      *IP*     |     number    |         ``ip.ihl = 5``           |
+|  ``ip.tos``     |    Type of service |      *IP*     |     number    |         ``ip.tos = 0 ``          |
+| ``ip.tlen``     |     Total Length   |      *IP*     |     number    |         ``ip.tlen = 20``         |
+|  ``ip.id``      |       Packet ID    |      *IP*     |     number    |       ``ip.id = 0xbeef``         |
+| ``ip.flags``    |       IP Flags     |      *IP*     |     number    |       ``ip.flags = 4``           |
+| ``ip.offset``   |   Fragment offset  |      *IP*     |     number    |       ``ip.offset = 0``          |
+|  ``ip.ttl``     |   Time to live     |      *IP*     |     number    |          ``ip.ttl = 64``         |
+|``ip.protocol``  |       Protocol     |      *IP*     |     number    |       ``ip.protocol = 6``        |
+|``ip.checksum``  |       Checksum     |      *IP*     |     number    |       ``ip.checksum = 0``        |
+|   ``ip.src``    |   Source address   |      *IP*     |  ip address   |    ``ip.src = 192.30.70.3``      |
+|   ``ip.dst``    |   Dest. address    |      *IP*     |  ip address   |    ``ip.dst = 192.30.70.3``      |
+| ``ip.payload``  |   IP raw payload   |      *IP*     |     string    |  ``ip.payload = "\x01\x02"``     |
+|   ``tcp.src``   |    Source port     |      *TCP*    |     number    |         ``tcp.src = 80``         |
+|   ``tcp.dst``   |    Dest. port      |      *TCP*    |     number    |         ``tcp.dst = 21``         |
+| ``tcp.seqno``   |  Sequence number   |      *TCP*    |     number    |        ``tcp.seqno = 10202``     |
+| ``tcp.ackno``   | Acknowledge number |      *TCP*    |     number    |       ``tcp.ackno = 10200``      |
+|  ``tcp.size``   |     TCP Length     |      *TCP*    |     number    |       ``tcp.size = 4``           |
+|``tcp.reserv``   | TCP reserv. field  |      *TCP*    |     number    |       ``tcp.reserv = 0``         |
+|   ``tcp.urg``   |  TCP urg. flag     |      *TCP*    |       bit     |       ``tcp.urg = 0``            |
+|   ``tcp.ack``   |  TCP ack. flag     |      *TCP*    |       bit     |       ``tcp.ack = 1``            |
+|   ``tcp.psh``   |  TCP psh. flag     |      *TCP*    |       bit     |       ``tcp.psh = 0``            |
+|   ``tcp.rst``   |  TCP psh. flag     |      *TCP*    |       bit     |       ``tcp.rst = 0``            |
+|   ``tcp.syn``   |  TCP syn. flag     |      *TCP*    |       bit     |       ``tcp.syn = 0``            |
+|   ``tcp.fin``   |  TCP fin. flag     |      *TCP*    |       bit     |       ``tcp.fin = 0``            |
+|  ``tcp.wsize``  |  TCP window size   |      *TCP*    |     number    |       ``tcp.wsize = 0``          |
+|``tcp.checksum`` |    Checksum        |      *TCP*    |     number    |       ``tcp.checksum = 0``       |
+|``tcp.urgp``     |  Urgent pointer    |      *TCP*    |     number    |      ``tcp.urgp = 0``            |
+|``tcp.payload``  |      Payload       |      *TCP*    |     string    | ``tcp.payload = "\x01abc"``      |
+|   ``udp.src``   |    Source port     |      *UDP*    |     number    |        ``udp.src = 53``          |
+|   ``udp.dst``   |    Dest. port      |      *UDP*    |     number    |        ``udp.dst = 7``           |
+|   ``udp.size``  |     UDP Length     |      *UDP*    |     number    |       ``udp.size = 8``           |
+|``udp.checksum`` |      Checksum      |      *UDP*    |     number    |       ``udp.checksum = 0``       |
+|``udp.payload``  |      Payload       |      *UDP*    |     number    |    ``udp.payload = "boo!"``      |
+| ``icmp.type``   |     ICMP type      |     *ICMP*    |     number    |       ``icmp.type = 0``          |
+| ``icmp.code``   |     ICMP code      |     *ICMP*    |     number    |        ``icmp.code = 0``         |
+|``icmp.checksum``|     Checksum       |     *ICMP*    |     number    |    ``icmp.checksum = 0``         |
+|``icmp.payload`` |     Payload        |     *ICMP*    |     string    |  ``icmp.payload = "ping!"``      |
+| ``arp.hwtype``  | ARP hardware type  |     *ARP*     |     number    |      ``arp.hwtype = 0x1``        |
+| ``arp.ptype``   | ARP protocol type  |     *ARP*     |     number    |      ``arp.ptype = 0x0800``      |
+| ``arp.hwlen``   |ARP hardware length |     *ARP*     |     number    |       ``arp.hwlen = 6``          |
+| ``arp.opcode``  | ARP operation code |     *ARP*     |     number    |       ``arp.opcode = 2``         |
+| ``arp.hwsrc``   | ARP src hw address |     *ARP*     |     string    |``arp.hwsrc = "de:ad:be:ef:0:0"`` |
+| ``arp.psrc``    | ARP src proto addr |     *ARP*     |   ip address  |    ``arp.psrc = 192.30.70.3``    |
+| ``arp.hwdst``   | ARP dst hw address |     *ARP*     |     string    |``arp.hwdst = "de:ad:be:ef:0:0"`` |
+| ``arp.pdst``    | ARP dst proto addr |     *ARP*     |   ip address  | ``arp.pdst = 192.30.70.3``       |
 
 When creating a signature you do not need specify all data. If you specify only the most relevant packet parts
 the remaining parts will be filled up with default values. The ``checksums`` are **always** recalculated.
@@ -135,6 +144,7 @@ Do you want to know more about each option, huh?... So let's go:
 - The option ``--gateway`` is where you specify your gateway address. Be aware that ``pig`` generates or at least try to generate the ``ethernet frames`` too. Due to it the gateway address is rather important in order to right composition of the ``layer-1`` data.
 - The option ``--net-mask`` for routing issues must receive your network mask.
 - The option ``--lo-iface`` is the place where you should inform the name of the local network interface you will use to "drain out" the generated packets.
+- The option ``--no-gateway`` indicates that any packet will send outside the network.
 
 Supposing that we want to generate ``DDos`` based traffic:
 
@@ -167,6 +177,24 @@ Look this:
 ```
 pig --signatures=pigsty/local-mess.pigsty --targets=192.30.70.3,192.30.70.*,192.30.70.0/9 --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
 ```
+
+### Not using the gateway
+
+This is useful when the loaded signatures will not send data outside the current network. In order to flag it you need to use
+the option ``--no-gateway``. When the ``--no-gateway``  option is used you do not need to specify the gateway's address
+because the packets will not flow outside the current segment. As result to inform the network mask becomes irrelevant too.
+
+For instance:
+
+```
+pig --signatures=pigsty/local_traffic.pigsty --no-gateway --lo-iface=eth2
+```
+
+In the sample above the ethernet frame will not be a pig's responsibility anymore. For this reason ``pig`` will not complain
+about the lack of ``--gateway`` and ``--net-mask`` option.
+
+The ``--no-gateway`` option is rather handy in cases that you need to generate ``ARP`` traffic. Take a look in this another
+document explaining how to perform [ARP spoofing with ``pig``](https://github.com/rafael-santiago/pig/blob/master/doc/arp_spoofing_with_pig.md).
 
 ### Sending only one signature and going back
 

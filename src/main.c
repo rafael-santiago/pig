@@ -287,7 +287,7 @@ int main(int argc, char **argv) {
             printf("\npig INFO: exiting... please wait...\npig INFO: pig has gone.\n");
         }
     } else {
-        printf("usage: %s --signatures=file.0,file.1,(...),file.n --gateway=<gateway address> --net-mask=<network mask> --lo-iface=<network interface> [--timeout=<in msecs> --no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n]\n", argv[0]);
+        printf("usage: %s --signatures=file.0,file.1,(...),file.n --gateway=<gateway address> --net-mask=<network mask> --lo-iface=<network interface> [--timeout=<in msecs> --no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n --no-gateway]\n", argv[0]);
     }
     return exit_code;
 }

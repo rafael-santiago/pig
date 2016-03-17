@@ -57,3 +57,17 @@
 - Binary payload parsing [``commit-id``: #b9605c].
 
 - Good manner: stripping off the evil strcat [``commit-id``: #7f9a80].
+
+## Version: 0.0.3
+
+### Features
+
+- Signatures based on ``ARP`` packets.
+
+- Optional gateway usage.
+
+- Including a little ``ARP Spoofing how to``.
+
+### Bugfixes
+
+- Segmentation Fault on IPv4 verifying [``commit-id``: #19e1a4].
