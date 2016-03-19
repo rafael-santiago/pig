@@ -260,7 +260,8 @@ static int is_targets_option_required(const pigsty_entry_ctx *entries) {
     const pigsty_entry_ctx *ep = NULL;
     for (ep = entries; ep != NULL; ep = ep->next) {
         for (cp = ep->conf; cp != NULL; cp = cp->next) {
-            if (cp->field->index == kIpv4_src || cp->field->index == kIpv4_dst) {
+            if (cp->field->index == kIpv4_src || cp->field->index == kIpv4_dst ||
+                cp->field->index == kArp_psrc || cp->field->index == kArp_pdst) {
                 if (cp->field->dsize > 4 && strcmp(cp->field->data, "user-defined-ip") == 0) {
                     return 1;
                 }
