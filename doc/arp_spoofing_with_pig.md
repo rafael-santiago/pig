@@ -48,7 +48,7 @@ Host H -> Reply an ARP request (I have it my MAC is "f0:0b:a0:f0:0b:a0")
 Host H -> Reply an ARP request (I have it my MAC is "f0:0b:a0:f0:0b:a0")
 Host H -> Reply an ARP request (I have it my MAC is "f0:0b:a0:f0:0b:a0")
 ...
-Host A -> Okay! Host H gots it... this operation was so easy and quick... the life is so beautiful!!! then lets continue!!
+Host A -> Okay! Host H gots it... this operation was so easy and quick... the life is so beautiful!!! then let's continue!!
 ...
 ```
 
@@ -81,7 +81,7 @@ Some facts about ``Skaro``:
 
 What will be done is deceive ``Skaro`` about the ``TARDIS`` MAC address in order to impede any Skaro's packet arriving.
 
-So lets try to ping ``TARDIS`` from ``Skaro``:
+So let's try to ping ``TARDIS`` from ``Skaro``:
 
 ```
 C:\Users\davros>ping 192.30.70.3
@@ -93,7 +93,7 @@ Reply from 192.30.70.3: bytes=32 time<1ms TTL=64
 ...
 ```
 
-Ok, the ``TARDIS`` is reachable... Still in ``Skaro`` lets see the ``TARDIS`` MAC address:
+Ok, the ``TARDIS`` is reachable... Still in ``Skaro`` let's see the ``TARDIS`` MAC address:
 
 ```
 C:\Users\davros>arp -a
@@ -106,7 +106,7 @@ IP address             Physical address        Type
 
 Yes as we know the MAC address listed by ``arp -a`` is the real MAC of ``TARDIS``.
 
-Now in ``TARDIS`` lets create the following ``pigsty`` file:
+Now in ``TARDIS`` let's create the following ``pigsty`` file:
 
 ```
 [
@@ -124,7 +124,7 @@ Now in ``TARDIS`` lets create the following ``pigsty`` file:
 ]
 ```
 
-Now lets activate our "force field" ;)
+Now let's activate our "force field" ;)
 
 ```
 doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty --lo-iface=eth1 --no-gateway --timeout=2
@@ -145,7 +145,7 @@ Now we need a litlle silence (in order to create suspense)
 
 So?? Is it working???? ahn?
 
-Going back to ``Skaro`` lets try to ping ``TARDIS``:
+Going back to ``Skaro`` let's try to ping ``TARDIS``:
 
 ```
 C:\Users\davros>ping 192.30.70.3
@@ -156,7 +156,7 @@ Reply from 192.30.70.3: Destination Host Unreachable.
 
 Nice?
 
-Lets see the ``Skaro's`` ARP table:
+Let's see the ``Skaro's`` ARP table:
 
 ```
 C:\Users\davros>arp -a
