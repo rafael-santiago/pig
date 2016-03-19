@@ -4,7 +4,7 @@
 
 ----
 
-**Abstract**: Now ``pig`` has the hability of sending ``ARP`` packets and in this document I will show how to do this explaining some details and particularities involved.
+**Abstract**: Now ``pig`` has the ability of sending ``ARP`` packets and in this document I will show how to do this, explaining some details and particularities involved.
 
 ----
 
@@ -13,20 +13,20 @@
 Although this text not being an extensive resource about ``ARP``, I think that is important to define (even superficially) what
 it is for every newbie in this subject reading this document.
 
-The ``ARP`` protocol is responsible to inform the hardware and protocol's addresses from each host to other. As hardware
+The ``ARP`` protocol is responsible to inform the hardware and protocol's addresses from a host to other. As hardware
 address stands for the ``MAC address`` and protocol address the ``Network address``. Nowadays the most used network
 protocol is the ``IP`` (Internet Protocol). The protocol address in this context stands for the ``IP address``. Being more
 specific an ``IPv4`` address because we do not use ``ARP`` inside ``IPv6`` networks but this is another story totally out of
-scope.
+scope by now.
 
 When we got an ``ARP`` packet saying that some hardware address has some protocol address we got a ``Reverse ARP`` (RARP).
 In a ``ARP`` what defines if it is a reverse ARP or not is a field called ``operation code``.
 
 Ah yes, ``ARP`` is ``A``ddress ``R``esolution ``P``rotocol.
 
-For this document only interest for us the standard ``ARP`` reply and request. Forget about ``RARP`` here.
+For this document the standard ``ARP`` reply and request is the relevant subject in your goal. Forget about ``RARP`` here.
 
-If you want to know more about this take a look in the [RFC#826](https://tools.ietf.org/html/rfc826).
+If you want to know more about this try to take a look in the [RFC#826](https://tools.ietf.org/html/rfc826).
 
 Now ``ARP poisoning`` or ``ARP spoofing`` is the process of faking an ``ARP reply`` in order to make a host believe that
 another host is the host that him is looking for. Confuse?
@@ -139,7 +139,7 @@ pig INFO: a packet based on signature "TARDIS force field" was sent.
 (...)
 ```
 
-Now we need a litlle silence (in order to create suspense)
+Now we need silence (in order to create suspense)
 
 ![The Good, the Ugly, the Bad and the Cat](https://github.com/rafael-santiago/pig/blob/master/etc/the-good-the-ugly-the-bad-and-the-cat.gif)
 
@@ -169,15 +169,15 @@ IP address             Physical address        Type
 
 It has the exact MAC address defined in the ``TARDIS force field``.
 
-Maybe you do not understad why the option ``--no-gateway`` was used... It was used because ``ARP`` packets are non-routable.
+Maybe you do not understand why the option ``--no-gateway`` was used... It was used because ``ARP`` packets are non-routable.
 In other words it will never passthru a gateway in order to go to another network. So the gateway's address and the network
 mask are pretty useless in this situation. The choice for a small timeout is because we need to flood and keep it on.
 
 ## Making your little pig become a professional liar
 
-It is cool but a little statical. We can generalize some info and with it the ``pig`` can be used as a pratical ``ARP spoofer``.
+It is cool but rather static. We can generalize some info and with it the ``pig`` can be used as a pratical ``ARP spoofer``.
 
-Take a look for our "force field" pigsty:
+Take a look at our "force field" pigsty:
 
 ```
 [
@@ -195,7 +195,7 @@ Take a look for our "force field" pigsty:
 ]
 ```
 
-In this signature above is being used the indirections for some command line options that ``pig`` allows for ``ARP`` signatures.
+In the shown signature above is being used the indirections for some command line options that ``pig`` allows for ``ARP`` signatures.
 Take a look at the ``Table 1`` to know more about them.
 
 **Table 1**: The ``ARP`` command line indirections recognized by ``pig`` until now.
