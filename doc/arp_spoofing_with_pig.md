@@ -230,7 +230,7 @@ Note that in the ``ARP`` field indirections related with the protocol address yo
 Using it you can flood the network with anomalous ``ARP`` packets and in some point you can do (simulate) some ``DoS``. Who knows...
 
 ```
-doctor@TARDIS:~/src/íg/src# bin/pig --signatures=force-field.pigsty --hw-src-addr="\"00:de:ad:be:ef:00\"" --proto-src-addr=user-defined-ip --hw-dst-addr="\"08:00:27:00:80:ad\"" --proto-dst-addr=192.30.70.10 --targets=192.30.70.1/8 --no-gateway --timeout=2
+doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty --hw-src-addr="\"00:de:ad:be:ef:00\"" --proto-src-addr=user-defined-ip --hw-dst-addr="\"08:00:27:00:80:ad\"" --proto-dst-addr=192.30.70.10 --targets=192.30.70.1/8 --no-gateway --timeout=2
 ```
 
 Bye!
