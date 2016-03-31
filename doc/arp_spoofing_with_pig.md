@@ -119,7 +119,7 @@ Now in ``TARDIS`` let's create the following ``pigsty`` file:
     arp.hwsrc = "00:de:ad:be:ef:00",
     arp.psrc = 192.30.70.3,
     arp.hwdst = "08:00:27:00:80:ad",
-    arp.pdst = "192.30.70.10",
+    arp.pdst = 192.30.70.10,
     signature = "TARDIS force field"
 ]
 ```
