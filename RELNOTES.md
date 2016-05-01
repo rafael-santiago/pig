@@ -1,30 +1,18 @@
 # pig - Release Notes
 
-## Version: 0.0.1
+## Version: 0.0.3
 
 ### Features
 
-- Signatures based on ``IPv4`` packets (``TCP``/``UDP``).
+- Signatures based on ``ARP`` packets.
 
-- Signatures based on ``IPv4`` packets (non ``TCP``/``UDP``) using raw definition by ``ip.payload`` field.
+- Optional gateway usage.
 
-- ``Geo-ip`` usage on ``ip.src`` and ``ip.dst`` fields.
-
-- Targets range specifying for ``ip.src`` and ``ip.dst`` fields.
-
-- Timeout setting up.
+- Including a little ``ARP Spoofing how to``.
 
 ### Bugfixes
 
-- SIGNATURE_FIELDS[] misconfiguration [``commit-id``: #13cbb3]
-
-- Buffer overrun when making udp packet buffers with payloads [``commit-id``: #53517f].
-
-- ``Issue#1``: Adding to the repo the GPL copy [``commit-id``: #855773].
-
-- ``Issue#2``: Reserved identifier violation [``commit-id``: #4a8857].
-
-- ``Issue#3``: Fix signal handler [``commit-id``: #2b6a8f].
+- Segmentation Fault on IPv4 verifying [``commit-id``: #19e1a4].
 
 ## Version: 0.0.2
 
@@ -58,16 +46,28 @@
 
 - Good manner: stripping off the evil strcat [``commit-id``: #7f9a80].
 
-## Version: 0.0.3
+## Version: 0.0.1
 
 ### Features
 
-- Signatures based on ``ARP`` packets.
+- Signatures based on ``IPv4`` packets (``TCP``/``UDP``).
 
-- Optional gateway usage.
+- Signatures based on ``IPv4`` packets (non ``TCP``/``UDP``) using raw definition by ``ip.payload`` field.
 
-- Including a little ``ARP Spoofing how to``.
+- ``Geo-ip`` usage on ``ip.src`` and ``ip.dst`` fields.
+
+- Targets range specifying for ``ip.src`` and ``ip.dst`` fields.
+
+- Timeout setting up.
 
 ### Bugfixes
 
-- Segmentation Fault on IPv4 verifying [``commit-id``: #19e1a4].
+- SIGNATURE_FIELDS[] misconfiguration [``commit-id``: #13cbb3]
+
+- Buffer overrun when making udp packet buffers with payloads [``commit-id``: #53517f].
+
+- ``Issue#1``: Adding to the repo the GPL copy [``commit-id``: #855773].
+
+- ``Issue#2``: Reserved identifier violation [``commit-id``: #4a8857].
+
+- ``Issue#3``: Fix signal handler [``commit-id``: #2b6a8f].

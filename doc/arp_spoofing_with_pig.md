@@ -48,7 +48,7 @@ Host H -> Reply an ARP request (I have it my MAC is "f0:0b:a0:f0:0b:a0")
 Host H -> Reply an ARP request (I have it my MAC is "f0:0b:a0:f0:0b:a0")
 Host H -> Reply an ARP request (I have it my MAC is "f0:0b:a0:f0:0b:a0")
 ...
-Host A -> Okay! Host H gots it... this operation was so easy and quick... the life is so beautiful!!! then let's continue!!
+Host A -> Okay! Host H got it... this operation was so easy and quick... the life is so beautiful!!! then let's continue!!
 ...
 ```
 
