@@ -17,6 +17,7 @@
 #include "options.h"
 #include "linux/native_arp.h"
 #include <string.h>
+#include <arpa/inet.h>
 
 #define PIG_ARP_TRIES_NR 1
 

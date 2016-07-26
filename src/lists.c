@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "netmask.h"
 #include "to_ipv4.h"
+#include "mkrnd.h"
 #include <string.h>
 
 static pigsty_conf_set_ctx *get_pigsty_conf_set_tail(pigsty_conf_set_ctx *conf);

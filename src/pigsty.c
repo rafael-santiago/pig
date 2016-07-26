@@ -15,6 +15,7 @@
 #include "arp.h"
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define is_pigsty_blank(c) ( (c) == ' ' || (c) == '\t' || (c) == '\n' || (c) == '\r' )
 

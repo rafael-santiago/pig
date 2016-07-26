@@ -262,15 +262,15 @@ CUTE_TEST_CASE(to_str_tests)
     CUTE_CHECK("sz != 8", sz == 8);
     CUTE_CHECK("to_str() != \"r\\nr\\nn\\ne\\n\"", strcmp(retval, "r\nr\nn\ne\n") == 0);
     free(retval);
-    retval = to_str("\"\x61\x62\x63\"", &sz);
+    retval = to_str("\"\\x61\\x62\\x63\"", &sz);
     CUTE_CHECK("sz != 3", sz == 3);
     CUTE_CHECK("to_str() != \"abc\"", strcmp(retval, "abc") == 0);
     free(retval);
-    retval = to_str("\"\x61\x62\x6362\"", &sz);
+    retval = to_str("\"\\x61\\x62\\x63""62\"", &sz);
     CUTE_CHECK("sz != 3", sz == 3);
     CUTE_CHECK("to_str() != \"abb\"", strcmp(retval, "abb") == 0);
     free(retval);
-    retval = to_str("\"\x9tab!\"", &sz);
+    retval = to_str("\"\\x9tab!\"", &sz);
     CUTE_CHECK("sz != 5", sz == 5);
     CUTE_CHECK("to_str() != \"\\ttab!\"", strcmp(retval, "\ttab!") == 0);
     free(retval);

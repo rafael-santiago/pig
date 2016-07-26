@@ -9,12 +9,18 @@
 #include "pigsty.h"
 #include "lists.h"
 #include "oink.h"
+#include "sock.h"
 #include "linux/native_arp.h"
 #include "arp.h"
 #include "options.h"
+#include "netmask.h"
+#include <unistd.h>
 #include <stdio.h>
+#include <ctype.h>
 #include <string.h>
 #include <signal.h>
+#include <time.h>
+#include <arpa/inet.h>
 
 static int g_should_exit = 0;
 
