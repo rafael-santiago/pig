@@ -139,3 +139,27 @@ unsigned char *addr2byte(const char *addr, size_t len) {
     }
     return retval;
 }
+
+void *get_ip4_payload(const char *buf, const size_t bsize, size_t *field_size) {
+    struct ip4 hdr;
+    struct ip4 *phdr = &hdr;
+    void *payload = NULL;
+
+    phdr->payload = NULL;
+    parse_ip4_dgram(&phdr, buf, bsize);
+
+    if (field_size != NULL) {
+        *field_size = phdr->payload_size;
+    }
+
+    if (phdr->payload == NULL) {
+        return NULL;
+    }
+
+    payload = pig_newseg(phdr->payload_size);
+    memcpy(payload, phdr->payload, phdr->payload_size);
+
+    free(phdr->payload);
+
+    return payload;
+}

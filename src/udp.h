@@ -26,4 +26,6 @@ unsigned char *mk_udp_buffer(const struct udp *hdr, size_t *bsize);
 unsigned short eval_udp_chsum(const struct udp hdr, const unsigned int src_addr,
                               const unsigned int dst_addr, unsigned short phdr_len);
 
+void *get_udp_payload(const char *buf, const size_t buf_size, size_t *field_size);
+
 #endif

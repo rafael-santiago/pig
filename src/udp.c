@@ -7,6 +7,7 @@
  */
 #include "udp.h"
 #include "memory.h"
+#include <string.h>
 
 void parse_udp_dgram(struct udp **hdr, const unsigned char *buf, size_t bsize) {
     struct udp *udp = *hdr;
@@ -80,4 +81,44 @@ unsigned short eval_udp_chsum(const struct udp hdr, const unsigned int src_addr,
         retval = (retval >> 16) + (retval & 0x0000ffff);
     }
     return (unsigned short)(~retval);
+}
+
+void *get_udp_payload(const char *buf, const size_t buf_size, size_t *field_size) {
+    struct udp hdr;
+    struct udp *phdr = &hdr;
+    void *payload = NULL;
+    int start_offset = 0;
+
+    if (field_size != NULL) {
+        *field_size = 0;
+    }
+
+    //  TODO(Santiago): When added support for ip6, strip off this.
+    if ((buf[0] >> 4) != 4) {
+        return NULL;
+    }
+
+    start_offset = 4 * (buf[0] & 0x0f);
+
+    if ((buf + start_offset) > (buf + buf_size)) {
+        return NULL;
+    }
+
+    phdr->payload = NULL;
+    parse_udp_dgram(&phdr, buf + start_offset, buf_size - start_offset);
+
+    if (field_size != NULL) {
+        *field_size = phdr->payload_size;
+    }
+
+    if (phdr->payload == NULL) {
+        return NULL;
+    }
+
+    payload = pig_newseg(phdr->payload_size);
+    memcpy(payload, phdr->payload, phdr->payload_size);
+
+    free(phdr->payload);
+
+    return payload;
 }

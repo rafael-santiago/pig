@@ -887,43 +887,59 @@ CUTE_TEST_CASE(pktslicer_get_pkt_field_tests)
         const size_t packet_size;
     };
     struct expect_slices slices[] = {
-        { 6, "\x5c\xac\x4c\xaa\xf5\xb5", "eth.dst",       ipv4_packet, ipv4_packet_size },
-        { 6, "\x08\x95\x2a\xad\xd6\x4f", "eth.src",       ipv4_packet, ipv4_packet_size },
-        { 2, "\x08\x00",                 "eth.type",      ipv4_packet, ipv4_packet_size },
-        { 1, "\x04",                     "ip.version",    ipv4_packet, ipv4_packet_size },
-        { 1, "\x05",                     "ip.ihl",        ipv4_packet, ipv4_packet_size },
-        { 1, "\x00",                     "ip.tos",        ipv4_packet, ipv4_packet_size },
-        { 2, "\x00\x34",                 "ip.tlen",       ipv4_packet, ipv4_packet_size },
-        { 2, "\xc8\xc5",                 "ip.id",         ipv4_packet, ipv4_packet_size },
-        { 1, "\x02",                     "ip.flags",      ipv4_packet, ipv4_packet_size },
-        { 2, "\x00\x00",                 "ip.offset",     ipv4_packet, ipv4_packet_size },
-        { 1, "\x3a",                     "ip.ttl",        ipv4_packet, ipv4_packet_size },
-        { 1, "\x06",                     "ip.protocol",   ipv4_packet, ipv4_packet_size },
-        { 2, "\xc2\x7f",                 "ip.checksum",   ipv4_packet, ipv4_packet_size },
-        { 4, "\x17\x2d\xdc\x5e",         "ip.src",        ipv4_packet, ipv4_packet_size },
-        { 4, "\xc0\xa8\x01\x4b",         "ip.dst",        ipv4_packet, ipv4_packet_size },
-        { 2, "\x00\x50",                 "tcp.src",       ipv4_packet, ipv4_packet_size },
-        { 2, "\x04\x59",                 "tcp.dst",       ipv4_packet, ipv4_packet_size },
-        { 4, "\x60\x26\x26\xa7",         "tcp.seqno",     ipv4_packet, ipv4_packet_size },
-        { 4, "\xba\x84\x24\x9b",         "tcp.ackno",     ipv4_packet, ipv4_packet_size },
-        { 1, "\x08",                     "tcp.size",      ipv4_packet, ipv4_packet_size },
-        { 1, "\x00",                     "tcp.reserv",    ipv4_packet, ipv4_packet_size },
-        { 1, "\x10",                     "tcp.flags",     ipv4_packet, ipv4_packet_size },
-        { 2, "\x03\x9c",                 "tcp.wsize",     ipv4_packet, ipv4_packet_size },
-        { 2, "\x97\xcd",                 "tcp.checksum",  ipv4_packet, ipv4_packet_size },
-        { 2, "\x00\x00",                 "tcp.urgp",      ipv4_packet, ipv4_packet_size },
-        { 2, "\x05\x73",                 "udp.src",        udp_packet, udp_packet_size  },
-        { 2, "\x00\x35",                 "udp.dst",        udp_packet, udp_packet_size  },
-        { 2, "\x00\x25",                 "udp.size",       udp_packet, udp_packet_size  },
-        { 2, "\x0a\xf6",                 "udp.checksum",   udp_packet, udp_packet_size  },
-        { 1, "\x03",                     "icmp.type",     icmp_packet, icmp_packet_size },
-        { 1, "\x03",                     "icmp.code",     icmp_packet, icmp_packet_size },
-        { 2, "\x80\xe3",                 "icmp.checksum", icmp_packet, icmp_packet_size },
-        { 2, "\x00\x01",                 "arp.hwtype",     arp_packet, arp_packet_size  },
-        { 2, "\x08\x00",                 "arp.ptype",      arp_packet, arp_packet_size  },
-        { 1, "\x06",                     "arp.hwlen",      arp_packet, arp_packet_size  },
-        { 1, "\x04",                     "arp.plen",       arp_packet, arp_packet_size  },
-        { 2, "\x00\x01",                 "arp.opcode",     arp_packet, arp_packet_size  }
+        {  6, "\x5c\xac\x4c\xaa\xf5\xb5", "eth.dst",       ipv4_packet, ipv4_packet_size },
+        {  6, "\x08\x95\x2a\xad\xd6\x4f", "eth.src",       ipv4_packet, ipv4_packet_size },
+        {  2, "\x08\x00",                 "eth.type",      ipv4_packet, ipv4_packet_size },
+        {  1, "\x04",                     "ip.version",    ipv4_packet, ipv4_packet_size },
+        {  1, "\x05",                     "ip.ihl",        ipv4_packet, ipv4_packet_size },
+        {  1, "\x00",                     "ip.tos",        ipv4_packet, ipv4_packet_size },
+        {  2, "\x00\x34",                 "ip.tlen",       ipv4_packet, ipv4_packet_size },
+        {  2, "\xc8\xc5",                 "ip.id",         ipv4_packet, ipv4_packet_size },
+        {  1, "\x02",                     "ip.flags",      ipv4_packet, ipv4_packet_size },
+        {  2, "\x00\x00",                 "ip.offset",     ipv4_packet, ipv4_packet_size },
+        {  1, "\x3a",                     "ip.ttl",        ipv4_packet, ipv4_packet_size },
+        {  1, "\x06",                     "ip.protocol",   ipv4_packet, ipv4_packet_size },
+        {  2, "\xc2\x7f",                 "ip.checksum",   ipv4_packet, ipv4_packet_size },
+        {  4, "\x17\x2d\xdc\x5e",         "ip.src",        ipv4_packet, ipv4_packet_size },
+        {  4, "\xc0\xa8\x01\x4b",         "ip.dst",        ipv4_packet, ipv4_packet_size },
+        { 32, "\x00\x50\x04\x59"
+              "\x60\x26\x26\xa7"
+              "\xba\x84\x24\x9b"
+              "\x80\x10\x03\x9c"
+              "\x97\xcd\x00\x00"
+              "\x01\x01\x05\x0a"
+              "\xba\x84\x24\x9a"
+              "\xba\x84\x24\x9b",         "ip.payload",    ipv4_packet, ipv4_packet_size },
+        {  2, "\x00\x50",                 "tcp.src",       ipv4_packet, ipv4_packet_size },
+        {  2, "\x04\x59",                 "tcp.dst",       ipv4_packet, ipv4_packet_size },
+        {  4, "\x60\x26\x26\xa7",         "tcp.seqno",     ipv4_packet, ipv4_packet_size },
+        {  4, "\xba\x84\x24\x9b",         "tcp.ackno",     ipv4_packet, ipv4_packet_size },
+        {  1, "\x08",                     "tcp.size",      ipv4_packet, ipv4_packet_size },
+        {  1, "\x00",                     "tcp.reserv",    ipv4_packet, ipv4_packet_size },
+        {  1, "\x10",                     "tcp.flags",     ipv4_packet, ipv4_packet_size },
+        {  2, "\x03\x9c",                 "tcp.wsize",     ipv4_packet, ipv4_packet_size },
+        {  2, "\x97\xcd",                 "tcp.checksum",  ipv4_packet, ipv4_packet_size },
+        {  2, "\x00\x00",                 "tcp.urgp",      ipv4_packet, ipv4_packet_size },
+        {  2, "\x05\x73",                 "udp.src",        udp_packet, udp_packet_size  },
+        {  2, "\x00\x35",                 "udp.dst",        udp_packet, udp_packet_size  },
+        {  2, "\x00\x25",                 "udp.size",       udp_packet, udp_packet_size  },
+        {  2, "\x0a\xf6",                 "udp.checksum",   udp_packet, udp_packet_size  },
+        { 29, "\x00\x03\x01\x00"
+              "\x00\x01\x00\x00"
+              "\x00\x00\x00\x00"
+              "\x03\x77\x77\x77"
+              "\x03\x77\x77\x77"
+              "\x03\x63\x6f\x6d"
+              "\x00\x00\x01\x00"
+              "\x01",                     "udp.payload",    udp_packet, udp_packet_size  },
+        {  1, "\x03",                     "icmp.type",     icmp_packet, icmp_packet_size },
+        {  1, "\x03",                     "icmp.code",     icmp_packet, icmp_packet_size },
+        {  2, "\x80\xe3",                 "icmp.checksum", icmp_packet, icmp_packet_size },
+        {  2, "\x00\x01",                 "arp.hwtype",     arp_packet, arp_packet_size  },
+        {  2, "\x08\x00",                 "arp.ptype",      arp_packet, arp_packet_size  },
+        {  1, "\x06",                     "arp.hwlen",      arp_packet, arp_packet_size  },
+        {  1, "\x04",                     "arp.plen",       arp_packet, arp_packet_size  },
+        {  2, "\x00\x01",                 "arp.opcode",     arp_packet, arp_packet_size  }
     };
     size_t slices_nr = sizeof(slices) / sizeof(slices[0]), s = 0;
     size_t b = 0;
