@@ -12,46 +12,68 @@
 
 #define get_byte_from_u32(v, b) ( ( (v) >> ( 24 - ( (b) * 8 ) ) ) & 0xff )
 
+typedef void *(*get_pkt_data_func)(const char *buf, const size_t buf_size, size_t *field_size);
+
 struct pkt_field_boundaries {
     const char *name;
     size_t start_off, end_off;
     unsigned int mask;
     unsigned int rsh;
-    unsigned size;
+    int size;
+    get_pkt_data_func get_data;
 };
 
 // INFO(Santiago): This states the slicer behavior for each relevant packet field.
 //                 The basic "gear" for this kind of "machine" is: ( ( ( pkt + start_off ) & mask ) >> rsh )
+//
+//                               "Hocus pocus", "Língua de vaca", "Abracadabra", Ploc-tchum! :)
+//
 const struct pkt_field_boundaries g_pkt_fields[] = {
-    { "eth.dst",     0,  5, 0xffffffff,  0, 6 },
-    { "eth.src",     6, 11, 0xffffffff,  0, 6 },
-    { "eth.type",   12, 13, 0xffffffff,  0, 2 },
-    { "ip.version", 14, 14, 0xf0000000, 28, 1 },
-    { "ip.ihl",     14, 14, 0x0f000000, 24, 1 },
-    { "ip.tos",     15, 15, 0xffffffff,  0, 1 },
-    { "ip.len",     16, 17, 0xffffffff,  0, 2 },
-    { "ip.id",      18, 19, 0xffffffff,  0, 2 },
-    { "ip.flags",   20, 20, 0xe0000000, 29, 1 },
-    { "ip.fragoff", 20, 21, 0x1fff0000, 16, 2 },
-    { "ip.ttl",     22, 22, 0xffffffff,  0, 1 },
-    { "ip.proto",   23, 23, 0xffffffff,  0, 1 },
-    { "ip.chsum",   24, 25, 0xffffffff,  0, 2 },
-    { "ip.src",     26, 29, 0xffffffff,  0, 4 },
-    { "ip.dst",     30, 33, 0xffffffff,  0, 4 },
-    { "tcp.src",    34, 35, 0xffffffff,  0, 2 },
-    { "tcp.dst",    36, 37, 0xffffffff,  0, 2 },
-    { "tcp.seqno",  38, 41, 0xffffffff,  0, 4 },
-    { "tcp.ackno",  42, 45, 0xffffffff,  0, 4 },
-    { "tcp.len",    46, 46, 0xf0000000, 28, 1 },
-    { "tcp.reserv", 46, 47, 0x0fc00000, 22, 1 },
-    { "tcp.flags",  46, 47, 0x003f0000, 16, 1 },
-    { "tcp.window", 48, 49, 0xffffffff,  0, 2 },
-    { "tcp.chsum",  50, 51, 0xffffffff,  0, 2 },
-    { "tcp.urgp",   52, 53, 0xffffffff,  0, 2 },
-    { "udp.src",    34, 35, 0xffffffff,  0, 2 },
-    { "udp.dst",    36, 37, 0xffffffff,  0, 2 },
-    { "udp.len",    38, 39, 0xffffffff,  0, 2 },
-    { "udp.chsum",  40, 41, 0xffffffff,  0, 2 }
+    { "eth.dst",        0,  5, 0xffffffff,  0,  6, NULL },
+    { "eth.src",        6, 11, 0xffffffff,  0,  6, NULL },
+    { "eth.type",      12, 13, 0xffffffff,  0,  2, NULL },
+    { "ip.version",    14, 14, 0xf0000000, 28,  1, NULL },
+    { "ip.ihl",        14, 14, 0x0f000000, 24,  1, NULL },
+    { "ip.tos",        15, 15, 0xffffffff,  0,  1, NULL },
+    { "ip.tlen",       16, 17, 0xffffffff,  0,  2, NULL },
+    { "ip.id",         18, 19, 0xffffffff,  0,  2, NULL },
+    { "ip.flags",      20, 20, 0xe0000000, 29,  1, NULL },
+    { "ip.offset",     20, 21, 0x1fff0000, 16,  2, NULL },
+    { "ip.ttl",        22, 22, 0xffffffff,  0,  1, NULL },
+    { "ip.protocol",   23, 23, 0xffffffff,  0,  1, NULL },
+    { "ip.checksum",   24, 25, 0xffffffff,  0,  2, NULL },
+    { "ip.src",        26, 29, 0xffffffff,  0,  4, NULL },
+    { "ip.dst",        30, 33, 0xffffffff,  0,  4, NULL },
+    { "ip.payload",     0,  0,          0,  0, -1, NULL },
+    { "tcp.src",       34, 35, 0xffffffff,  0,  2, NULL },
+    { "tcp.dst",       36, 37, 0xffffffff,  0,  2, NULL },
+    { "tcp.seqno",     38, 41, 0xffffffff,  0,  4, NULL },
+    { "tcp.ackno",     42, 45, 0xffffffff,  0,  4, NULL },
+    { "tcp.size",      46, 46, 0xf0000000, 28,  1, NULL },
+    { "tcp.reserv",    46, 47, 0x0fc00000, 22,  1, NULL },
+    { "tcp.flags",     46, 47, 0x003f0000, 16,  1, NULL },
+    { "tcp.wsize",     48, 49, 0xffffffff,  0,  2, NULL },
+    { "tcp.checksum",  50, 51, 0xffffffff,  0,  2, NULL },
+    { "tcp.urgp",      52, 53, 0xffffffff,  0,  2, NULL },
+    { "tcp.payload",    0,  0,          0,  0, -1, NULL },
+    { "udp.src",       34, 35, 0xffffffff,  0,  2, NULL },
+    { "udp.dst",       36, 37, 0xffffffff,  0,  2, NULL },
+    { "udp.size",      38, 39, 0xffffffff,  0,  2, NULL },
+    { "udp.checksum",  40, 41, 0xffffffff,  0,  2, NULL },
+    { "udp.payload",    0,  0,          0,  0, -1, NULL },
+    { "icmp.type",     34, 34, 0xffffffff,  0,  1, NULL },
+    { "icmp.code",     35, 35, 0xffffffff,  0,  1, NULL },
+    { "icmp.checksum", 36, 37, 0xffffffff,  0,  2, NULL },
+    { "icmp.payload",   0,  0,          0,  0,  0, NULL },
+    { "arp.hwtype",    14,  15, 0xffffffff, 0,  2, NULL },
+    { "arp.ptype",     16,  17, 0xffffffff, 0,  2, NULL },
+    { "arp.hwlen",     18,  18, 0xffffffff, 0,  1, NULL },
+    { "arp.plen",      19,  19, 0xffffffff, 0,  1, NULL },
+    { "arp.opcode",    20,  21, 0xffffffff, 0,  2, NULL },
+    { "arp.hwsrc",      0,  0,           0, 0, -1, NULL },
+    { "arp.psrc",       0,  0,           0, 0, -1, NULL },
+    { "arp.hwdst",      0,  0,           0, 0, -1, NULL },
+    { "arp.pdst",       0,  0,           0, 0, -1, NULL }
 };
 
 const size_t g_pkt_fields_size = sizeof(g_pkt_fields) / sizeof(g_pkt_fields[0]);
@@ -85,12 +107,13 @@ void set_pkt_field(const char *field, unsigned char *buf, size_t buf_size, const
 }
 */
 
-void *get_pkt_field(const char *field, const unsigned char *buf, size_t buf_size, size_t *field_size) {
+void *get_pkt_field(const char *field, const unsigned char *buf, const size_t buf_size, size_t *field_size) {
     size_t p = 0;
     const unsigned char *mbuf_end = NULL;
     static unsigned int slice = 0;
     static unsigned char mbuf[0xffff] = "";
     static size_t mbuf_size = 0;
+    get_pkt_data_func get_data = NULL;
     if (field == NULL || buf == NULL) {
         return NULL;
     }
@@ -99,6 +122,12 @@ void *get_pkt_field(const char *field, const unsigned char *buf, size_t buf_size
     mbuf_end = mbuf + mbuf_size;
     for (p = 0; p < g_pkt_fields_size; p++) {
         if (strcmp(g_pkt_fields[p].name, field) == 0) {
+            if (g_pkt_fields[p].size == -1) {
+                if ((get_data = g_pkt_fields[p].get_data) == NULL) {
+                    return NULL;
+                }
+                return get_data(buf, buf_size, field_size);
+            }
             if (mbuf + g_pkt_fields[p].start_off + (g_pkt_fields[p].end_off - g_pkt_fields[p].start_off) > mbuf_end) {
                 return NULL;
             }
