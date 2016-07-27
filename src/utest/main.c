@@ -852,60 +852,72 @@ CUTE_TEST_CASE(pcap_loading_tests)
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(pktslicer_get_pkt_field_tests)
-    char *packet = "\x5c\xac\x4c\xaa\xf5\xb5\x08\x95\x2a\xad\xd6\x4f\x08\x00\x45\x00"
-                   "\x00\x34\xc8\xc5\x40\x00\x3a\x06\xc2\x7f\x17\x2d\xdc\x5e\xc0\xa8"
-                   "\x01\x4b\x00\x50\x04\x59\x60\x26\x26\xa7\xba\x84\x24\x9b\x80\x10"
-                   "\x03\x9c\x97\xcd\x00\x00\x01\x01\x05\x0a\xba\x84\x24\x9a\xba\x84"
-                   "\x24\x9b";
-    size_t packet_size = 66;
+    char *ipv4_packet = "\x5c\xac\x4c\xaa\xf5\xb5\x08\x95\x2a\xad\xd6\x4f\x08\x00\x45\x00"
+                        "\x00\x34\xc8\xc5\x40\x00\x3a\x06\xc2\x7f\x17\x2d\xdc\x5e\xc0\xa8"
+                        "\x01\x4b\x00\x50\x04\x59\x60\x26\x26\xa7\xba\x84\x24\x9b\x80\x10"
+                        "\x03\x9c\x97\xcd\x00\x00\x01\x01\x05\x0a\xba\x84\x24\x9a\xba\x84"
+                        "\x24\x9b";
+    size_t ipv4_packet_size = 66;
+    char *udp_packet = "\x00\x90\xd0\xeb\x46\xe7\x00\x0e\x35\x78\x0c\x02\x08\x00\x45\x00"
+                       "\x00\x39\x15\x09\x00\x00\x80\x11\xa2\x56\xc0\xa8\x01\x03\xc0\xa8"
+                       "\x01\x01\x05\x73\x00\x35\x00\x25\x0a\xf6\x00\x03\x01\x00\x00\x01"
+                       "\x00\x00\x00\x00\x00\x00\x03\x77\x77\x77\x03\x77\x77\x77\x03\x63"
+                       "\x6f\x6d\x00\x00\x01\x00\x01";
+    size_t udp_packet_size = 71;
     size_t slice_size = 0;
     void *slice = NULL;
     struct expect_slices {
         const size_t slice_size;
         const unsigned char *slice;
         const char *pkt_field;
+        const char *packet;
+        const size_t packet_size;
     };
     struct expect_slices slices[] = {
-        { 6, "\x5c\xac\x4c\xaa\xf5\xb5", "eth.dst"    },
-        { 6, "\x08\x95\x2a\xad\xd6\x4f", "eth.src"    },
-        { 2, "\x08\x00",                 "eth.type"   },
-        { 1, "\x04",                     "ip.version" },
-        { 1, "\x05",                     "ip.ihl"     },
-        { 1, "\x00",                     "ip.tos"     },
-        { 2, "\x00\x34",                 "ip.len"     },
-        { 2, "\xc8\xc5",                 "ip.id"      },
-        { 1, "\x02",                     "ip.flags"   },
-        { 2, "\x00\x00",                 "ip.fragoff" },
-        { 1, "\x3a",                     "ip.ttl"     },
-        { 1, "\x06",                     "ip.proto"   },
-        { 2, "\xc2\x7f",                 "ip.chsum"   },
-        { 4, "\x17\x2d\xdc\x5e",         "ip.src"     },
-        { 4, "\xc0\xa8\x01\x4b",         "ip.dst"     },
-        { 2, "\x00\x50",                 "tcp.src"    },
-        { 2, "\x04\x59",                 "tcp.dst"    },
-        { 4, "\x60\x26\x26\xa7",         "tcp.seqno"  },
-        { 4, "\xba\x84\x24\x9b",         "tcp.ackno"  },
-        { 1, "\x08",                     "tcp.len"    },
-        { 1, "\x00",                     "tcp.reserv" },
-        { 1, "\x0010",                   "tcp.flags"  },
-        { 2, "\x03\x9c",                 "tcp.window" },
-        { 2, "\x97\xcd",                 "tcp.chsum"  },
-        { 2, "\x00\x00",                 "tcp.urgp"   }
+        { 6, "\x5c\xac\x4c\xaa\xf5\xb5", "eth.dst",    ipv4_packet, ipv4_packet_size },
+        { 6, "\x08\x95\x2a\xad\xd6\x4f", "eth.src",    ipv4_packet, ipv4_packet_size },
+        { 2, "\x08\x00",                 "eth.type",   ipv4_packet, ipv4_packet_size },
+        { 1, "\x04",                     "ip.version", ipv4_packet, ipv4_packet_size },
+        { 1, "\x05",                     "ip.ihl",     ipv4_packet, ipv4_packet_size },
+        { 1, "\x00",                     "ip.tos",     ipv4_packet, ipv4_packet_size },
+        { 2, "\x00\x34",                 "ip.len",     ipv4_packet, ipv4_packet_size },
+        { 2, "\xc8\xc5",                 "ip.id",      ipv4_packet, ipv4_packet_size },
+        { 1, "\x02",                     "ip.flags",   ipv4_packet, ipv4_packet_size },
+        { 2, "\x00\x00",                 "ip.fragoff", ipv4_packet, ipv4_packet_size },
+        { 1, "\x3a",                     "ip.ttl",     ipv4_packet, ipv4_packet_size },
+        { 1, "\x06",                     "ip.proto",   ipv4_packet, ipv4_packet_size },
+        { 2, "\xc2\x7f",                 "ip.chsum",   ipv4_packet, ipv4_packet_size },
+        { 4, "\x17\x2d\xdc\x5e",         "ip.src",     ipv4_packet, ipv4_packet_size },
+        { 4, "\xc0\xa8\x01\x4b",         "ip.dst",     ipv4_packet, ipv4_packet_size },
+        { 2, "\x00\x50",                 "tcp.src",    ipv4_packet, ipv4_packet_size },
+        { 2, "\x04\x59",                 "tcp.dst",    ipv4_packet, ipv4_packet_size },
+        { 4, "\x60\x26\x26\xa7",         "tcp.seqno",  ipv4_packet, ipv4_packet_size },
+        { 4, "\xba\x84\x24\x9b",         "tcp.ackno",  ipv4_packet, ipv4_packet_size },
+        { 1, "\x08",                     "tcp.len",    ipv4_packet, ipv4_packet_size },
+        { 1, "\x00",                     "tcp.reserv", ipv4_packet, ipv4_packet_size },
+        { 1, "\x0010",                   "tcp.flags",  ipv4_packet, ipv4_packet_size },
+        { 2, "\x03\x9c",                 "tcp.window", ipv4_packet, ipv4_packet_size },
+        { 2, "\x97\xcd",                 "tcp.chsum",  ipv4_packet, ipv4_packet_size },
+        { 2, "\x00\x00",                 "tcp.urgp",   ipv4_packet, ipv4_packet_size },
+        { 2, "\x05\x73",                 "udp.src",     udp_packet,  udp_packet_size },
+        { 2, "\x00\x35",                 "udp.dst",     udp_packet,  udp_packet_size },
+        { 2, "\x00\x25",                 "udp.len",     udp_packet,  udp_packet_size },
+        { 2, "\x0a\xf6",                 "udp.chsum",   udp_packet,  udp_packet_size }
     };
     size_t slices_nr = sizeof(slices) / sizeof(slices[0]), s = 0;
     size_t b = 0;
 
-    slice = get_pkt_field("unk.field", packet, packet_size, &slice_size);
+    slice = get_pkt_field("unk.field", slices[0].packet, slices[0].packet_size, &slice_size);
     CUTE_ASSERT(slice == NULL);
     CUTE_ASSERT(slice_size == 0);
 
-    slice = get_pkt_field("unk.field", packet, packet_size, NULL);
+    slice = get_pkt_field("unk.field", slices[0].packet, slices[0].packet_size, NULL);
     CUTE_ASSERT(slice == NULL);
 
     for (s = 0; s < slices_nr; s++) {
-        slice = get_pkt_field(slices[s].pkt_field, packet, packet_size, &slice_size);
-        CUTE_ASSERT(slice_size == slices[s].slice_size);
+        slice = get_pkt_field(slices[s].pkt_field, slices[s].packet, slices[s].packet_size, &slice_size);
         CUTE_ASSERT(slice != NULL);
+        CUTE_ASSERT(slice_size == slices[s].slice_size);
         for (b = 0; b < slice_size; b++) {
             CUTE_ASSERT(((unsigned char *)slice)[b] == slices[s].slice[b]);
         }

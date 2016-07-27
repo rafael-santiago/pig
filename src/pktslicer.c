@@ -47,7 +47,11 @@ const struct pkt_field_boundaries g_pkt_fields[] = {
     { "tcp.flags",  46, 47, 0x003f0000, 16, 1 },
     { "tcp.window", 48, 49, 0xffffffff,  0, 2 },
     { "tcp.chsum",  50, 51, 0xffffffff,  0, 2 },
-    { "tcp.urgp",   52, 53, 0xffffffff,  0, 2 }
+    { "tcp.urgp",   52, 53, 0xffffffff,  0, 2 },
+    { "udp.src",    34, 35, 0xffffffff,  0, 2 },
+    { "udp.dst",    36, 37, 0xffffffff,  0, 2 },
+    { "udp.len",    38, 39, 0xffffffff,  0, 2 },
+    { "udp.chsum",  40, 41, 0xffffffff,  0, 2 }
 };
 
 const size_t g_pkt_fields_size = sizeof(g_pkt_fields) / sizeof(g_pkt_fields[0]);
