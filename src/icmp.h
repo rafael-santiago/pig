@@ -24,4 +24,6 @@ unsigned char *mk_icmp_buffer(const struct icmp *hdr, size_t *bsize);
 
 unsigned short eval_icmp_chsum(const struct icmp hdr);
 
+void *get_icmp_payload(const char *buf, const size_t buf_size, size_t *field_size);
+
 #endif

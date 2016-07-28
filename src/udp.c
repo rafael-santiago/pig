@@ -93,6 +93,10 @@ void *get_udp_payload(const char *buf, const size_t buf_size, size_t *field_size
         *field_size = 0;
     }
 
+    if (buf == NULL) {
+        return NULL;
+    }
+
     //  TODO(Santiago): When added support for ip6, strip off this.
     if ((buf[0] >> 4) != 4) {
         return NULL;

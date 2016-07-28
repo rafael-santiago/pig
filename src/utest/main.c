@@ -920,6 +920,14 @@ CUTE_TEST_CASE(pktslicer_get_pkt_field_tests)
         {  2, "\x03\x9c",                 "tcp.wsize",     ipv4_packet, ipv4_packet_size },
         {  2, "\x97\xcd",                 "tcp.checksum",  ipv4_packet, ipv4_packet_size },
         {  2, "\x00\x00",                 "tcp.urgp",      ipv4_packet, ipv4_packet_size },
+        { 32, "\x00\x50\x04\x59"
+              "\x60\x26\x26\xa7"
+              "\xba\x84\x24\x9b"
+              "\x80\x10\x03\x9c"
+              "\x97\xcd\x00\x00"
+              "\x01\x01\x05\x0a"
+              "\xba\x84\x24\x9a"
+              "\xba\x84\x24\x9b",         "tcp.payload",   ipv4_packet, ipv4_packet_size },
         {  2, "\x05\x73",                 "udp.src",        udp_packet, udp_packet_size  },
         {  2, "\x00\x35",                 "udp.dst",        udp_packet, udp_packet_size  },
         {  2, "\x00\x25",                 "udp.size",       udp_packet, udp_packet_size  },
@@ -935,11 +943,37 @@ CUTE_TEST_CASE(pktslicer_get_pkt_field_tests)
         {  1, "\x03",                     "icmp.type",     icmp_packet, icmp_packet_size },
         {  1, "\x03",                     "icmp.code",     icmp_packet, icmp_packet_size },
         {  2, "\x80\xe3",                 "icmp.checksum", icmp_packet, icmp_packet_size },
+        { 80, "\x00\x00\x00\x00"
+              "\x45\x00\x00\x4c"
+              "\x00\x00\x40\x00"
+              "\x40\x11\xb7\x04"
+              "\xc0\xa8\x01\x01"
+              "\xc0\xa8\x01\x4b"
+              "\x00\x35\xc4\x95"
+              "\x00\x38\xe9\x8d"
+              "\x50\xc2\x81\x80"
+              "\x00\x01\x00\x01"
+              "\x00\x00\x00\x00"
+              "\x03\x61\x70\x69"
+              "\x06\x67\x69\x74"
+              "\x68\x75\x62\x03"
+              "\x63\x6f\x6d\x00"
+              "\x00\x01\x00\x01"
+              "\xc0\x0c\x00\x01"
+              "\x00\x01\x00\x00"
+              "\x00\x02\x00\x04"
+              "\xc0\x1e\xfc\x7f",         "icmp.payload",  icmp_packet, icmp_packet_size },
         {  2, "\x00\x01",                 "arp.hwtype",     arp_packet, arp_packet_size  },
         {  2, "\x08\x00",                 "arp.ptype",      arp_packet, arp_packet_size  },
         {  1, "\x06",                     "arp.hwlen",      arp_packet, arp_packet_size  },
         {  1, "\x04",                     "arp.plen",       arp_packet, arp_packet_size  },
-        {  2, "\x00\x01",                 "arp.opcode",     arp_packet, arp_packet_size  }
+        {  2, "\x00\x01",                 "arp.opcode",     arp_packet, arp_packet_size  },
+        {  6, "\x5c\xac\x4c"
+              "\xaa\xf5\xb5",             "arp.hwsrc",      arp_packet, arp_packet_size  },
+        {  4, "\xc0\xa8\x01\x4b",         "arp.psrc",       arp_packet, arp_packet_size  },
+        {  6, "\x08\x95\x2a"
+              "\xad\xd6\x4f",             "arp.hwdst",      arp_packet, arp_packet_size  },
+        {  4, "\xc0\xa8\x01\x01",         "arp.pdst",       arp_packet, arp_packet_size  }
     };
     size_t slices_nr = sizeof(slices) / sizeof(slices[0]), s = 0;
     size_t b = 0;
