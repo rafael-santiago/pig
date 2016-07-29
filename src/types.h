@@ -19,7 +19,8 @@ typedef enum _pig_fields {
     kTcp_psh, kTcp_rst, kTcp_syn, kTcp_fin, kTcp_wsize, kTcp_checksum, kTcp_urgp, kTcp_payload,
     kUdp_src, kUdp_dst, kUdp_size, kUdp_checksum, kUdp_payload, kIcmp_type, kIcmp_code, kIcmp_checksum,
     kIcmp_payload, kArp_hwtype, kArp_ptype, kArp_hwlen, kArp_plen, kArp_opcode, kArp_hwsrc, kArp_psrc,
-    kArp_hwdst, kArp_pdst, kSignature, kRefresh, kRandom, kUnk, kMaxPigFields
+    kArp_hwdst, kArp_pdst, kEth_hwdst, kEth_hwsrc, kEth_type, kEth_payload,
+    kSignature, kRefresh, kRandom, kUnk, kMaxPigFields
 }pig_field_t;
 
 typedef struct _pigsty_field {
