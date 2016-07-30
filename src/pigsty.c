@@ -886,7 +886,8 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                 retval = 1;
                 for (cp = ep->conf; cp != NULL && retval; cp = cp->next) {
                     retval = (cp->field->index >= tfield_floor && cp->field->index <= tfield_ceil) ||
-                             (cp->field->index >= ifield_floor && cp->field->index <= ifield_ceil);
+                             (cp->field->index >= ifield_floor && cp->field->index <= ifield_ceil) ||
+                             (cp->field->index >= kEth_hwdst && cp->field->index <= kEth_payload);
                 }
 
                 if (retval == 0) {
@@ -898,7 +899,8 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
 
             for (cp = ep->conf; cp != NULL && retval == 1; cp = cp->next) {
                 if (is_arp) {
-                    retval = (cp->field->index >= kArp_hwtype && cp->field->index <= kArp_pdst);
+                    retval = (cp->field->index >= kArp_hwtype && cp->field->index <= kArp_pdst) ||
+                             (cp->field->index >= kEth_hwdst && cp->field->index <= kEth_payload);
                 }
             }
 
@@ -946,22 +948,22 @@ static int check_eth_frame_sanity(const pigsty_conf_set_ctx *conf, int *ip_versi
             break;
     }
 
-    if (ether_type != -1) {
+    if (ether_type == ETHER_TYPE_ARP || ether_type == ETHER_TYPE_IP) {
 
         for (cp = conf; cp != NULL && normal == 1; cp = cp->next) {
 
             //  WARN(Santiago): If a user is specifying the ethernet frame's payload is quite crazy
             //                  use the cooked datagram fields. So, here the ethernet frame range stops at kEth_type.
-            normal = (cp->field->index >= kEth_hwdst && cp->field->index <= kEth_type);
+            normal = (cp->field->index != kEth_payload);
 
-            if (normal == 1) {
+            if (normal == 0 || (cp->field->index >= kEth_hwdst && cp->field->index <= kEth_type)) {
+                continue;
+            }
 
-                normal = (cp->field->index >= kArp_hwtype && cp->field->index <= kArp_pdst);
+            normal = (cp->field->index >= kArp_hwtype && cp->field->index <= kArp_pdst);
 
-                if (must_neg) {
-                    normal = !normal;
-                }
-
+            if (must_neg) {
+                normal = !normal;
             }
 
         }

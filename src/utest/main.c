@@ -240,13 +240,29 @@ CUTE_TEST_CASE(pigsty_file_parsing_tests)
     del_pigsty_entry(pigsty);
     pigsty = NULL;
 
-    /*test_pigsty = "[ eth.type = 0x0800, eth.hwdst = \"BA:BA:CA:BA:BA:CA\", eth.hwsrc = \"DE:ad:Be:Ef:f0:bA\", eth.payload = \"\\x00\", signature = \"valid ethernet frame\" ]";
+    test_pigsty = "[ eth.type = 0x0800, eth.hwdst = \"BA:BA:CA:BA:BA:CA\", eth.hwsrc = \"DE:ad:Be:Ef:f0:bA\", eth.payload = \"\\x00\", signature = \"invalid ethernet frame\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty != NULL", pigsty == NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
+
+    test_pigsty = "[ eth.type = 0x0800, eth.hwdst = \"BA:BA:CA:BA:BA:CA\", eth.hwsrc = \"DE:ad:Be:Ef:f0:bA\", ip.version = 4, ip.src = 127.0.0.1, ip.dst = 128.0.7.2, ip.protocol = 6, tcp.src = 80, tcp.dst = 1004, signature = \"valid ethernet frame w/ IP\" ]";
     write_to_file("test.pigsty", test_pigsty);
     pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
     CUTE_CHECK("pigsty == NULL", pigsty != NULL);
     remove("test.pigsty");
     del_pigsty_entry(pigsty);
-    pigsty = NULL;*/
+    pigsty = NULL;
+
+    test_pigsty = "[ eth.type = 0x0000, eth.hwdst = \"BA:BA:CA:BA:BA:CA\", eth.hwsrc = \"DE:ad:Be:Ef:f0:bA\", eth.payload = \"\\x00\", signature = \"valid ethernet frame\" ]";
+    write_to_file("test.pigsty", test_pigsty);
+    pigsty = load_pigsty_data_from_file(pigsty, "test.pigsty");
+    CUTE_CHECK("pigsty == NULL", pigsty != NULL);
+    remove("test.pigsty");
+    del_pigsty_entry(pigsty);
+    pigsty = NULL;
 
 CUTE_TEST_CASE_END
 
