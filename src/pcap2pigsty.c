@@ -29,9 +29,11 @@ struct pkt_field_dumper_ctx {
 
 static void init_pcap_rec_dumper_lookup_tables();
 
-static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record);
+static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record, const int incl_ethframe);
 
 static void init_pcap_rec_dumper_lookup_table();
+
+static int ethframe_dumper(FILE *pigsty, const pcap_record_ctx *record);
 
 static int ip4_dumper(FILE *pigsty, const pcap_record_ctx *record);
 
@@ -45,7 +47,7 @@ static int tcp_dumper(FILE *pigsty, const pcap_record_ctx *record);
 
 static int udp_dumper(FILE *pigsty, const pcap_record_ctx *record);
 
-static int tlayer_dumper(struct pkt_field_dumper_ctx *dumper, size_t dumper_size, FILE *pigsty, const pcap_record_ctx *record);
+static int dumper_textsec(struct pkt_field_dumper_ctx *dumper, size_t dumper_size, FILE *pigsty, const pcap_record_ctx *record);
 
 static int generic_ip4tlayer_dumper(FILE *pigsty, const pcap_record_ctx *record);
 
@@ -67,7 +69,7 @@ static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buf
 
 #define PIGSTY_NEXT_ENTRY ","
 
-int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath) {
+int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath, const int incl_ethframe) {
     int exit_code = 1;
     pcap_file_ctx *pcap = NULL;
     pcap_record_ctx *rp = NULL;
@@ -94,7 +96,7 @@ int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath) {
     exit_code = 0;
 
     for (rp = pcap->rec; rp != NULL && exit_code == 0; rp = rp->next) {
-        exit_code = save_pcap_rec_chunk(pigsty, rp);
+        exit_code = save_pcap_rec_chunk(pigsty, rp, incl_ethframe);
     }
 
 ___pcap2pigsty_cleanup:
@@ -139,7 +141,7 @@ static void init_pcap_rec_dumper_lookup_tables() {
     ltdone = 1;
 }
 
-static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record) {
+static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record, const int incl_ethframe) {
     pcap_rec_dumper pktdumper = NULL;
     unsigned short *ethtype = NULL;
 
@@ -151,6 +153,12 @@ static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record) {
 
     if (ethtype == NULL) {
         return 1;
+    }
+
+    if (incl_ethframe) {
+        if (ethframe_dumper(pigsty, record) != 0) {
+            return 1;
+        }
     }
 
     pktdumper = g_pcap_rec_dumper_lt[(*ethtype) >> 4][(*ethtype) & 0xff];
@@ -166,6 +174,22 @@ static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record) {
     free(ethtype);
 
     return pktdumper(pigsty, record);
+}
+
+static int ethframe_dumper(FILE *pigsty, const pcap_record_ctx *record) {
+    struct pkt_field_dumper_ctx dumper[] = {
+        { "eth.hwdst",   dump_maddr   },
+        { "eth.hwsrc",   dump_maddr   },
+        { "eth.type",    dump_xdata   }
+        //  WARN(Santiago): Do not worry about the eth.payload field. The generic_dumper()
+        //                  will spit it for us if needed.
+    };
+
+    if (pigsty == NULL || record == NULL || record->data == NULL) {
+        return 1;
+    }
+
+    return dumper_textsec(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
 }
 
 static int ip4_dumper(FILE *pigsty, const pcap_record_ctx *record) {
@@ -312,7 +336,7 @@ static int icmp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
         { "icmp.checksum", dump_xdata   },
         { "icmp.payload",  dump_xstring }
     };
-    return tlayer_dumper(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
+    return dumper_textsec(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
 }
 
 static int tcp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
@@ -334,7 +358,7 @@ static int tcp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
         { "tcp.urgp",     dump_xdata   },
         { "tcp.payload",  dump_string  }
     };
-    return tlayer_dumper(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
+    return dumper_textsec(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
 }
 
 static int udp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
@@ -345,10 +369,10 @@ static int udp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
         { "udp.checksum", dump_xdata  },
         { "udp.payload",  dump_string }
     };
-    return tlayer_dumper(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
+    return dumper_textsec(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
 }
 
-static int tlayer_dumper(struct pkt_field_dumper_ctx *dumper, size_t dumper_size, FILE *pigsty, const pcap_record_ctx *record) {
+static int dumper_textsec(struct pkt_field_dumper_ctx *dumper, size_t dumper_size, FILE *pigsty, const pcap_record_ctx *record) {
     size_t d = 0;
     void *buffer = NULL;
     size_t buffer_size = 0;
