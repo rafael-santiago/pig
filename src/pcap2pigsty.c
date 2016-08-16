@@ -63,6 +63,10 @@ static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *b
 
 static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
 
+#define PIGSTY_NEW_ENTRY "\n\t"
+
+#define PIGSTY_NEXT_ENTRY ","
+
 int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath) {
     int exit_code = 1;
     pcap_file_ctx *pcap = NULL;
@@ -199,7 +203,7 @@ static int ip4_dumper(FILE *pigsty, const pcap_record_ctx *record) {
                 dumper[d].write(pigsty, field, buffer, buffer_size);
 
                 if ((d + 1) != dumper_size) {
-                    fprintf(pigsty, ",");
+                    fprintf(pigsty, PIGSTY_NEXT_ENTRY);
                 }
 
                 if (strcmp(field, "ip.protocol") == 0) {
@@ -279,7 +283,7 @@ static int arp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
                 }
 
                 if ((d + 1) != dumper_size) {
-                    fprintf(pigsty, ",");
+                    fprintf(pigsty, PIGSTY_NEXT_ENTRY);
                 }
             }
 
@@ -363,7 +367,7 @@ static int tlayer_dumper(struct pkt_field_dumper_ctx *dumper, size_t dumper_size
             dumper[d].write(pigsty, field, buffer, buffer_size);
 
             if ((d + 1) != dumper_size) {
-                fprintf(pigsty, ",");
+                fprintf(pigsty, PIGSTY_NEXT_ENTRY);
             }
 
             free(buffer);
@@ -392,7 +396,7 @@ static void dump_xdata(FILE *pigsty, const char *field, const unsigned char *buf
         return;
     }
 
-    fprintf(pigsty, "\n\t%s = 0x", field);
+    fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = 0x", field);
 
     bp = buffer;
     bp_end = bp + buffer_size;
@@ -427,7 +431,7 @@ static void dump_ddata(FILE *pigsty, const char *field, const unsigned char *buf
             return;
     }
 
-    fprintf(pigsty, "\n\t%s = %s", field, temp);
+    fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = %s", field, temp);
 }
 
 static void dump_ip4addr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
@@ -451,7 +455,7 @@ static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *b
     bp = buffer;
     bp_end = bp + buffer_size;
 
-    fprintf(pigsty, "\n\t%s = \"", field);
+    fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = \"", field);
 
     while (bp != bp_end) {
         sprintf(temp, "\\x%.2X", *bp);
@@ -474,7 +478,7 @@ static void dump_string(FILE *pigsty, const char *field, const unsigned char *bu
     bp = buffer;
     bp_end = bp + buffer_size;
 
-    fprintf(pigsty, "\n\t%s = \"", field);
+    fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = \"", field);
 
     while (bp != bp_end) {
 
@@ -521,7 +525,7 @@ static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *b
     }
 
     if (rsh != -1) {
-        fprintf(pigsty, "\n\t%s = %d", (((*buffer) >> rsh) & 0x1));
+        fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = %d", (((*buffer) >> rsh) & 0x1));
     }
 }
 
@@ -536,7 +540,7 @@ static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buf
     bp = buffer;
     bp_end = bp + buffer_size;
 
-    fprintf(pigsty, "\n\t%s = \"", field);
+    fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = \"", field);
 
     while (bp != bp_end) {
         fprintf(pigsty, "%.2X", *bp);
