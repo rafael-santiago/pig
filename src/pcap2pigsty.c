@@ -29,7 +29,7 @@ struct pkt_field_dumper_ctx {
 
 static void init_pcap_rec_dumper_lookup_tables();
 
-static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record, const int incl_ethframe);
+static int pigsty_data(FILE *pigsty, const pcap_record_ctx *record, const int incl_ethframe);
 
 static void init_pcap_rec_dumper_lookup_table();
 
@@ -65,15 +65,24 @@ static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *b
 
 static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
 
+static void pigsty_ini(FILE *pigsty);
+
+static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int index);
+
+#define NEW_PIGSTY "[ "
+
 #define PIGSTY_NEW_ENTRY "\n\t"
 
 #define PIGSTY_NEXT_ENTRY ","
 
-int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath, const int incl_ethframe) {
+#define NEXT_PIGSTY " ]\n"
+
+int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath, const char *signature_fmt, const int incl_ethframe) {
     int exit_code = 1;
     pcap_file_ctx *pcap = NULL;
     pcap_record_ctx *rp = NULL;
     FILE *pigsty = NULL;
+    int signature_index = 0;
 
     if (pigsty_filepath == NULL) {
         goto ___pcap2pigsty_cleanup;
@@ -96,7 +105,9 @@ int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath, const in
     exit_code = 0;
 
     for (rp = pcap->rec; rp != NULL && exit_code == 0; rp = rp->next) {
-        exit_code = save_pcap_rec_chunk(pigsty, rp, incl_ethframe);
+        pigsty_ini(pigsty);
+        exit_code = pigsty_data(pigsty, rp, incl_ethframe);
+        pigsty_finis(pigsty, signature_fmt, signature_index++);
     }
 
 ___pcap2pigsty_cleanup:
@@ -109,7 +120,43 @@ ___pcap2pigsty_cleanup:
         fclose(pigsty);
     }
 
+    if (exit_code != 0) {
+        remove(pigsty_filepath);
+    }
+
     return exit_code;
+}
+
+static void pigsty_ini(FILE *pigsty) {
+    fprintf(pigsty, NEW_PIGSTY);
+}
+
+static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int index) {
+    const char *fmt = "packet[%d]";
+    int inval_fmt = 0;
+    const char *sp = NULL;
+    const char *sp_end = NULL;
+    int o = 0;
+
+    if (signature_fmt == NULL) {
+        inval_fmt = 1;
+    }
+
+    for (sp = signature_fmt; *sp != 0 && inval_fmt == 0; sp++) {
+        if (*sp == '%' && *(sp + 1) != 'd' || (*sp == '%' && *(sp + 1) == 'd' && o > 0)) {
+            inval_fmt = 0;
+        } else if (*sp == '%' && *(sp + 1) == 'd') {
+            o++;
+        }
+    }
+
+    if (!inval_fmt) {
+        fmt = signature_fmt;
+    }
+
+    fprintf(pigsty, PIGSTY_NEXT_ENTRY
+                    PIGSTY_NEW_ENTRY "signature = %s"
+                    NEXT_PIGSTY, fmt, index);
 }
 
 static void init_pcap_rec_dumper_lookup_tables() {
@@ -141,7 +188,7 @@ static void init_pcap_rec_dumper_lookup_tables() {
     ltdone = 1;
 }
 
-static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record, const int incl_ethframe) {
+static int pigsty_data(FILE *pigsty, const pcap_record_ctx *record, const int incl_ethframe) {
     pcap_rec_dumper pktdumper = NULL;
     unsigned short *ethtype = NULL;
 
@@ -157,11 +204,14 @@ static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record, cons
 
     if (incl_ethframe) {
         if (ethframe_dumper(pigsty, record) != 0) {
+            free(ethtype);
             return 1;
         }
     }
 
     pktdumper = g_pcap_rec_dumper_lt[(*ethtype) >> 4][(*ethtype) & 0xff];
+
+    free(ethtype);
 
     if (pktdumper == NULL) {
         pktdumper = g_pcap_rec_dumper_lt[0xff][0xff];
@@ -170,8 +220,6 @@ static int save_pcap_rec_chunk(FILE *pigsty, const pcap_record_ctx *record, cons
             return 1;
         }
     }
-
-    free(ethtype);
 
     return pktdumper(pigsty, record);
 }
