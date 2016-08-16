@@ -14,13 +14,15 @@
 
 typedef int (*pcap_rec_dumper)(FILE *pigsty, const pcap_record_ctx *record);
 
+typedef void (*dump_writer)(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
+
 static pcap_rec_dumper g_pcap_rec_dumper_lt[0xff][0xff] = { 0 };
 
 static pcap_rec_dumper g_pcap_rec_dumper_ip4tlayer_lt[0xff] = { 0 };
 
 struct pkt_field_dumper_ctx {
     const char *field;
-    void (*write)(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
+    dump_writer write;
 };
 
 //static pcap_rec_dumper g_pcap_rec_dumper_ip6tlayer_lt[0xffff] = { 0 };
@@ -58,6 +60,8 @@ static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *b
 static void dump_string(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
 
 static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+
+static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
 
 int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath) {
     int exit_code = 1;
@@ -224,15 +228,15 @@ static int ip4_dumper(FILE *pigsty, const pcap_record_ctx *record) {
 
 static int arp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
     struct pkt_field_dumper_ctx dumper[] = {
-        { "arp.hwtype", NULL },
-        { "arp.ptype",  NULL },
-        { "arp.hwlen",  NULL },
-        { "arp.plen",   NULL },
-        { "arp.opcode", NULL },
-        { "arp.hwsrc",  NULL },
-        { "arp.psrc",   NULL },
-        { "arp.hwdst",  NULL },
-        { "arp.pdst",   NULL }
+        { "arp.hwtype", dump_xdata    },
+        { "arp.ptype",  dump_xdata    },
+        { "arp.hwlen",  dump_ddata    },
+        { "arp.plen",   dump_ddata    },
+        { "arp.opcode", dump_ddata    },
+        { "arp.hwsrc",  dump_maddr    },
+        { "arp.psrc",   NULL          },
+        { "arp.hwdst",  dump_maddr    },
+        { "arp.pdst",   NULL          }
     };
     size_t dumper_size = sizeof(dumper) / sizeof(dumper[0]);
     size_t d = 0;
@@ -240,12 +244,48 @@ static int arp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
     unsigned char plen = 0;
     void *buffer = NULL;
     size_t buffer_size = 0;
+    const char *field = NULL;
+    dump_writer write = NULL;
 
     if (pigsty == NULL || record == NULL) {
         return 1;
     }
 
     for (d = 0; d < dumper_size; d++) {
+        field = dumper[d].field;
+        buffer = get_pkt_field(field, record->data, record->hdr.incl_len, &buffer_size);
+
+        if (buffer != NULL) {
+
+            write = dumper[d].write;
+
+            if (write == NULL) {
+                if (strcmp(field, "arp.psrc") != 0 && strcmp(field, "arp.pdst") != 0) {
+                    continue;
+                }
+
+                if (ptype == 0x0800 && plen == 0x4) {
+                    dump_ip4addr(pigsty, field, buffer, buffer_size);
+                } else {
+                    dump_xstring(pigsty, field, buffer, buffer_size);
+                }
+            } else {
+                write(pigsty, field, buffer, buffer_size);
+
+                if (strcmp(buffer, "arp.ptype") == 0) {
+                    ptype = *(unsigned short *)buffer;
+                } else if (strcmp(buffer, "arp.plen") == 0) {
+                    plen = *(unsigned char *)buffer;
+                }
+
+                if ((d + 1) != dumper_size) {
+                    fprintf(pigsty, ",");
+                }
+            }
+
+            free(buffer);
+        }
+
     }
 
     return 0;
@@ -483,4 +523,28 @@ static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *b
     if (rsh != -1) {
         fprintf(pigsty, "\n\t%s = %d", (((*buffer) >> rsh) & 0x1));
     }
+}
+
+static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
+    const char *bp = NULL;
+    const char *bp_end = NULL;
+
+    if (pigsty == NULL || field == NULL || buffer == NULL || buffer_size == 0) {
+        return;
+    }
+
+    bp = buffer;
+    bp_end = bp + buffer_size;
+
+    fprintf(pigsty, "\n\t%s = \"", field);
+
+    while (bp != bp_end) {
+        fprintf(pigsty, "%.2X", *bp);
+        bp++;
+        if (bp != bp_end) {
+            fprintf(pigsty, ":");
+        }
+    }
+
+    fprintf(pigsty, "\"");
 }
