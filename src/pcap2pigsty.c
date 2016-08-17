@@ -63,7 +63,9 @@ static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *b
 
 static void dump_string(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
 
-static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+static void dump_tcpflags(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+
+static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size, const char *ntok);
 
 static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
 
@@ -178,7 +180,7 @@ static void init_pcap_rec_dumper_lookup_tables() {
     r_nr = sizeof(g_pcap_rec_dumper_lt) / sizeof(g_pcap_rec_dumper_lt[0]);
 
     for (r = 0; r < r_nr; r++) {
-        for ( c = 0; c < c_nr; c++) {
+        for (c = 0; c < c_nr; c++) {
             g_pcap_rec_dumper_lt[c][r] = generic_dumper;
         }
     }
@@ -400,22 +402,17 @@ static int icmp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
 
 static int tcp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
     struct pkt_field_dumper_ctx dumper[] = {
-        { "tcp.src",      dump_ddata   },
-        { "tcp.dst",      dump_ddata   },
-        { "tcp.seqno",    dump_xdata   },
-        { "tcp.ackno",    dump_xdata   },
-        { "tcp.size",     dump_ddata   },
-        { "tcp.reserv",   dump_ddata   },
-        { "tcp.urg",      dump_tcpflag },
-        { "tcp.ack",      dump_tcpflag },
-        { "tcp.psh",      dump_tcpflag },
-        { "tcp.rst",      dump_tcpflag },
-        { "tcp.syn",      dump_tcpflag },
-        { "tcp.fin",      dump_tcpflag },
-        { "tcp.wsize",    dump_ddata   },
-        { "tcp.checksum", dump_xdata   },
-        { "tcp.urgp",     dump_xdata   },
-        { "tcp.payload",  dump_string  }
+        { "tcp.src",      dump_ddata    },
+        { "tcp.dst",      dump_ddata    },
+        { "tcp.seqno",    dump_xdata    },
+        { "tcp.ackno",    dump_xdata    },
+        { "tcp.size",     dump_ddata    },
+        { "tcp.reserv",   dump_ddata    },
+        { "tcp.flags",    dump_tcpflags },
+        { "tcp.wsize",    dump_ddata    },
+        { "tcp.checksum", dump_xdata    },
+        { "tcp.urgp",     dump_xdata    },
+        { "tcp.payload",  dump_string   }
     };
     return dumper_textsec(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
 }
@@ -586,7 +583,16 @@ static void dump_string(FILE *pigsty, const char *field, const unsigned char *bu
     fprintf(pigsty, "\"");
 }
 
-static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
+static void dump_tcpflags(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
+    dump_tcpflag(pigsty, "tcp.urg", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
+    dump_tcpflag(pigsty, "tcp.ack", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
+    dump_tcpflag(pigsty, "tcp.psh", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
+    dump_tcpflag(pigsty, "tcp.rst", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
+    dump_tcpflag(pigsty, "tcp.syn", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
+    dump_tcpflag(pigsty, "tcp.fin", buffer, buffer_size, "");
+}
+
+static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size, const char *ntok) {
     int rsh = -1;
 
     if (pigsty == NULL || field == NULL || buffer == NULL || buffer_size == 0) {
@@ -608,7 +614,7 @@ static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *b
     }
 
     if (rsh != -1) {
-        fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = %d", (((*buffer) >> rsh) & 0x1));
+        fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = %d%s", field, (((*buffer) >> rsh) & 0x1), ntok);
     }
 }
 
