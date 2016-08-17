@@ -8,9 +8,11 @@
 #include "pcap2pigsty.h"
 #include "pcap.h"
 #include "pktslicer.h"
+#include "endianess.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
+#include <arpa/inet.h>
 
 typedef int (*pcap_rec_dumper)(FILE *pigsty, const pcap_record_ctx *record);
 
@@ -69,13 +71,13 @@ static void pigsty_ini(FILE *pigsty);
 
 static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int index);
 
-#define NEW_PIGSTY "[ "
+#define NEW_PIGSTY "["
 
-#define PIGSTY_NEW_ENTRY "\n\t"
+#define PIGSTY_NEW_ENTRY "\n "
 
 #define PIGSTY_NEXT_ENTRY ","
 
-#define NEXT_PIGSTY " ]\n"
+#define NEXT_PIGSTY "\n]\n"
 
 int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath, const char *signature_fmt, const int incl_ethframe) {
     int exit_code = 1;
@@ -96,7 +98,7 @@ int pcap2pigsty(const char *pigsty_filepath, const char *pcap_filepath, const ch
         goto ___pcap2pigsty_cleanup;
     }
 
-    if ((pigsty = fopen(pcap_filepath, "a")) == NULL) {
+    if ((pigsty = fopen(pigsty_filepath, "a")) == NULL) {
         goto ___pcap2pigsty_cleanup;
     }
 
@@ -137,6 +139,7 @@ static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int inde
     const char *sp = NULL;
     const char *sp_end = NULL;
     int o = 0;
+    char str_fmt[255] = "";
 
     if (signature_fmt == NULL) {
         inval_fmt = 1;
@@ -154,9 +157,12 @@ static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int inde
         fmt = signature_fmt;
     }
 
-    fprintf(pigsty, PIGSTY_NEXT_ENTRY
-                    PIGSTY_NEW_ENTRY "signature = %s"
-                    NEXT_PIGSTY, fmt, index);
+    sprintf(str_fmt, PIGSTY_NEXT_ENTRY
+                     PIGSTY_NEW_ENTRY
+                     "signature = %s"
+                     NEXT_PIGSTY, fmt);
+
+    fprintf(pigsty, str_fmt, index);
 }
 
 static void init_pcap_rec_dumper_lookup_tables() {
@@ -168,9 +174,15 @@ static void init_pcap_rec_dumper_lookup_tables() {
 
     memset(g_pcap_rec_dumper_lt, 0, sizeof(g_pcap_rec_dumper_lt));
 
-    g_pcap_rec_dumper_lt[0x08][0x00] = ip4_dumper;
-    g_pcap_rec_dumper_lt[0x08][0x06] = arp_dumper;
-    //g_pcap_rec_dumper_lt[0x08][0xdd] = ip6_dumper;
+    if (little_endian()) {
+        g_pcap_rec_dumper_lt[0x00][0x08] = ip4_dumper;
+        g_pcap_rec_dumper_lt[0x06][0x08] = arp_dumper;
+        //g_pcap_rec_dumper_lt[0xdd][0x08] = ip6_dumper;
+    } else {
+        g_pcap_rec_dumper_lt[0x08][0x00] = ip4_dumper;
+        g_pcap_rec_dumper_lt[0x08][0x06] = arp_dumper;
+        //g_pcap_rec_dumper_lt[0x08][0xdd] = ip6_dumper;
+    }
     g_pcap_rec_dumper_lt[0xff][0xff] = generic_dumper;
 
     memset(g_pcap_rec_dumper_ip4tlayer_lt, 0, sizeof(g_pcap_rec_dumper_ip4tlayer_lt));
@@ -204,14 +216,11 @@ static int pigsty_data(FILE *pigsty, const pcap_record_ctx *record, const int in
 
     if (incl_ethframe) {
         if (ethframe_dumper(pigsty, record) != 0) {
-            free(ethtype);
             return 1;
         }
     }
 
-    pktdumper = g_pcap_rec_dumper_lt[(*ethtype) >> 4][(*ethtype) & 0xff];
-
-    free(ethtype);
+    pktdumper = g_pcap_rec_dumper_lt[(*ethtype) >> 8][(*ethtype) & 0xff];
 
     if (pktdumper == NULL) {
         pktdumper = g_pcap_rec_dumper_lt[0xff][0xff];
@@ -237,7 +246,13 @@ static int ethframe_dumper(FILE *pigsty, const pcap_record_ctx *record) {
         return 1;
     }
 
-    return dumper_textsec(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
+    if (dumper_textsec(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record) != 0) {
+        return 1;
+    }
+
+    fprintf(pigsty, PIGSTY_NEXT_ENTRY);
+
+    return 0;
 }
 
 static int ip4_dumper(FILE *pigsty, const pcap_record_ctx *record) {
@@ -281,8 +296,6 @@ static int ip4_dumper(FILE *pigsty, const pcap_record_ctx *record) {
                 if (strcmp(field, "ip.protocol") == 0) {
                     tlayer = *(unsigned char *)buffer;
                 }
-
-                free(buffer);
             }
         }
     }
@@ -348,18 +361,17 @@ static int arp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
             } else {
                 write(pigsty, field, buffer, buffer_size);
 
-                if (strcmp(buffer, "arp.ptype") == 0) {
+                if (strcmp(field, "arp.ptype") == 0) {
                     ptype = *(unsigned short *)buffer;
-                } else if (strcmp(buffer, "arp.plen") == 0) {
+                    ptype = htons(ptype);
+                } else if (strcmp(field, "arp.plen") == 0) {
                     plen = *(unsigned char *)buffer;
-                }
-
-                if ((d + 1) != dumper_size) {
-                    fprintf(pigsty, PIGSTY_NEXT_ENTRY);
                 }
             }
 
-            free(buffer);
+            if ((d + 1) != dumper_size) {
+                fprintf(pigsty, PIGSTY_NEXT_ENTRY);
+            }
         }
 
     }
@@ -441,8 +453,6 @@ static int dumper_textsec(struct pkt_field_dumper_ctx *dumper, size_t dumper_siz
             if ((d + 1) != dumper_size) {
                 fprintf(pigsty, PIGSTY_NEXT_ENTRY);
             }
-
-            free(buffer);
         }
     }
 
@@ -488,15 +498,15 @@ static void dump_ddata(FILE *pigsty, const char *field, const unsigned char *buf
 
     switch (buffer_size) {
         case sizeof(unsigned char):
-            sprintf(temp, "%d", (unsigned char *)buffer);
+            sprintf(temp, "%d", *(unsigned char *)buffer);
             break;
 
         case sizeof(unsigned short):
-            sprintf(temp, "%d", (unsigned short *)buffer);
+            sprintf(temp, "%d", htons(*(unsigned short *)buffer));
             break;
 
         case sizeof(unsigned int):
-            sprintf(temp, "%d", (unsigned int *)buffer);
+            sprintf(temp, "%d", htonl(*(unsigned int *)buffer));
             break;
 
         default:
@@ -512,7 +522,7 @@ static void dump_ip4addr(FILE *pigsty, const char *field, const unsigned char *b
         return;
     }
 
-    fprintf(pigsty, "\n\t%s = %d.%d.%d.%d", field, *(buffer), *(buffer + 1), *(buffer + 2), *(buffer + 3));
+    fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = %d.%d.%d.%d", field, *(buffer), *(buffer + 1), *(buffer + 2), *(buffer + 3));
 }
 
 static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
@@ -530,7 +540,7 @@ static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *b
     fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = \"", field);
 
     while (bp != bp_end) {
-        sprintf(temp, "\\x%.2X", *bp);
+        sprintf(temp, "\\x%.2x", *bp);
         fprintf(pigsty, "%s", temp);
         bp++;
     }
@@ -565,7 +575,7 @@ static void dump_string(FILE *pigsty, const char *field, const unsigned char *bu
         } else if (*bp == '\\') {
             fprintf(pigsty, "\\\\");
         } else {
-            sprintf(temp, "\\x%.2X", *bp);
+            sprintf(temp, "\\x%.2x", *bp);
             fprintf(pigsty, "%s", temp);
         }
 
@@ -602,8 +612,8 @@ static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *b
 }
 
 static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
-    const char *bp = NULL;
-    const char *bp_end = NULL;
+    const unsigned char *bp = NULL;
+    const unsigned char *bp_end = NULL;
 
     if (pigsty == NULL || field == NULL || buffer == NULL || buffer_size == 0) {
         return;

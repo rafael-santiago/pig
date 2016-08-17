@@ -34,8 +34,8 @@ struct pkt_field_boundaries {
 //                               "Hocus pocus", "Língua de vaca", "Abracadabra", Ploc-tchum! :)
 //
 const struct pkt_field_boundaries g_pkt_fields[] = {
-    { "eth.dst",        0,  5, 0xffffffff,  0,  6,                   NULL },
-    { "eth.src",        6, 11, 0xffffffff,  0,  6,                   NULL },
+    { "eth.hwdst",      0,  5, 0xffffffff,  0,  6,                   NULL },
+    { "eth.hwsrc",      6, 11, 0xffffffff,  0,  6,                   NULL },
     { "eth.type",      12, 13, 0xffffffff,  0,  2,                   NULL },
     { "ip.version",    14, 14, 0xf0000000, 28,  1,                   NULL },
     { "ip.ihl",        14, 14, 0x0f000000, 24,  1,                   NULL },
@@ -122,16 +122,25 @@ void *get_pkt_field(const char *field, const unsigned char *buf, const size_t bu
     if (field == NULL || buf == NULL) {
         return NULL;
     }
+    void *data = NULL;
+
     memcpy(mbuf, buf, buf_size);
     mbuf_size = buf_size;
     mbuf_end = mbuf + mbuf_size;
     for (p = 0; p < g_pkt_fields_size; p++) {
         if (strcmp(g_pkt_fields[p].name, field) == 0) {
             if (g_pkt_fields[p].size == -1) {
-                if ((buf + 14) > mbuf_end || (get_data = g_pkt_fields[p].get_data) == NULL) {
+                if ((mbuf + 14) > mbuf_end || (get_data = g_pkt_fields[p].get_data) == NULL) {
                     return NULL;
                 }
-                return get_data(buf + 14, buf_size - 14, field_size);
+                data = get_data(buf + 14, buf_size - 14, field_size);
+                if (data == NULL) {
+                    return NULL;
+                }
+                memset(mbuf, 0, sizeof(mbuf));
+                memcpy(mbuf, data, *field_size % sizeof(mbuf));
+                free(data);
+                return &mbuf[0];
             }
             if (mbuf + g_pkt_fields[p].start_off + (g_pkt_fields[p].end_off - g_pkt_fields[p].start_off) > mbuf_end) {
                 return NULL;

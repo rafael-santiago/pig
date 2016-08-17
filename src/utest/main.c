@@ -21,6 +21,7 @@
 #include "../options.h"
 #include "../pcap.h"
 #include "../pktslicer.h"
+#include "../pcap2pigsty.h"
 #include "pcap_data.h"
 #include <cutest.h>
 #include <stdlib.h>
@@ -911,8 +912,8 @@ CUTE_TEST_CASE(pktslicer_get_pkt_field_tests)
         const size_t packet_size;
     };
     struct expect_slices slices[] = {
-        {  6, "\x5c\xac\x4c\xaa\xf5\xb5", "eth.dst",       ipv4_packet, ipv4_packet_size },
-        {  6, "\x08\x95\x2a\xad\xd6\x4f", "eth.src",       ipv4_packet, ipv4_packet_size },
+        {  6, "\x5c\xac\x4c\xaa\xf5\xb5", "eth.hwdst",     ipv4_packet, ipv4_packet_size },
+        {  6, "\x08\x95\x2a\xad\xd6\x4f", "eth.hwsrc",     ipv4_packet, ipv4_packet_size },
         {  2, "\x08\x00",                 "eth.type",      ipv4_packet, ipv4_packet_size },
         {  1, "\x04",                     "ip.version",    ipv4_packet, ipv4_packet_size },
         {  1, "\x05",                     "ip.ihl",        ipv4_packet, ipv4_packet_size },
@@ -1019,6 +1020,53 @@ CUTE_TEST_CASE(pktslicer_get_pkt_field_tests)
     }
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(pcap2pigsty_tests)
+    struct test_rounds {
+        const unsigned char *pcap;
+        const size_t pcap_size;
+        const int incl_ethframe;
+        const char *pigsty;
+    };
+    struct test_rounds rounds[] = {
+        { single_arp_pcap,  single_arp_pcap_len, 1, "[\n"
+                                                    " eth.hwdst = \"08:95:2A:AD:D6:4F\",\n"
+                                                    " eth.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
+                                                    " eth.type = 0x0806,\n"
+                                                    " arp.hwtype = 0x001,\n"
+                                                    " arp.ptype = 0x0800,\n"
+                                                    " arp.hwlen = 6,\n"
+                                                    " arp.plen = 4,\n"
+                                                    " arp.opcode = 1,\n"
+                                                    " arp.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
+                                                    " arp.psrc = 192.168.1.75,\n"
+                                                    " arp.hwdst = \"08:95:2A:AD:D6:4F\",\n"
+                                                    " arp.dst = 192.168.1.1,\n"
+                                                    " signature = Test_0 ]\n"},
+        { single_icmp_pcap, single_arp_pcap_len, 1, NULL },
+        { single_udp_pcap,  single_udp_pcap_len, 1, NULL },
+        { single_tcp_pcap,  single_tcp_pcap_len, 1, NULL }
+    };
+    size_t rounds_nr = 1;//sizeof(rounds) / sizeof(rounds[0]);
+    size_t r = 0;
+    FILE *fp = NULL;
+    const char *pcap_filepath = "test-pcap.pcap";
+    const char *pigsty_filepath = "test.pigsty";
+
+    for (r = 0; r < rounds_nr; r++) {
+
+        fp = fopen(pcap_filepath, "wb");
+        CUTE_ASSERT(fp != NULL);
+        fwrite(rounds[r].pcap, 1, rounds[r].pcap_size, fp);
+        fclose(fp);
+
+        CUTE_ASSERT(pcap2pigsty(pigsty_filepath, pcap_filepath, "Test_%d", rounds[r].incl_ethframe) == 0);
+
+        //remove(pigsty_filepath);
+        remove(pcap_filepath);
+    }
+
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -1045,6 +1093,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(get_options_tests);
     CUTE_RUN_TEST(pcap_loading_tests);
     CUTE_RUN_TEST(pktslicer_get_pkt_field_tests);
+    CUTE_RUN_TEST(pcap2pigsty_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(run_tests)
