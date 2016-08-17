@@ -167,12 +167,21 @@ static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int inde
 
 static void init_pcap_rec_dumper_lookup_tables() {
     static int ltdone = 0;
+    size_t c = 0, r = 0;
+    size_t c_nr = 0, r_nr = 0;
 
     if (ltdone) {
         return;
     }
 
-    memset(g_pcap_rec_dumper_lt, 0, sizeof(g_pcap_rec_dumper_lt));
+    c_nr = sizeof(g_pcap_rec_dumper_lt[0]) / sizeof(g_pcap_rec_dumper_lt[0][0]);
+    r_nr = sizeof(g_pcap_rec_dumper_lt) / sizeof(g_pcap_rec_dumper_lt[0]);
+
+    for (r = 0; r < r_nr; r++) {
+        for ( c = 0; c < c_nr; c++) {
+            g_pcap_rec_dumper_lt[c][r] = generic_dumper;
+        }
+    }
 
     if (little_endian()) {
         g_pcap_rec_dumper_lt[0x00][0x08] = ip4_dumper;
@@ -183,16 +192,18 @@ static void init_pcap_rec_dumper_lookup_tables() {
         g_pcap_rec_dumper_lt[0x08][0x06] = arp_dumper;
         //g_pcap_rec_dumper_lt[0x08][0xdd] = ip6_dumper;
     }
-    g_pcap_rec_dumper_lt[0xff][0xff] = generic_dumper;
 
-    memset(g_pcap_rec_dumper_ip4tlayer_lt, 0, sizeof(g_pcap_rec_dumper_ip4tlayer_lt));
+    r_nr = sizeof(g_pcap_rec_dumper_ip4tlayer_lt) / sizeof(g_pcap_rec_dumper_ip4tlayer_lt[0]);
+
+    for (r = 0; r < r_nr; r++) {
+        g_pcap_rec_dumper_ip4tlayer_lt[r] = generic_ip4tlayer_dumper;
+    }
 
     g_pcap_rec_dumper_ip4tlayer_lt[0x01] = icmp_dumper;
     g_pcap_rec_dumper_ip4tlayer_lt[0x06] = tcp_dumper;
     g_pcap_rec_dumper_ip4tlayer_lt[0x11] = udp_dumper;
-    g_pcap_rec_dumper_ip4tlayer_lt[0xff] = generic_ip4tlayer_dumper;
 
-    //memset(g_pcap_rec_dumper_ip6tlayer_lt, 0, sizeof(g_pcap_rec_dumper_ip6tlayer_lt));
+    //memset(g_pcap_rec_dumper_ip6tlayer_lt, generic_ip6tlayer_dumper, sizeof(g_pcap_rec_dumper_ip6tlayer_lt));
 
     //g_pcap_rec_dumper_ip6tlayer_lt[0x06] = tcp_dumper;
     //g_pcap_rec_dumper_ip6tlayer_lt[0x11] = udp_dumper;
@@ -222,12 +233,8 @@ static int pigsty_data(FILE *pigsty, const pcap_record_ctx *record, const int in
 
     pktdumper = g_pcap_rec_dumper_lt[(*ethtype) >> 8][(*ethtype) & 0xff];
 
-    if (pktdumper == NULL) {
-        pktdumper = g_pcap_rec_dumper_lt[0xff][0xff];
-
-        if (pktdumper == NULL) {  // WARN(Santiago): It should never happen.
-            return 1;
-        }
+    if (pktdumper == NULL) {  // WARN(Santiago): It should never happen.
+        return 1;
     }
 
     return pktdumper(pigsty, record);
@@ -300,14 +307,8 @@ static int ip4_dumper(FILE *pigsty, const pcap_record_ctx *record) {
 
     tlayerdumper = g_pcap_rec_dumper_ip4tlayer_lt[tlayer];
 
-    if (tlayerdumper == NULL) {
-
-        tlayerdumper = g_pcap_rec_dumper_ip4tlayer_lt[0xff];
-
-        if (tlayerdumper == NULL) {  // WARN(Santiago): It should never happen.
-            return 1;
-        }
-
+    if (tlayerdumper == NULL) {  // WARN(Santiago): It should never happen.
+        return 1;
     }
 
     return tlayerdumper(pigsty, record);
