@@ -1028,40 +1028,197 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
         const char *pigsty;
     };
     struct test_rounds rounds[] = {
-        { single_arp_pcap,  single_arp_pcap_len, 1, "[\n"
+        { single_arp_pcap,  single_arp_pcap_len, 1,  "[\n"
+                                                     " eth.hwdst = \"08:95:2A:AD:D6:4F\",\n"
+                                                     " eth.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
+                                                     " eth.type = 0x0806,\n"
+                                                     " arp.hwtype = 0x0001,\n"
+                                                     " arp.ptype = 0x0800,\n"
+                                                     " arp.hwlen = 6,\n"
+                                                     " arp.plen = 4,\n"
+                                                     " arp.opcode = 1,\n"
+                                                     " arp.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
+                                                     " arp.psrc = 192.168.1.75,\n"
+                                                     " arp.hwdst = \"08:95:2A:AD:D6:4F\",\n"
+                                                     " arp.pdst = 192.168.1.1,\n"
+                                                     " signature = Test_0\n"
+                                                     "]\n" },
+        { single_arp_pcap,  single_arp_pcap_len, 0,  "[\n"
+                                                     " arp.hwtype = 0x0001,\n"
+                                                     " arp.ptype = 0x0800,\n"
+                                                     " arp.hwlen = 6,\n"
+                                                     " arp.plen = 4,\n"
+                                                     " arp.opcode = 1,\n"
+                                                     " arp.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
+                                                     " arp.psrc = 192.168.1.75,\n"
+                                                     " arp.hwdst = \"08:95:2A:AD:D6:4F\",\n"
+                                                     " arp.pdst = 192.168.1.1,\n"
+                                                     " signature = Test_0\n"
+                                                     "]\n" },
+        { single_icmp_pcap, single_icmp_pcap_len, 1, "[\n"
+                                                     " eth.hwdst = \"08:95:2A:AD:D6:4F\",\n"
+                                                     " eth.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
+                                                     " eth.type = 0x0800,\n"
+                                                     " ip.version = 4,\n"
+                                                     " ip.ihl = 0x05,\n"
+                                                     " ip.tos = 0x00,\n"
+                                                     " ip.tlen = 104,\n"
+                                                     " ip.id = 0x0B98,\n"
+                                                     " ip.offset = 0x0000,\n"
+                                                     " ip.ttl = 128,\n"
+                                                     " ip.protocol = 1,\n"
+                                                     " ip.checksum = 0xAB60,\n"
+                                                     " ip.src = 192.168.1.75,\n"
+                                                     " ip.dst = 192.168.1.1,\n"
+                                                     " icmp.type = 3,\n"
+                                                     " icmp.code = 3,\n"
+                                                     " icmp.checksum = 0x80E3,\n"
+                                                     " icmp.payload = \"\\x00\\x00\\x00\\x00\\x45\\x00\\x00\\x4c\\x00\\x00\\x40\\x00\\x40\\x11\\xb7\\x04\\xc0\\xa8\\x01\\x01\\xc0\\xa8\\x01\\x4b\\x00\\x35\\xc4\\x95\\x00\\x38\\xe9\\x8d\\x50\\xc2\\x81\\x80\\x00\\x01\\x00\\x01\\x00\\x00\\x00\\x00\\x03\\x61\\x70\\x69\\x06\\x67\\x69\\x74\\x68\\x75\\x62\\x03\\x63\\x6f\\x6d\\x00\\x00\\x01\\x00\\x01\\xc0\\x0c\\x00\\x01\\x00\\x01\\x00\\x00\\x00\\x02\\x00\\x04\\xc0\\x1e\\xfc\\x7f\",\n"
+                                                     " signature = Test_0\n"
+                                                     "]\n" },
+        { single_icmp_pcap, single_icmp_pcap_len, 0, "[\n"
+                                                     " ip.version = 4,\n"
+                                                     " ip.ihl = 0x05,\n"
+                                                     " ip.tos = 0x00,\n"
+                                                     " ip.tlen = 104,\n"
+                                                     " ip.id = 0x0B98,\n"
+                                                     " ip.offset = 0x0000,\n"
+                                                     " ip.ttl = 128,\n"
+                                                     " ip.protocol = 1,\n"
+                                                     " ip.checksum = 0xAB60,\n"
+                                                     " ip.src = 192.168.1.75,\n"
+                                                     " ip.dst = 192.168.1.1,\n"
+                                                     " icmp.type = 3,\n"
+                                                     " icmp.code = 3,\n"
+                                                     " icmp.checksum = 0x80E3,\n"
+                                                     " icmp.payload = \"\\x00\\x00\\x00\\x00\\x45\\x00\\x00\\x4c\\x00\\x00\\x40\\x00\\x40\\x11\\xb7\\x04\\xc0\\xa8\\x01\\x01\\xc0\\xa8\\x01\\x4b\\x00\\x35\\xc4\\x95\\x00\\x38\\xe9\\x8d\\x50\\xc2\\x81\\x80\\x00\\x01\\x00\\x01\\x00\\x00\\x00\\x00\\x03\\x61\\x70\\x69\\x06\\x67\\x69\\x74\\x68\\x75\\x62\\x03\\x63\\x6f\\x6d\\x00\\x00\\x01\\x00\\x01\\xc0\\x0c\\x00\\x01\\x00\\x01\\x00\\x00\\x00\\x02\\x00\\x04\\xc0\\x1e\\xfc\\x7f\",\n"
+                                                     " signature = Test_0\n"
+                                                     "]\n" },
+        { single_udp_pcap,  single_udp_pcap_len, 1, "[\n"
+                                                    " eth.hwdst = \"01:00:5E:7F:FF:FA\",\n"
+                                                    " eth.hwsrc = \"08:95:2A:AD:D6:4F\",\n"
+                                                    " eth.type = 0x0800,\n"
+                                                    " ip.version = 4,\n"
+                                                    " ip.ihl = 0x05,\n"
+                                                    " ip.tos = 0x00,\n"
+                                                    " ip.tlen = 292,\n"
+                                                    " ip.id = 0x0000,\n"
+                                                    " ip.offset = 0x0000,\n"
+                                                    " ip.ttl = 1,\n"
+                                                    " ip.protocol = 17,\n"
+                                                    " ip.checksum = 0xC725,\n"
+                                                    " ip.src = 192.168.1.1,\n"
+                                                    " ip.dst = 239.255.255.250,\n"
+                                                    " udp.src = 33468,\n"
+                                                    " udp.dst = 1900,\n"
+                                                    " udp.size = 272,\n"
+                                                    " udp.checksum = 0x86EE,\n"
+                                                    " udp.payload = \"NOTIFY * HTTP/1.1\\r\\nHost:239.255.255.250:1900\\r\\nCache-Control:max-age=120\\r\\nLocation:http://192.168.1.1:49152/rootDesc.xml\\r\\nServer:OS 1.0 UPnP/1.0 Technicolor/V1.0\\r\\nNT:upnp:rootdevice\\r\\nUSN:uuid:11111111-0000-c0a8-0101-00064f123333::upnp:rootdevice\\r\\nNTS:ssdp:alive\\r\\n\\r\\n\",\n"
+                                                    " signature = Test_0\n"
+                                                    "]\n" },
+        { single_udp_pcap,  single_udp_pcap_len, 0, "[\n"
+                                                    " ip.version = 4,\n"
+                                                    " ip.ihl = 0x05,\n"
+                                                    " ip.tos = 0x00,\n"
+                                                    " ip.tlen = 292,\n"
+                                                    " ip.id = 0x0000,\n"
+                                                    " ip.offset = 0x0000,\n"
+                                                    " ip.ttl = 1,\n"
+                                                    " ip.protocol = 17,\n"
+                                                    " ip.checksum = 0xC725,\n"
+                                                    " ip.src = 192.168.1.1,\n"
+                                                    " ip.dst = 239.255.255.250,\n"
+                                                    " udp.src = 33468,\n"
+                                                    " udp.dst = 1900,\n"
+                                                    " udp.size = 272,\n"
+                                                    " udp.checksum = 0x86EE,\n"
+                                                    " udp.payload = \"NOTIFY * HTTP/1.1\\r\\nHost:239.255.255.250:1900\\r\\nCache-Control:max-age=120\\r\\nLocation:http://192.168.1.1:49152/rootDesc.xml\\r\\nServer:OS 1.0 UPnP/1.0 Technicolor/V1.0\\r\\nNT:upnp:rootdevice\\r\\nUSN:uuid:11111111-0000-c0a8-0101-00064f123333::upnp:rootdevice\\r\\nNTS:ssdp:alive\\r\\n\\r\\n\",\n"
+                                                    " signature = Test_0\n"
+                                                    "]\n" },
+        { single_tcp_pcap,  single_tcp_pcap_len, 1, "[\n"
                                                     " eth.hwdst = \"08:95:2A:AD:D6:4F\",\n"
                                                     " eth.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
-                                                    " eth.type = 0x0806,\n"
-                                                    " arp.hwtype = 0x001,\n"
-                                                    " arp.ptype = 0x0800,\n"
-                                                    " arp.hwlen = 6,\n"
-                                                    " arp.plen = 4,\n"
-                                                    " arp.opcode = 1,\n"
-                                                    " arp.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
-                                                    " arp.psrc = 192.168.1.75,\n"
-                                                    " arp.hwdst = \"08:95:2A:AD:D6:4F\",\n"
-                                                    " arp.dst = 192.168.1.1,\n"
-                                                    " signature = Test_0 ]\n"},
-        { single_icmp_pcap, single_arp_pcap_len, 1, NULL },
-        { single_udp_pcap,  single_udp_pcap_len, 1, NULL },
-        { single_tcp_pcap,  single_tcp_pcap_len, 1, NULL }
+                                                    " eth.type = 0x0800,\n"
+                                                    " ip.version = 4,\n"
+                                                    " ip.ihl = 0x05,\n"
+                                                    " ip.tos = 0x00,\n"
+                                                    " ip.tlen = 725,\n"
+                                                    " ip.id = 0x0293,\n"
+                                                    " ip.offset = 0x0000,\n"
+                                                    " ip.ttl = 128,\n"
+                                                    " ip.protocol = 6,\n"
+                                                    " ip.checksum = 0x49DB,\n"
+                                                    " ip.src = 192.168.1.48,\n"
+                                                    " ip.dst = 107.191.126.29,\n"
+                                                    " tcp.src = 1041,\n"
+                                                    " tcp.dst = 80,\n"
+                                                    " tcp.seqno = 0x0A8D03E3,\n"
+                                                    " tcp.ackno = 0x024BB1CB,\n"
+                                                    " tcp.size = 5,\n"
+                                                    " tcp.reserv = 0,\n"
+                                                    " tcp.wsize = 4356,\n"
+                                                    " tcp.checksum = 0xD33E,\n"
+                                                    " tcp.urgp = 0x0000,\n"
+                                                    " tcp.payload = \"\\x04\\x11\\x00P\\n\\x8d\\x03\\xe3\\x02K\\xb1\\xcbP\\x18\\x11\\x04\\xd3>\\x00\\x00GET / HTTP/1.1\\r\\nHost: cat-v.org\\r\\nConnection: keep-alive\\r\\nCache-Control: max-age=0\\r\\nUpgrade-Insecure-Requests: 1\\r\\nUser-Agent: Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36\\r\\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\\r\\nAccept-Encoding: gzip, deflate, sdch\\r\\nAccept-Language: pt-BR,pt;q=0.8,en-US;q=0.6,en;q=0.4,it;q=0.2,ru;q=0.2,ja;q=0.2\\r\\nCookie: __utmt=1; __utmt_~1=1; __utma=76273031.1392042815.1463148865.1466772058.1471453012.6; __utmb=76273031.3.10.1471453012; __utmc=76273031; __utmz=76273031.1466551143.2.2.utmcsr=suckless.org|utmccn=(referral)|utmcmd=referral|utmcct=/coding_style\\r\\n\\r\\n\",\n"
+                                                    " signature = Test_0\n"
+                                                    "]\n" },
+        { single_tcp_pcap,  single_tcp_pcap_len, 0, "[\n"
+                                                    " ip.version = 4,\n"
+                                                    " ip.ihl = 0x05,\n"
+                                                    " ip.tos = 0x00,\n"
+                                                    " ip.tlen = 725,\n"
+                                                    " ip.id = 0x0293,\n"
+                                                    " ip.offset = 0x0000,\n"
+                                                    " ip.ttl = 128,\n"
+                                                    " ip.protocol = 6,\n"
+                                                    " ip.checksum = 0x49DB,\n"
+                                                    " ip.src = 192.168.1.48,\n"
+                                                    " ip.dst = 107.191.126.29,\n"
+                                                    " tcp.src = 1041,\n"
+                                                    " tcp.dst = 80,\n"
+                                                    " tcp.seqno = 0x0A8D03E3,\n"
+                                                    " tcp.ackno = 0x024BB1CB,\n"
+                                                    " tcp.size = 5,\n"
+                                                    " tcp.reserv = 0,\n"
+                                                    " tcp.wsize = 4356,\n"
+                                                    " tcp.checksum = 0xD33E,\n"
+                                                    " tcp.urgp = 0x0000,\n"
+                                                    " tcp.payload = \"\\x04\\x11\\x00P\\n\\x8d\\x03\\xe3\\x02K\\xb1\\xcbP\\x18\\x11\\x04\\xd3>\\x00\\x00GET / HTTP/1.1\\r\\nHost: cat-v.org\\r\\nConnection: keep-alive\\r\\nCache-Control: max-age=0\\r\\nUpgrade-Insecure-Requests: 1\\r\\nUser-Agent: Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36\\r\\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\\r\\nAccept-Encoding: gzip, deflate, sdch\\r\\nAccept-Language: pt-BR,pt;q=0.8,en-US;q=0.6,en;q=0.4,it;q=0.2,ru;q=0.2,ja;q=0.2\\r\\nCookie: __utmt=1; __utmt_~1=1; __utma=76273031.1392042815.1463148865.1466772058.1471453012.6; __utmb=76273031.3.10.1471453012; __utmc=76273031; __utmz=76273031.1466551143.2.2.utmcsr=suckless.org|utmccn=(referral)|utmcmd=referral|utmcct=/coding_style\\r\\n\\r\\n\",\n"
+                                                    " signature = Test_0\n"
+                                                    "]\n" }
     };
-    size_t rounds_nr = 1;//sizeof(rounds) / sizeof(rounds[0]);
+    size_t rounds_nr = sizeof(rounds) / sizeof(rounds[0]);
     size_t r = 0;
     FILE *fp = NULL;
     const char *pcap_filepath = "test-pcap.pcap";
     const char *pigsty_filepath = "test.pigsty";
+    char buf[0xffff] = "";
+    size_t bufsize = 0;
+
+    remove(pigsty_filepath);
 
     for (r = 0; r < rounds_nr; r++) {
 
-        fp = fopen(pcap_filepath, "wb");
+        fp = fopen(pcap_filepath, "w");
         CUTE_ASSERT(fp != NULL);
         fwrite(rounds[r].pcap, 1, rounds[r].pcap_size, fp);
         fclose(fp);
 
         CUTE_ASSERT(pcap2pigsty(pigsty_filepath, pcap_filepath, "Test_%d", rounds[r].incl_ethframe) == 0);
 
-        //remove(pigsty_filepath);
+        fp = fopen(pigsty_filepath, "r");
+        CUTE_ASSERT(fp != NULL);
+        fseek(fp, 0L, SEEK_END);
+        bufsize = (size_t) ftell(fp);
+        fseek(fp, 0L, SEEK_SET);
+        fread(&buf, 1, bufsize, fp);
+        fclose(fp);
+
+        CUTE_ASSERT(bufsize == strlen(rounds[r].pigsty));
+
+        CUTE_ASSERT(memcmp(buf, rounds[r].pigsty, bufsize) == 0);
+
+        remove(pigsty_filepath);
         remove(pcap_filepath);
     }
 

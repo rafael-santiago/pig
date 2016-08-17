@@ -289,13 +289,11 @@ static int ip4_dumper(FILE *pigsty, const pcap_record_ctx *record) {
             if (buffer != NULL) {
                 dumper[d].write(pigsty, field, buffer, buffer_size);
 
-                if ((d + 1) != dumper_size) {
-                    fprintf(pigsty, PIGSTY_NEXT_ENTRY);
-                }
-
                 if (strcmp(field, "ip.protocol") == 0) {
                     tlayer = *(unsigned char *)buffer;
                 }
+
+                fprintf(pigsty, PIGSTY_NEXT_ENTRY);
             }
         }
     }
@@ -574,6 +572,8 @@ static void dump_string(FILE *pigsty, const char *field, const unsigned char *bu
             fprintf(pigsty, "\\r");
         } else if (*bp == '\\') {
             fprintf(pigsty, "\\\\");
+        } else if (*bp == '"') {
+            fprintf(pigsty, "\\\"");
         } else {
             sprintf(temp, "\\x%.2x", *bp);
             fprintf(pigsty, "%s", temp);
