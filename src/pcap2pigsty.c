@@ -9,6 +9,7 @@
 #include "pcap.h"
 #include "pktslicer.h"
 #include "endianess.h"
+#include "options.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <string.h>
@@ -53,25 +54,29 @@ static int dumper_textsec(struct pkt_field_dumper_ctx *dumper, size_t dumper_siz
 
 static int generic_ip4tlayer_dumper(FILE *pigsty, const pcap_record_ctx *record);
 
-static void dump_xdata(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+static void dump_xdata(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
 
-static void dump_ddata(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+static void dump_ddata(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
 
-static void dump_ip4addr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+static void dump_ip4addr(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
 
-static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
 
-static void dump_string(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+static void dump_string(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
 
-static void dump_tcpflags(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+static void dump_tcpflags(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
 
-static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size, const char *ntok);
+static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size, const char *ntok);
 
-static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size);
+static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
 
 static void pigsty_ini(FILE *pigsty);
 
 static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int index);
+
+static void selwrite(dump_writer, FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size);
+
+void get_option_label_from_field(char *option, const char *field);
 
 #define NEW_PIGSTY "["
 
@@ -296,7 +301,7 @@ static int ip4_dumper(FILE *pigsty, const pcap_record_ctx *record) {
             buffer = get_pkt_field(field, record->data, record->hdr.incl_len, &buffer_size);
 
             if (buffer != NULL) {
-                dumper[d].write(pigsty, field, buffer, buffer_size);
+                selwrite(dumper[d].write, pigsty, field, buffer, buffer_size);
 
                 if (strcmp(field, "ip.protocol") == 0) {
                     tlayer = *(unsigned char *)buffer;
@@ -355,12 +360,12 @@ static int arp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
                 }
 
                 if (ptype == 0x0800 && plen == 0x4) {
-                    dump_ip4addr(pigsty, field, buffer, buffer_size);
+                    selwrite(dump_ip4addr, pigsty, field, buffer, buffer_size);
                 } else {
-                    dump_xstring(pigsty, field, buffer, buffer_size);
+                    selwrite(dump_xstring, pigsty, field, buffer, buffer_size);
                 }
             } else {
-                write(pigsty, field, buffer, buffer_size);
+                selwrite(write, pigsty, field, buffer, buffer_size);
 
                 if (strcmp(field, "arp.ptype") == 0) {
                     ptype = *(unsigned short *)buffer;
@@ -444,7 +449,7 @@ static int dumper_textsec(struct pkt_field_dumper_ctx *dumper, size_t dumper_siz
         buffer = get_pkt_field(field, record->data, record->hdr.incl_len, &buffer_size);
 
         if (buffer != NULL) {
-            dumper[d].write(pigsty, field, buffer, buffer_size);
+            selwrite(dumper[d].write, pigsty, field, buffer, buffer_size);
 
             if ((d + 1) != dumper_size) {
                 fprintf(pigsty, PIGSTY_NEXT_ENTRY);
@@ -465,7 +470,7 @@ static int generic_ip4tlayer_dumper(FILE *pigsty, const pcap_record_ctx *record)
     return 0;
 }
 
-static void dump_xdata(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
+static void dump_xdata(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size) {
     char temp[20] = "";
     const unsigned char *bp = NULL;
     const unsigned char *bp_end = NULL;
@@ -485,7 +490,7 @@ static void dump_xdata(FILE *pigsty, const char *field, const unsigned char *buf
     }
 }
 
-static void dump_ddata(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
+static void dump_ddata(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size) {
     char temp[20] = "";
 
     if (pigsty == NULL || field == NULL || buffer == NULL || buffer_size == 0) {
@@ -512,7 +517,7 @@ static void dump_ddata(FILE *pigsty, const char *field, const unsigned char *buf
     fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = %s", field, temp);
 }
 
-static void dump_ip4addr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
+static void dump_ip4addr(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size) {
 
     if (pigsty == NULL || field == NULL || buffer == NULL || buffer_size != 4) {
         return;
@@ -521,7 +526,7 @@ static void dump_ip4addr(FILE *pigsty, const char *field, const unsigned char *b
     fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = %d.%d.%d.%d", field, *(buffer), *(buffer + 1), *(buffer + 2), *(buffer + 3));
 }
 
-static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
+static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size) {
     const unsigned char *bp = NULL;
     const unsigned char *bp_end = NULL;
     char temp[20] = "";
@@ -544,7 +549,7 @@ static void dump_xstring(FILE *pigsty, const char *field, const unsigned char *b
     fprintf(pigsty, "\"");
 }
 
-static void dump_string(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
+static void dump_string(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size) {
     const unsigned char *bp = NULL;
     const unsigned char *bp_end = NULL;
     char temp[20] = "";
@@ -583,16 +588,35 @@ static void dump_string(FILE *pigsty, const char *field, const unsigned char *bu
     fprintf(pigsty, "\"");
 }
 
-static void dump_tcpflags(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
-    dump_tcpflag(pigsty, "tcp.urg", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
-    dump_tcpflag(pigsty, "tcp.ack", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
-    dump_tcpflag(pigsty, "tcp.psh", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
-    dump_tcpflag(pigsty, "tcp.rst", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
-    dump_tcpflag(pigsty, "tcp.syn", buffer, buffer_size, PIGSTY_NEXT_ENTRY);
-    dump_tcpflag(pigsty, "tcp.fin", buffer, buffer_size, "");
+static void dump_tcpflags(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size) {
+    char *data = NULL;
+    struct dump_program_instruction_set {
+        const char *option;
+        const char *field;
+        const char *ntok;
+    };
+    struct dump_program_instruction_set dump_task[] = {
+        { "tcp-urg", "tcp.urg", PIGSTY_NEXT_ENTRY },
+        { "tcp-ack", "tcp.ack", PIGSTY_NEXT_ENTRY },
+        { "tcp-psh", "tcp.psh", PIGSTY_NEXT_ENTRY },
+        { "tcp-rst", "tcp.rst", PIGSTY_NEXT_ENTRY },
+        { "tcp-syn", "tcp.syn", PIGSTY_NEXT_ENTRY },
+        { "tcp-fin", "tcp.fin", ""                }
+    };
+    size_t dump_task_nr = sizeof(dump_task) / sizeof(dump_task[0]);
+    size_t d;
+
+    for (d = 0; d < dump_task_nr; d++) {
+        data = get_option(dump_task[d].option, NULL);
+        if (data != NULL) {
+            fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = %s%s", dump_task[d].field, data, dump_task[d].ntok);
+        } else {
+            dump_tcpflag(pigsty, dump_task[d].field, buffer, buffer_size, dump_task[d].ntok);
+        }
+    }
 }
 
-static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size, const char *ntok) {
+static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size, const char *ntok) {
     int rsh = -1;
 
     if (pigsty == NULL || field == NULL || buffer == NULL || buffer_size == 0) {
@@ -618,7 +642,7 @@ static void dump_tcpflag(FILE *pigsty, const char *field, const unsigned char *b
     }
 }
 
-static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, size_t buffer_size) {
+static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size) {
     const unsigned char *bp = NULL;
     const unsigned char *bp_end = NULL;
 
@@ -641,3 +665,55 @@ static void dump_maddr(FILE *pigsty, const char *field, const unsigned char *buf
 
     fprintf(pigsty, "\"");
 }
+
+static void selwrite(dump_writer writer, FILE *pigsty, const char *field, const unsigned char *buffer, const size_t buffer_size) {
+    char label[255] = "";
+    char *data = NULL;
+
+    if (field == NULL || pigsty == NULL || buffer == NULL || buffer_size == 0) {
+        return;
+    }
+
+    if (strcmp(field, "tcp.flags") != 0) {
+        get_option_label_from_field(label, field);
+
+        data = get_option(label, NULL);
+
+        if (data != NULL) {
+            fprintf(pigsty, PIGSTY_NEW_ENTRY "%s = %s", field, data);
+            return;
+        }
+    }
+
+    if (writer == NULL) { //  WARN(Santiago): It should never happen.
+        return;
+    }
+
+    writer(pigsty, field, buffer, buffer_size);
+}
+
+void get_option_label_from_field(char *option, const char *field) {
+    const char *fp = NULL;
+    char *op = NULL;
+
+    if (field == NULL || option == NULL) {
+        return;
+    }
+
+    fp  = field;
+    op = option;
+
+    while (*fp != 0) {
+        if (*fp == '.') {
+            *op = '-';
+        } else {
+            *op = *fp;
+        }
+
+        fp++;
+        op++;
+    }
+
+    *op = 0;
+}
+

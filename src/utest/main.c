@@ -1026,7 +1026,62 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
         const size_t pcap_size;
         const int incl_ethframe;
         const char *pigsty;
+        int argc;
+        char **argv;
     };
+    char *argv[] = {
+        "--eth-hwdst=\"Ethernet Hardware Destination\"",
+        "--eth-hwsrc=\"Ethernet Hardware Source\"",
+        "--eth-type=\"Ether Type\"",
+        "--eth-payload=\"Ethernet Payload\"",
+        "--arp-hwtype=\"Arp Hardware Type\"",
+        "--arp-ptype=\"Arp Protocol Type\"",
+        "--arp-hwlen=\"Arp Hardware Length\"",
+        "--arp-plen=\"Arp Protocol Length\"",
+        "--arp-opcode=\"Arp Operation Code\"",
+        "--arp-hwsrc=\"Arp Hardware Source\"",
+        "--arp-psrc=\"Arp Protocol Source\"",
+        "--arp-hwdst=\"Arp Hardware Destination\"",
+        "--arp-pdst=\"Arp Protocol Destination\"",
+        "--ip-version=\"IP Version\"",
+        "--ip-ihl=\"IP Internet Header Length\"",
+        "--ip-tos=\"IP Type of Service\"",
+        "--ip-tlen=\"IP Total Length\"",
+        "--ip-id=\"IP Identification\"",
+        "--ip-offset=\"IP Offset\"",
+        "--ip-ttl=\"IP Time to Live\"",
+        "--ip-protocol=\"IP Protocol\"",
+        "--ip-checksum=\"IP Checksum\"",
+        "--ip-src=\"IP Source\"",
+        "--ip-dst=\"IP Destination\"",
+        "--ip-payload=\"IP Payload\"",
+        "--icmp-type=\"ICMP Message Type\"",
+        "--icmp-code=\"ICMP Message Code\"",
+        "--icmp-checksum=\"ICMP Checksum\"",
+        "--icmp-payload=\"ICMP Payload\"",
+        "--tcp-src=\"TCP Source\"",
+        "--tcp-dst=\"TCP Destination\"",
+        "--tcp-seqno=\"TCP Sequence Number\"",
+        "--tcp-ackno=\"TCP Acknowledgement Number\"",
+        "--tcp-size=\"TCP Size\"",
+        "--tcp-reserv=\"TCP Reserved\"",
+        "--tcp-urg=\"TCP Urgent Flag\"",
+        "--tcp-ack=\"TCP Acknowledgement Flag\"",
+        "--tcp-psh=\"TCP Push Flag\"",
+        "--tcp-rst=\"TCP Reset Flag\"",
+        "--tcp-syn=\"TCP Syncronization Flag\"",
+        "--tcp-fin=\"TCP Finish Flag\"",
+        "--tcp-wsize=\"TCP Window Size\"",
+        "--tcp-checksum=\"TCP Checksum\"",
+        "--tcp-urgp=\"TCP Urgent Pointer\"",
+        "--tcp-payload=\"TCP Payload\"",
+        "--udp-src=\"UDP Source\"",
+        "--udp-dst=\"UDP Destination\"",
+        "--udp-size=\"UDP Size\"",
+        "--udp-checksum=\"UDP Checksum\"",
+        "--udp-payload=\"UDP Payload\""
+    };
+    int argc = sizeof(argv) / sizeof(argv[0]);
     struct test_rounds rounds[] = {
         { single_arp_pcap,  single_arp_pcap_len, 1,  "[\n"
                                                      " eth.hwdst = \"08:95:2A:AD:D6:4F\",\n"
@@ -1042,7 +1097,7 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
                                                      " arp.hwdst = \"08:95:2A:AD:D6:4F\",\n"
                                                      " arp.pdst = 192.168.1.1,\n"
                                                      " signature = Test_0\n"
-                                                     "]\n" },
+                                                     "]\n", 0, NULL },
         { single_arp_pcap,  single_arp_pcap_len, 0,  "[\n"
                                                      " arp.hwtype = 0x0001,\n"
                                                      " arp.ptype = 0x0800,\n"
@@ -1054,7 +1109,7 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
                                                      " arp.hwdst = \"08:95:2A:AD:D6:4F\",\n"
                                                      " arp.pdst = 192.168.1.1,\n"
                                                      " signature = Test_0\n"
-                                                     "]\n" },
+                                                     "]\n", 0, NULL },
         { single_icmp_pcap, single_icmp_pcap_len, 1, "[\n"
                                                      " eth.hwdst = \"08:95:2A:AD:D6:4F\",\n"
                                                      " eth.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
@@ -1075,7 +1130,7 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
                                                      " icmp.checksum = 0x80E3,\n"
                                                      " icmp.payload = \"\\x00\\x00\\x00\\x00\\x45\\x00\\x00\\x4c\\x00\\x00\\x40\\x00\\x40\\x11\\xb7\\x04\\xc0\\xa8\\x01\\x01\\xc0\\xa8\\x01\\x4b\\x00\\x35\\xc4\\x95\\x00\\x38\\xe9\\x8d\\x50\\xc2\\x81\\x80\\x00\\x01\\x00\\x01\\x00\\x00\\x00\\x00\\x03\\x61\\x70\\x69\\x06\\x67\\x69\\x74\\x68\\x75\\x62\\x03\\x63\\x6f\\x6d\\x00\\x00\\x01\\x00\\x01\\xc0\\x0c\\x00\\x01\\x00\\x01\\x00\\x00\\x00\\x02\\x00\\x04\\xc0\\x1e\\xfc\\x7f\",\n"
                                                      " signature = Test_0\n"
-                                                     "]\n" },
+                                                     "]\n", 0, NULL },
         { single_icmp_pcap, single_icmp_pcap_len, 0, "[\n"
                                                      " ip.version = 4,\n"
                                                      " ip.ihl = 0x05,\n"
@@ -1093,7 +1148,7 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
                                                      " icmp.checksum = 0x80E3,\n"
                                                      " icmp.payload = \"\\x00\\x00\\x00\\x00\\x45\\x00\\x00\\x4c\\x00\\x00\\x40\\x00\\x40\\x11\\xb7\\x04\\xc0\\xa8\\x01\\x01\\xc0\\xa8\\x01\\x4b\\x00\\x35\\xc4\\x95\\x00\\x38\\xe9\\x8d\\x50\\xc2\\x81\\x80\\x00\\x01\\x00\\x01\\x00\\x00\\x00\\x00\\x03\\x61\\x70\\x69\\x06\\x67\\x69\\x74\\x68\\x75\\x62\\x03\\x63\\x6f\\x6d\\x00\\x00\\x01\\x00\\x01\\xc0\\x0c\\x00\\x01\\x00\\x01\\x00\\x00\\x00\\x02\\x00\\x04\\xc0\\x1e\\xfc\\x7f\",\n"
                                                      " signature = Test_0\n"
-                                                     "]\n" },
+                                                     "]\n", 0, NULL },
         { single_udp_pcap,  single_udp_pcap_len, 1, "[\n"
                                                     " eth.hwdst = \"01:00:5E:7F:FF:FA\",\n"
                                                     " eth.hwsrc = \"08:95:2A:AD:D6:4F\",\n"
@@ -1115,7 +1170,7 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
                                                     " udp.checksum = 0x86EE,\n"
                                                     " udp.payload = \"NOTIFY * HTTP/1.1\\r\\nHost:239.255.255.250:1900\\r\\nCache-Control:max-age=120\\r\\nLocation:http://192.168.1.1:49152/rootDesc.xml\\r\\nServer:OS 1.0 UPnP/1.0 Technicolor/V1.0\\r\\nNT:upnp:rootdevice\\r\\nUSN:uuid:11111111-0000-c0a8-0101-00064f123333::upnp:rootdevice\\r\\nNTS:ssdp:alive\\r\\n\\r\\n\",\n"
                                                     " signature = Test_0\n"
-                                                    "]\n" },
+                                                    "]\n", 0, NULL },
         { single_udp_pcap,  single_udp_pcap_len, 0, "[\n"
                                                     " ip.version = 4,\n"
                                                     " ip.ihl = 0x05,\n"
@@ -1134,7 +1189,7 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
                                                     " udp.checksum = 0x86EE,\n"
                                                     " udp.payload = \"NOTIFY * HTTP/1.1\\r\\nHost:239.255.255.250:1900\\r\\nCache-Control:max-age=120\\r\\nLocation:http://192.168.1.1:49152/rootDesc.xml\\r\\nServer:OS 1.0 UPnP/1.0 Technicolor/V1.0\\r\\nNT:upnp:rootdevice\\r\\nUSN:uuid:11111111-0000-c0a8-0101-00064f123333::upnp:rootdevice\\r\\nNTS:ssdp:alive\\r\\n\\r\\n\",\n"
                                                     " signature = Test_0\n"
-                                                    "]\n" },
+                                                    "]\n", 0, NULL },
         { single_tcp_pcap,  single_tcp_pcap_len, 1, "[\n"
                                                     " eth.hwdst = \"08:95:2A:AD:D6:4F\",\n"
                                                     " eth.hwsrc = \"5C:AC:4C:AA:F5:B5\",\n"
@@ -1167,7 +1222,7 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
                                                     " tcp.urgp = 0x0000,\n"
                                                     " tcp.payload = \"\\x04\\x11\\x00P\\n\\x8d\\x03\\xe3\\x02K\\xb1\\xcbP\\x18\\x11\\x04\\xd3>\\x00\\x00GET / HTTP/1.1\\r\\nHost: cat-v.org\\r\\nConnection: keep-alive\\r\\nCache-Control: max-age=0\\r\\nUpgrade-Insecure-Requests: 1\\r\\nUser-Agent: Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36\\r\\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\\r\\nAccept-Encoding: gzip, deflate, sdch\\r\\nAccept-Language: pt-BR,pt;q=0.8,en-US;q=0.6,en;q=0.4,it;q=0.2,ru;q=0.2,ja;q=0.2\\r\\nCookie: __utmt=1; __utmt_~1=1; __utma=76273031.1392042815.1463148865.1466772058.1471453012.6; __utmb=76273031.3.10.1471453012; __utmc=76273031; __utmz=76273031.1466551143.2.2.utmcsr=suckless.org|utmccn=(referral)|utmcmd=referral|utmcct=/coding_style\\r\\n\\r\\n\",\n"
                                                     " signature = Test_0\n"
-                                                    "]\n" },
+                                                    "]\n", 0, NULL },
         { single_tcp_pcap,  single_tcp_pcap_len, 0, "[\n"
                                                     " ip.version = 4,\n"
                                                     " ip.ihl = 0x05,\n"
@@ -1197,7 +1252,177 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
                                                     " tcp.urgp = 0x0000,\n"
                                                     " tcp.payload = \"\\x04\\x11\\x00P\\n\\x8d\\x03\\xe3\\x02K\\xb1\\xcbP\\x18\\x11\\x04\\xd3>\\x00\\x00GET / HTTP/1.1\\r\\nHost: cat-v.org\\r\\nConnection: keep-alive\\r\\nCache-Control: max-age=0\\r\\nUpgrade-Insecure-Requests: 1\\r\\nUser-Agent: Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36\\r\\nAccept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8\\r\\nAccept-Encoding: gzip, deflate, sdch\\r\\nAccept-Language: pt-BR,pt;q=0.8,en-US;q=0.6,en;q=0.4,it;q=0.2,ru;q=0.2,ja;q=0.2\\r\\nCookie: __utmt=1; __utmt_~1=1; __utma=76273031.1392042815.1463148865.1466772058.1471453012.6; __utmb=76273031.3.10.1471453012; __utmc=76273031; __utmz=76273031.1466551143.2.2.utmcsr=suckless.org|utmccn=(referral)|utmcmd=referral|utmcct=/coding_style\\r\\n\\r\\n\",\n"
                                                     " signature = Test_0\n"
-                                                    "]\n" }
+                                                    "]\n", 0, NULL },
+        { single_arp_pcap,  single_arp_pcap_len, 1,  "[\n"
+                                                     " eth.hwdst = \"Ethernet Hardware Destination\",\n"
+                                                     " eth.hwsrc = \"Ethernet Hardware Source\",\n"
+                                                     " eth.type = \"Ether Type\",\n"
+                                                     " arp.hwtype = \"Arp Hardware Type\",\n"
+                                                     " arp.ptype = \"Arp Protocol Type\",\n"
+                                                     " arp.hwlen = \"Arp Hardware Length\",\n"
+                                                     " arp.plen = \"Arp Protocol Length\",\n"
+                                                     " arp.opcode = \"Arp Operation Code\",\n"
+                                                     " arp.hwsrc = \"Arp Hardware Source\",\n"
+                                                     " arp.psrc = \"Arp Protocol Source\",\n"
+                                                     " arp.hwdst = \"Arp Hardware Destination\",\n"
+                                                     " arp.pdst = \"Arp Protocol Destination\",\n"
+                                                     " signature = Test_0\n"
+                                                     "]\n", argc, argv },
+        { single_arp_pcap,  single_arp_pcap_len, 0,  "[\n"
+                                                     " arp.hwtype = \"Arp Hardware Type\",\n"
+                                                     " arp.ptype = \"Arp Protocol Type\",\n"
+                                                     " arp.hwlen = \"Arp Hardware Length\",\n"
+                                                     " arp.plen = \"Arp Protocol Length\",\n"
+                                                     " arp.opcode = \"Arp Operation Code\",\n"
+                                                     " arp.hwsrc = \"Arp Hardware Source\",\n"
+                                                     " arp.psrc = \"Arp Protocol Source\",\n"
+                                                     " arp.hwdst = \"Arp Hardware Destination\",\n"
+                                                     " arp.pdst = \"Arp Protocol Destination\",\n"
+                                                     " signature = Test_0\n"
+                                                     "]\n", argc, argv },
+        { single_icmp_pcap, single_icmp_pcap_len, 1, "[\n"
+                                                     " eth.hwdst = \"Ethernet Hardware Destination\",\n"
+                                                     " eth.hwsrc = \"Ethernet Hardware Source\",\n"
+                                                     " eth.type = \"Ether Type\",\n"
+                                                     " ip.version = \"IP Version\",\n"
+                                                     " ip.ihl = \"IP Internet Header Length\",\n"
+                                                     " ip.tos = \"IP Type of Service\",\n"
+                                                     " ip.tlen = \"IP Total Length\",\n"
+                                                     " ip.id = \"IP Identification\",\n"
+                                                     " ip.offset = \"IP Offset\",\n"
+                                                     " ip.ttl = \"IP Time to Live\",\n"
+                                                     " ip.protocol = \"IP Protocol\",\n"
+                                                     " ip.checksum = \"IP Checksum\",\n"
+                                                     " ip.src = \"IP Source\",\n"
+                                                     " ip.dst = \"IP Destination\",\n"
+                                                     " icmp.type = \"ICMP Message Type\",\n"
+                                                     " icmp.code = \"ICMP Message Code\",\n"
+                                                     " icmp.checksum = \"ICMP Checksum\",\n"
+                                                     " icmp.payload = \"ICMP Payload\",\n"
+                                                     " signature = Test_0\n"
+                                                     "]\n", argc, argv },
+        { single_icmp_pcap, single_icmp_pcap_len, 0, "[\n"
+                                                     " ip.version = \"IP Version\",\n"
+                                                     " ip.ihl = \"IP Internet Header Length\",\n"
+                                                     " ip.tos = \"IP Type of Service\",\n"
+                                                     " ip.tlen = \"IP Total Length\",\n"
+                                                     " ip.id = \"IP Identification\",\n"
+                                                     " ip.offset = \"IP Offset\",\n"
+                                                     " ip.ttl = \"IP Time to Live\",\n"
+                                                     " ip.protocol = \"IP Protocol\",\n"
+                                                     " ip.checksum = \"IP Checksum\",\n"
+                                                     " ip.src = \"IP Source\",\n"
+                                                     " ip.dst = \"IP Destination\",\n"
+                                                     " icmp.type = \"ICMP Message Type\",\n"
+                                                     " icmp.code = \"ICMP Message Code\",\n"
+                                                     " icmp.checksum = \"ICMP Checksum\",\n"
+                                                     " icmp.payload = \"ICMP Payload\",\n"
+                                                     " signature = Test_0\n"
+                                                     "]\n", argc, argv },
+        { single_udp_pcap,  single_udp_pcap_len, 1, "[\n"
+                                                    " eth.hwdst = \"Ethernet Hardware Destination\",\n"
+                                                    " eth.hwsrc = \"Ethernet Hardware Source\",\n"
+                                                    " eth.type = \"Ether Type\",\n"
+                                                    " ip.version = \"IP Version\",\n"
+                                                    " ip.ihl = \"IP Internet Header Length\",\n"
+                                                    " ip.tos = \"IP Type of Service\",\n"
+                                                    " ip.tlen = \"IP Total Length\",\n"
+                                                    " ip.id = \"IP Identification\",\n"
+                                                    " ip.offset = \"IP Offset\",\n"
+                                                    " ip.ttl = \"IP Time to Live\",\n"
+                                                    " ip.protocol = \"IP Protocol\",\n"
+                                                    " ip.checksum = \"IP Checksum\",\n"
+                                                    " ip.src = \"IP Source\",\n"
+                                                    " ip.dst = \"IP Destination\",\n"
+                                                    " udp.src = \"UDP Source\",\n"
+                                                    " udp.dst = \"UDP Destination\",\n"
+                                                    " udp.size = \"UDP Size\",\n"
+                                                    " udp.checksum = \"UDP Checksum\",\n"
+                                                    " udp.payload = \"UDP Payload\",\n"
+                                                    " signature = Test_0\n"
+                                                    "]\n", argc, argv },
+        { single_udp_pcap,  single_udp_pcap_len, 0, "[\n"
+                                                    " ip.version = \"IP Version\",\n"
+                                                    " ip.ihl = \"IP Internet Header Length\",\n"
+                                                    " ip.tos = \"IP Type of Service\",\n"
+                                                    " ip.tlen = \"IP Total Length\",\n"
+                                                    " ip.id = \"IP Identification\",\n"
+                                                    " ip.offset = \"IP Offset\",\n"
+                                                    " ip.ttl = \"IP Time to Live\",\n"
+                                                    " ip.protocol = \"IP Protocol\",\n"
+                                                    " ip.checksum = \"IP Checksum\",\n"
+                                                    " ip.src = \"IP Source\",\n"
+                                                    " ip.dst = \"IP Destination\",\n"
+                                                    " udp.src = \"UDP Source\",\n"
+                                                    " udp.dst = \"UDP Destination\",\n"
+                                                    " udp.size = \"UDP Size\",\n"
+                                                    " udp.checksum = \"UDP Checksum\",\n"
+                                                    " udp.payload = \"UDP Payload\",\n"
+                                                    " signature = Test_0\n"
+                                                    "]\n", argc, argv },
+        { single_tcp_pcap,  single_tcp_pcap_len, 1, "[\n"
+                                                    " eth.hwdst = \"Ethernet Hardware Destination\",\n"
+                                                    " eth.hwsrc = \"Ethernet Hardware Source\",\n"
+                                                    " eth.type = \"Ether Type\",\n"
+                                                    " ip.version = \"IP Version\",\n"
+                                                    " ip.ihl = \"IP Internet Header Length\",\n"
+                                                    " ip.tos = \"IP Type of Service\",\n"
+                                                    " ip.tlen = \"IP Total Length\",\n"
+                                                    " ip.id = \"IP Identification\",\n"
+                                                    " ip.offset = \"IP Offset\",\n"
+                                                    " ip.ttl = \"IP Time to Live\",\n"
+                                                    " ip.protocol = \"IP Protocol\",\n"
+                                                    " ip.checksum = \"IP Checksum\",\n"
+                                                    " ip.src = \"IP Source\",\n"
+                                                    " ip.dst = \"IP Destination\",\n"
+                                                    " tcp.src = \"TCP Source\",\n"
+                                                    " tcp.dst = \"TCP Destination\",\n"
+                                                    " tcp.seqno = \"TCP Sequence Number\",\n"
+                                                    " tcp.ackno = \"TCP Acknowledgement Number\",\n"
+                                                    " tcp.size = \"TCP Size\",\n"
+                                                    " tcp.reserv = \"TCP Reserved\",\n"
+                                                    " tcp.urg = \"TCP Urgent Flag\",\n"
+                                                    " tcp.ack = \"TCP Acknowledgement Flag\",\n"
+                                                    " tcp.psh = \"TCP Push Flag\",\n"
+                                                    " tcp.rst = \"TCP Reset Flag\",\n"
+                                                    " tcp.syn = \"TCP Syncronization Flag\",\n"
+                                                    " tcp.fin = \"TCP Finish Flag\",\n"
+                                                    " tcp.wsize = \"TCP Window Size\",\n"
+                                                    " tcp.checksum = \"TCP Checksum\",\n"
+                                                    " tcp.urgp = \"TCP Urgent Pointer\",\n"
+                                                    " tcp.payload = \"TCP Payload\",\n"
+                                                    " signature = Test_0\n"
+                                                    "]\n", argc, argv },
+        { single_tcp_pcap,  single_tcp_pcap_len, 0, "[\n"
+                                                    " ip.version = \"IP Version\",\n"
+                                                    " ip.ihl = \"IP Internet Header Length\",\n"
+                                                    " ip.tos = \"IP Type of Service\",\n"
+                                                    " ip.tlen = \"IP Total Length\",\n"
+                                                    " ip.id = \"IP Identification\",\n"
+                                                    " ip.offset = \"IP Offset\",\n"
+                                                    " ip.ttl = \"IP Time to Live\",\n"
+                                                    " ip.protocol = \"IP Protocol\",\n"
+                                                    " ip.checksum = \"IP Checksum\",\n"
+                                                    " ip.src = \"IP Source\",\n"
+                                                    " ip.dst = \"IP Destination\",\n"
+                                                    " tcp.src = \"TCP Source\",\n"
+                                                    " tcp.dst = \"TCP Destination\",\n"
+                                                    " tcp.seqno = \"TCP Sequence Number\",\n"
+                                                    " tcp.ackno = \"TCP Acknowledgement Number\",\n"
+                                                    " tcp.size = \"TCP Size\",\n"
+                                                    " tcp.reserv = \"TCP Reserved\",\n"
+                                                    " tcp.urg = \"TCP Urgent Flag\",\n"
+                                                    " tcp.ack = \"TCP Acknowledgement Flag\",\n"
+                                                    " tcp.psh = \"TCP Push Flag\",\n"
+                                                    " tcp.rst = \"TCP Reset Flag\",\n"
+                                                    " tcp.syn = \"TCP Syncronization Flag\",\n"
+                                                    " tcp.fin = \"TCP Finish Flag\",\n"
+                                                    " tcp.wsize = \"TCP Window Size\",\n"
+                                                    " tcp.checksum = \"TCP Checksum\",\n"
+                                                    " tcp.urgp = \"TCP Urgent Pointer\",\n"
+                                                    " tcp.payload = \"TCP Payload\",\n"
+                                                    " signature = Test_0\n"
+                                                    "]\n", argc, argv }
     };
     size_t rounds_nr = sizeof(rounds) / sizeof(rounds[0]);
     size_t r = 0;
@@ -1215,6 +1440,8 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
         CUTE_ASSERT(fp != NULL);
         fwrite(rounds[r].pcap, 1, rounds[r].pcap_size, fp);
         fclose(fp);
+
+        register_options(rounds[r].argc, rounds[r].argv);
 
         CUTE_ASSERT(pcap2pigsty(pigsty_filepath, pcap_filepath, "Test_%d", rounds[r].incl_ethframe) == 0);
 
