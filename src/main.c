@@ -21,9 +21,7 @@ static void sigint_watchdog(int signr) {
 }
 
 int main(int argc, char **argv) {
-    char *no_echo = get_option("no-echo", NULL);
     int exit_code = 1;
-    int was_subtask = 0;
 
     register_options(argc, argv);
 
@@ -35,13 +33,7 @@ int main(int argc, char **argv) {
     if (argc > 1) {
         signal(SIGINT, sigint_watchdog);
         signal(SIGTERM, sigint_watchdog);
-        srand(time(0));
-
-        exit_code = run_pig_run(&was_subtask);
-
-        if (no_echo == NULL && exit_code == 0 && !was_subtask) {
-            printf("\npig INFO: exiting... please wait...\npig INFO: pig has gone.\n");
-        }
+        exit_code = run_pig_run();
     } else {
         exit_code = pktcraft_help();
     }

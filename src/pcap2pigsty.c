@@ -430,6 +430,7 @@ static int udp_dumper(FILE *pigsty, const pcap_record_ctx *record) {
         { "udp.checksum", dump_xdata  },
         { "udp.payload",  dump_string }
     };
+
     return dumper_textsec(dumper, sizeof(dumper) / sizeof(dumper[0]), pigsty, record);
 }
 
@@ -566,7 +567,7 @@ static void dump_string(FILE *pigsty, const char *field, const unsigned char *bu
 
     while (bp != bp_end) {
 
-        if (isprint(*bp) && *bp != '\\') {
+        if (*bp != '\"' && *bp != '\\' && isprint(*bp)) {
             if (!isxdigit(*bp)) {
                 fprintf(pigsty, "%c", *bp);
                 lxc = 0;

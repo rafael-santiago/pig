@@ -175,6 +175,7 @@ int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_t
         if (!is_lo) {
             parse_ip4_dgram(&iph_p, eth.payload, eth.payload_size);
             eth.ether_type = ETHER_TYPE_IP;
+            //  TODO(Santiago): Only fill up the unset fields (not explicitly present into the signature context).
             fill_up_mac_addresses_by_ipinfo(&eth, iph, hwaddr, gw_hwaddr, nt_mask, loiface);
             if (iph.payload != NULL) {
                 free(iph.payload);

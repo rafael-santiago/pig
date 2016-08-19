@@ -101,7 +101,9 @@ int pktcraft_help() {
            "--gateway=<gateway address> --net-mask=<network mask> "
            "--lo-iface=<network interface> [--timeout=<in msecs> "
            "--no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n --no-gateway]\n\n"
-           "If you want to know more about some sub-task you should try: pig --sub-task=<name> --help\n");
+           "*** If you want to know more about some sub-task you should try: pig --sub-task=<name> --help\n___\n"
+           "pig is Copyright (C) 2015-2016 by Rafael Santiago.\n\n"
+           "Bug reports, feedback, etc: <voidbrainvoid@gmail.com> or <https://github.com/rafael-santiago/pig/issues>\n");
     return 0;
 }
 
@@ -294,6 +296,8 @@ static int random_pktcrafter(const pigsty_entry_ctx *pigsty,
     const pigsty_entry_ctx *signature = NULL;
     int retval = 0;
 
+    srand(time(0));
+
     while (!g_pig_out) {
         signature = get_pigsty_entry_by_index(rand() % signatures_count, pigsty);
 
@@ -304,6 +308,10 @@ static int random_pktcrafter(const pigsty_entry_ctx *pigsty,
         retval = single_pktcraft(signature, hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
 
         usleep(user_options.timeo);
+    }
+
+    if (!user_options.should_be_quiet) {
+        printf("\npig INFO: exiting... please wait...\npig INFO: pig has gone.\n");
     }
 
     return retval;

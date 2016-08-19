@@ -8,7 +8,7 @@
 
 typedef int (*pig_task_exec)();
 
-int run_pig_run(int *was_subtask) {
+int run_pig_run() {
     const char *option = NULL;
     struct pig_subtask {
         const char *name;
@@ -35,10 +35,6 @@ int run_pig_run(int *was_subtask) {
             printf("pig ERROR: sub-task \"%s\" is unknown.\n", option);
             return 1;
         }
-    }
-
-    if ((pig_task != pktcraft || get_option("help", NULL)) && was_subtask != NULL) {
-        *was_subtask = 1;
     }
 
     return pig_task();

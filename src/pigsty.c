@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <errno.h>
 
 #define is_pigsty_blank(c) ( (c) == ' ' || (c) == '\t' || (c) == '\n' || (c) == '\r' )
 
@@ -187,7 +188,7 @@ static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *ent
 }
 
 int is_arp_packet(const pigsty_conf_set_ctx *conf) {
-    return is_xpacket(conf, kArp_hwtype, kArp_pdst, 1);
+    return is_xpacket(conf, kArp_hwtype, kArp_pdst, 0);
 }
 
 int is_explicit_eth_frame(const pigsty_conf_set_ctx *conf) {
@@ -283,11 +284,13 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
             if (*end_bp == '\"') {
                 end_bp++;
                 while (*end_bp != '\"' && *end_bp != 0) {
-                    end_bp++;
                     if (*end_bp == '\\') {
                         end_bp += 2;
-                    } else if (*end_bp == '\n') {
-                        g_line_nr++;
+                    } else {
+                        if (*end_bp == '\n') {
+                            g_line_nr++;
+                        }
+                        end_bp++;
                     }
                 }
                 if (*end_bp != 0) {
@@ -438,6 +441,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     buffer = *next;
     token = get_next_pigsty_word(buffer, next);
     while (all_ok && **next != 0 && token != NULL) {
+
         switch (state) {
             case 0:  //  field existence verifying
                 field_index = get_pigsty_field_index(token);
@@ -536,7 +540,7 @@ static int verify_u3(const char *buffer) {
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
     }
-    return (retval >= 0x0 && retval <= 0x7);
+    return (retval <= 0x7);
 }
 
 static int verify_u4(const char *buffer) {
@@ -546,7 +550,7 @@ static int verify_u4(const char *buffer) {
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
     }
-    return (retval >= 0x0 && retval <= 0xf);
+    return (retval <= 0xf);
 }
 
 static int verify_u6(const char *buffer) {
@@ -556,7 +560,7 @@ static int verify_u6(const char *buffer) {
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
     }
-    return (retval >= 0x0 && retval <= 0x3f);
+    return (retval <= 0x3f);
 }
 
 static int verify_u8(const char *buffer) {
@@ -566,7 +570,7 @@ static int verify_u8(const char *buffer) {
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
     }
-    return (retval >= 0x0 && retval <= 0xff);
+    return (retval <= 0xff);
 }
 
 static int verify_u13(const char *buffer) {
@@ -576,7 +580,7 @@ static int verify_u13(const char *buffer) {
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
     }
-    return (retval >= 0x0 && retval <= 0x1fff);
+    return (errno != ERANGE && retval <= 0x1fff);
 }
 
 static int verify_u16(const char *buffer) {
@@ -586,7 +590,7 @@ static int verify_u16(const char *buffer) {
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
     }
-    return (retval >= 0x0 && retval <= 0xffff);
+    return (errno != ERANGE && retval <= 0xffff);
 }
 
 static int verify_u32(const char *buffer) {
@@ -596,7 +600,7 @@ static int verify_u32(const char *buffer) {
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
     }
-    return (retval >= 0x0 && retval <= 0xffffffff);
+    return (errno != ERANGE && retval <= 0xffffffff);
 }
 
 int verify_ipv4_addr(const char *buffer) {
@@ -812,6 +816,7 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
 
         if (is_eth) {
             retval = check_eth_frame_sanity(ep->conf, &ip_version);
+
             if (retval == 0) {
                 printf("pig PANIC: mismatch between the eth.type and the used datagram fields into a explicit ethernet frame.\n");
             }
@@ -839,6 +844,9 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                         //  INFO(Santiago): Ethernet frame which has a explicit payload or invalid packet. Let's see...
                         for (cp = ep->conf; cp != NULL && retval == 1; cp = cp->next) {
                             retval = (cp->field->index >= kEth_hwdst && cp->field->index <= kEth_payload);
+                            if (retval == 0) {
+                                printf("pig PANIC: non ethernet field inside a raw ethernet frame.\n");
+                            }
                         }
                     }
                     break;
