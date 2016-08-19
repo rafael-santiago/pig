@@ -141,7 +141,7 @@ static void pigsty_ini(FILE *pigsty) {
 }
 
 static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int index) {
-    const char *fmt = "packet[%d]";
+    const char *fmt = "packet (%d)";
     int inval_fmt = 0;
     const char *sp = NULL;
     const char *sp_end = NULL;
@@ -150,13 +150,13 @@ static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int inde
 
     if (signature_fmt == NULL) {
         inval_fmt = 1;
-    }
-
-    for (sp = signature_fmt; *sp != 0 && inval_fmt == 0; sp++) {
-        if (*sp == '%' && *(sp + 1) != 'd' || (*sp == '%' && *(sp + 1) == 'd' && o > 0)) {
-            inval_fmt = 0;
-        } else if (*sp == '%' && *(sp + 1) == 'd') {
-            o++;
+    } else {
+        for (sp = signature_fmt; *sp != 0 && inval_fmt == 0; sp++) {
+            if (*sp == '%' && *(sp + 1) != 'd' || (*sp == '%' && *(sp + 1) == 'd' && o > 0)) {
+                inval_fmt = 0;
+            } else if (*sp == '%' && *(sp + 1) == 'd') {
+                o++;
+            }
         }
     }
 
@@ -166,7 +166,7 @@ static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int inde
 
     sprintf(str_fmt, PIGSTY_NEXT_ENTRY
                      PIGSTY_NEW_ENTRY
-                     "signature = %s"
+                     "signature = \"%s\""
                      NEXT_PIGSTY, fmt);
 
     fprintf(pigsty, str_fmt, index);
@@ -232,13 +232,13 @@ static int pigsty_data(FILE *pigsty, const pcap_record_ctx *record, const int in
         return 1;
     }
 
-    if (incl_ethframe) {
+    pktdumper = g_pcap_rec_dumper_lt[(*ethtype) >> 8][(*ethtype) & 0xff];
+
+    if (incl_ethframe || pktdumper == generic_dumper) {
         if (ethframe_dumper(pigsty, record) != 0) {
             return 1;
         }
     }
-
-    pktdumper = g_pcap_rec_dumper_lt[(*ethtype) >> 8][(*ethtype) & 0xff];
 
     if (pktdumper == NULL) {  // WARN(Santiago): It should never happen.
         return 1;
@@ -553,6 +553,7 @@ static void dump_string(FILE *pigsty, const char *field, const unsigned char *bu
     const unsigned char *bp = NULL;
     const unsigned char *bp_end = NULL;
     char temp[20] = "";
+    int lxc = 0;
 
     if (pigsty == NULL || field == NULL || buffer == NULL || buffer_size == 0) {
         return;
@@ -566,20 +567,38 @@ static void dump_string(FILE *pigsty, const char *field, const unsigned char *bu
     while (bp != bp_end) {
 
         if (isprint(*bp) && *bp != '\\') {
-            fprintf(pigsty, "%c", *bp);
+            if (!isxdigit(*bp)) {
+                fprintf(pigsty, "%c", *bp);
+                lxc = 0;
+            } else {
+                if (lxc) {
+                    sprintf(temp, "\\x%.2x", *bp);
+                    fprintf(pigsty, "%s", temp);
+                    lxc = 1;
+                } else {
+                    fprintf(pigsty, "%c", *bp);
+                    lxc = 0;
+                }
+            }
         } else if (*bp == '\t') {
             fprintf(pigsty, "\\t");
+            lxc = 0;
         } else if (*bp == '\n') {
             fprintf(pigsty, "\\n");
+            lxc = 0;
         } else if (*bp == '\r') {
             fprintf(pigsty, "\\r");
+            lxc = 0;
         } else if (*bp == '\\') {
             fprintf(pigsty, "\\\\");
+            lxc = 0;
         } else if (*bp == '"') {
             fprintf(pigsty, "\\\"");
+            lxc = 0;
         } else {
             sprintf(temp, "\\x%.2x", *bp);
             fprintf(pigsty, "%s", temp);
+            lxc = 1;
         }
 
         bp++;

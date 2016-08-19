@@ -42,9 +42,9 @@ pigsty_conf_set_ctx *get_pigsty_conf_set_by_index(const size_t index, pigsty_con
 
 size_t get_pigsty_conf_set_count(pigsty_conf_set_ctx *conf);
 
-size_t get_pigsty_entry_count(pigsty_entry_ctx *entries);
+size_t get_pigsty_entry_count(const pigsty_entry_ctx *entries);
 
-pigsty_entry_ctx *get_pigsty_entry_by_index(const size_t index, pigsty_entry_ctx *entries);
+const pigsty_entry_ctx *get_pigsty_entry_by_index(const size_t index, const pigsty_entry_ctx *entries);
 
 void del_pig_target_addr(pig_target_addr_ctx *addrs);
 
