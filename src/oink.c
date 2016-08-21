@@ -197,6 +197,8 @@ int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_t
     int is_lo = 0;
     int retval = -1;
     int sockfd_lo = -1;
+    pigsty_field_ctx *fp = NULL;
+
     eth.payload = mk_pkt(signature->conf, (pig_target_addr_ctx *)addrs, &eth.payload_size);
     is_lo = (gw_hwaddr == NULL && is_lopkt(eth.payload, eth.payload_size));
     if (is_arp_packet(signature->conf)) {
@@ -204,25 +206,48 @@ int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_t
         //                  I will not write this stupidity.
         if (!is_lo) {
             arph = parse_arp_dgram(eth.payload, eth.payload_size);
-            eth.ether_type = ETHER_TYPE_ARP;
+
+            fp = get_pigsty_conf_set_field(kEth_type, signature->conf);
+
+            if (fp == NULL) {
+                eth.ether_type = ETHER_TYPE_ARP;
+            } else {
+                eth.ether_type = *(unsigned short *)fp->data;
+            }
+
             fill_up_mac_addresses_by_arpinfo(&eth, arph, signature->conf);
+
             packet = mk_ethernet_frame(&packet_size, eth);
             free(eth.payload);
+
             arp_header_free(arph);
             free(arph);
+
             retval = inject(packet, packet_size, sockfd);
+
             free(packet);
         }
     } else {
         if (!is_lo) {
             parse_ip4_dgram(&iph_p, eth.payload, eth.payload_size);
-            eth.ether_type = ETHER_TYPE_IP;
+
+            fp = get_pigsty_conf_set_field(kEth_type, signature->conf);
+
+            if (fp == NULL) {
+                eth.ether_type = ETHER_TYPE_IP;
+            } else {
+                eth.ether_type = *(unsigned short *)fp->data;
+            }
+
             fill_up_mac_addresses_by_ipinfo(&eth, iph, hwaddr, gw_hwaddr, nt_mask, loiface, signature->conf);
+
             if (iph.payload != NULL) {
                 free(iph.payload);
             }
+
             packet = mk_ethernet_frame(&packet_size, eth);
             free(eth.payload);
+
             if (packet != NULL) {
                 retval = inject(packet, packet_size, sockfd);
                 free(packet);
