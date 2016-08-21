@@ -84,7 +84,7 @@ unsigned short eval_icmp_chsum(const struct icmp hdr) {
     return (unsigned short)(~sum);
 }
 
-void *get_icmp_payload(const char *buf, const size_t buf_size, size_t *field_size) {
+void *get_icmp_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
     struct icmp hdr;
     struct icmp *phdr = &hdr;
     void *payload = NULL;

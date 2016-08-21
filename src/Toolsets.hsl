@@ -1,0 +1,45 @@
+#
+#                                Copyright (C) 2016 by Rafael Santiago
+#
+# This is a free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#
+include ~/toolsets/gcc/gcc-app.hsl
+include ~/toolsets/clang/clang-app.hsl
+
+local function bkexec(cmd type string) : result type int {
+    result hefesto.sys.run($cmd + " > /dev/null 2>&1");
+}
+
+local function has_gcc() : result type string {
+    result (bkexec("gcc --version") == 0);
+}
+
+local function has_clang() : result type string {
+    result (bkexec("clang --version") == 0);
+}
+
+function get_toolset_name() : result type string {
+    var option type list;
+
+    $option = hefesto.sys.get_option("toolset");
+
+    if ($option.count() > 0) {
+        result $option.item(0);
+    }
+
+    if (has_gcc()) {
+        result "gcc-c-app";
+    }
+
+    if (has_clang()) {
+        result "clang-c-app";
+    }
+
+    hefesto.sys.echo("ERROR: You need to have GCC or Clang well installed and exported on your system before going ahead.\n");
+
+    hefesto.project.abort(1);
+
+    result "no-tool-any-set";
+}

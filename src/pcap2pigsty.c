@@ -152,7 +152,7 @@ static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int inde
         inval_fmt = 1;
     } else {
         for (sp = signature_fmt; *sp != 0 && inval_fmt == 0; sp++) {
-            if (*sp == '%' && *(sp + 1) != 'd' || (*sp == '%' && *(sp + 1) == 'd' && o > 0)) {
+            if ((*sp == '%' && *(sp + 1) != 'd') || (*sp == '%' && *(sp + 1) == 'd' && o > 0)) {
                 inval_fmt = 0;
             } else if (*sp == '%' && *(sp + 1) == 'd') {
                 o++;

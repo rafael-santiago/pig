@@ -31,6 +31,6 @@ unsigned char *mk_tcp_buffer(const struct tcp *hdr, size_t *bsize);
 
 unsigned short eval_tcp_ip4_chsum(const struct tcp hdr, const unsigned int src_addr, const unsigned int dst_addr);
 
-void *get_tcp_payload(const char *buf, const size_t buf_size, size_t *field_size);
+void *get_tcp_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size);
 
 #endif

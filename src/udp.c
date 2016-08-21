@@ -83,7 +83,7 @@ unsigned short eval_udp_chsum(const struct udp hdr, const unsigned int src_addr,
     return (unsigned short)(~retval);
 }
 
-void *get_udp_payload(const char *buf, const size_t buf_size, size_t *field_size) {
+void *get_udp_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
     struct udp hdr;
     struct udp *phdr = &hdr;
     void *payload = NULL;
@@ -97,7 +97,7 @@ void *get_udp_payload(const char *buf, const size_t buf_size, size_t *field_size
         return NULL;
     }
 
-    //  TODO(Santiago): When added support for ip6, strip off this.
+    //  TODO(Santiago): When added support for ip6, strip off it.
     if ((buf[0] >> 4) != 4) {
         return NULL;
     }

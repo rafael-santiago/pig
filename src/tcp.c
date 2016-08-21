@@ -134,7 +134,7 @@ unsigned short eval_tcp_ip4_chsum(const struct tcp hdr, const unsigned int src_a
     return (unsigned short)(~retval);
 }
 
-void *get_tcp_payload(const char *buf, const size_t buf_size, size_t *field_size) {
+void *get_tcp_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
     struct tcp hdr;
     struct tcp *phdr = &hdr;
     size_t offset = 0;

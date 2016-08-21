@@ -372,7 +372,7 @@ CUTE_TEST_CASE(ip_packet_making_tests)
     struct ip4 ip4_hdr, ip4_hdr_parsed;
     struct ip4 *ip4_hdr_parsed_p = NULL;
     unsigned char *packet = NULL;
-    unsigned char *expected_packet = "\x45\x00\x00\x14\xde\xad\xbe\xef\x10\x06\xab\xcd\x7f\x00\x00\x01\x7f\x00\x00\x02";
+    unsigned char *expected_packet = (unsigned char *)"\x45\x00\x00\x14\xde\xad\xbe\xef\x10\x06\xab\xcd\x7f\x00\x00\x01\x7f\x00\x00\x02";
     size_t p = 0;
     size_t packet_size    = 0;
     ip4_hdr.version       = 0x4;
@@ -414,7 +414,7 @@ CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(udp_packet_making_tests)
     unsigned char *packet = NULL;
-    unsigned char *expected_packet = "\xaa\xbb\xcc\xdd\x00\x08\xee\xff";
+    unsigned char *expected_packet = (unsigned char *)"\xaa\xbb\xcc\xdd\x00\x08\xee\xff";
     size_t packet_size = 0, p = 0;
     struct udp udp_hdr, udp_hdr_parsed, *udp_hdr_p = NULL;
     udp_hdr.src          = 0xaabb;
@@ -442,7 +442,7 @@ CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(tcp_packet_making_tests)
     unsigned char *packet = NULL;
-    unsigned char *expected_packet = "\xde\xad\xbe\xef\x00\x11\x22\x33\x33\x22\x11\x00\x50\x03\x11\x44\x77\x88\xaa\xff";
+    unsigned char *expected_packet = (unsigned char *)"\xde\xad\xbe\xef\x00\x11\x22\x33\x33\x22\x11\x00\x50\x03\x11\x44\x77\x88\xaa\xff";
     size_t packet_size = 0, p = 0;
     struct tcp tcp_hdr, tcp_hdr_parsed, *tcp_hdr_p = NULL;
     tcp_hdr.src = 0xdead;
@@ -481,13 +481,13 @@ CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(icmp_packet_making_tests)
     struct icmp icmp_hdr, *icmp_hdr_p = NULL;
-    unsigned char *expected_packet = "\x00\x00\x54\xde\x00\x01\x00\x7d\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69";
+    unsigned char *expected_packet = (unsigned char *)"\x00\x00\x54\xde\x00\x01\x00\x7d\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69";
     unsigned char *packet = NULL;
     size_t packet_size = 0, p = 0;
     icmp_hdr.type = 0;
     icmp_hdr.code = 0;
     icmp_hdr.chsum = 0x54de;
-    icmp_hdr.payload = "\x00\x01\x00\x7d\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69";
+    icmp_hdr.payload = (unsigned char *)"\x00\x01\x00\x7d\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69";
     icmp_hdr.payload_size = 36;
     packet = mk_icmp_buffer(&icmp_hdr, &packet_size);
     CUTE_CHECK_EQ("packet_size != 40", packet_size, 40);
@@ -535,7 +535,8 @@ CUTE_TEST_CASE(udp_chsum_evaluation_tests)
     uhdr.dst = 0xec34;
     uhdr.len = 0x9a;
     uhdr.chsum = 0x0;
-    uhdr.payload = "\x27\x47\x81\x80\x00\x01\x00\x03\x00\x00\x00\x00\x03\x77\x77\x77\x06\x67"
+    uhdr.payload = (unsigned char *)
+                   "\x27\x47\x81\x80\x00\x01\x00\x03\x00\x00\x00\x00\x03\x77\x77\x77\x06\x67"
                    "\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00\x00\x01\x00\x01\x03"
                    "\x77\x77\x77\x06\x67\x6f\x6f\x67\x6c\x65\x03\x63\x6f\x6d\x02\x62\x72\x00"
                    "\x00\x01\x00\x01\x00\x00\x01\x2b\x00\x04\xad\xc2\x76\x37\x03\x77\x77\x77"
@@ -577,7 +578,8 @@ CUTE_TEST_CASE(tcp_chsum_evaluation_tests)
     uhdr.chsum = 0x0;
     uhdr.urgp = 0x0;
     uhdr.payload_size = 223;
-    uhdr.payload = "\x48\x54\x54\x50\x2f\x31\x2e\x31\x20\x32\x30\x30\x20\x4f\x4b\x0d\x0a\x54\x72\x61"
+    uhdr.payload = (unsigned char *)
+                   "\x48\x54\x54\x50\x2f\x31\x2e\x31\x20\x32\x30\x30\x20\x4f\x4b\x0d\x0a\x54\x72\x61"
                    "\x6e\x73\x66\x65\x72\x2d\x45\x6e\x63\x6f\x64\x69\x6e\x67\x3a\x20\x63\x68\x75\x6e"
                    "\x6b\x65\x64\x0d\x0a\x44\x61\x74\x65\x3a\x20\x46\x72\x69\x2c\x20\x32\x30\x20\x4a"
                    "\x75\x6e\x20\x32\x30\x31\x34\x20\x31\x36\x3a\x31\x38\x3a\x31\x38\x20\x47\x4d\x54"
@@ -600,7 +602,7 @@ CUTE_TEST_CASE(icmp_chsum_evaluation_tests)
     icmp_hdr.type = 0;
     icmp_hdr.code = 0;
     icmp_hdr.chsum = 0x00;
-    icmp_hdr.payload = "\x00\x01\x00\x7d\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69";
+    icmp_hdr.payload = (unsigned char *)"\x00\x01\x00\x7d\x61\x62\x63\x64\x65\x66\x67\x68\x69\x6a\x6b\x6c\x6d\x6e\x6f\x70\x71\x72\x73\x74\x75\x76\x77\x61\x62\x63\x64\x65\x66\x67\x68\x69";
     icmp_hdr.payload_size = 36;
     CUTE_CHECK("eval_icmp_chsum() != expected_chsum", eval_icmp_chsum(icmp_hdr) == expected_chsum);
 CUTE_TEST_CASE_END
@@ -719,7 +721,7 @@ CUTE_TEST_CASE(pig_hwaddr_ctx_tests)
     pig_hwaddr_ctx *hwaddr = NULL;
     unsigned char *p = NULL;
     unsigned int nt_addr[4] = { 0x7f000001, 0x000000, 0x000000, 0x000000 };
-    hwaddr = add_hwaddr_to_pig_hwaddr(hwaddr, "\xde\xad\xbe\xef\x12\x34", nt_addr, 4);
+    hwaddr = add_hwaddr_to_pig_hwaddr(hwaddr, (unsigned char *)"\xde\xad\xbe\xef\x12\x34", nt_addr, 4);
     CUTE_CHECK("hwaddr == NULL", hwaddr != NULL);
     p = get_ph_addr_from_pig_hwaddr(nt_addr, hwaddr);
     CUTE_CHECK("p == NULL", p != NULL);
@@ -729,7 +731,7 @@ CUTE_TEST_CASE(pig_hwaddr_ctx_tests)
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(eth_frame_making_tests)
-    unsigned char *expected_frame = "\xba\xba\xca\xde\xad\xbe\xde\xad\xbe\xef\xde\xad\x08\x00";
+    unsigned char *expected_frame = (unsigned char *)"\xba\xba\xca\xde\xad\xbe\xde\xad\xbe\xef\xde\xad\x08\x00";
     unsigned char *working_buffer = NULL;
     size_t wbsz = 0, wb = 0;
     struct ethernet_frame eth_frm;
@@ -784,7 +786,7 @@ CUTE_TEST_CASE_END
 CUTE_TEST_CASE(arp_packet_making_tests)
     struct arp arph;
     struct arp *arph_p = NULL;
-    unsigned char *expected_packet = "\x00\x01\x08\x00\x06\x04\x00\x01\xde\xad\xbe\xef\xde\x00\x7f\x00\x00\x01\xde\xad\xbe\xef\xde\x00\x7f\x00\x00\x01";
+    unsigned char *expected_packet = (unsigned char *)"\x00\x01\x08\x00\x06\x04\x00\x01\xde\xad\xbe\xef\xde\x00\x7f\x00\x00\x01\xde\xad\xbe\xef\xde\x00\x7f\x00\x00\x01";
     size_t expected_packet_sz = 28;
     unsigned char *packet = NULL;
     size_t packet_sz = 0, p = 0;
@@ -794,10 +796,10 @@ CUTE_TEST_CASE(arp_packet_making_tests)
     arph.hw_addr_len = 6;
     arph.pt_addr_len = 4;
     arph.opcode = ARP_OPCODE_REQUEST;
-    arph.src_hw_addr = "\xde\xad\xbe\xef\xde\x00";
-    arph.src_pt_addr = "\x7f\x00\x00\x01";
-    arph.dest_hw_addr = "\xde\xad\xbe\xef\xde\x00";
-    arph.dest_pt_addr = "\x7f\x00\x00\x01";
+    arph.src_hw_addr = (unsigned char *)"\xde\xad\xbe\xef\xde\x00";
+    arph.src_pt_addr = (unsigned char *)"\x7f\x00\x00\x01";
+    arph.dest_hw_addr = (unsigned char *)"\xde\xad\xbe\xef\xde\x00";
+    arph.dest_pt_addr = (unsigned char *)"\x7f\x00\x00\x01";
 
     packet = mk_arp_dgram(&packet_sz, arph);
 
@@ -878,30 +880,30 @@ CUTE_TEST_CASE(pcap_loading_tests)
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(pktslicer_get_pkt_field_tests)
-    char *ipv4_packet = "\x5c\xac\x4c\xaa\xf5\xb5\x08\x95\x2a\xad\xd6\x4f\x08\x00\x45\x00"
-                        "\x00\x34\xc8\xc5\x40\x00\x3a\x06\xc2\x7f\x17\x2d\xdc\x5e\xc0\xa8"
-                        "\x01\x4b\x00\x50\x04\x59\x60\x26\x26\xa7\xba\x84\x24\x9b\x80\x10"
-                        "\x03\x9c\x97\xcd\x00\x00\x01\x01\x05\x0a\xba\x84\x24\x9a\xba\x84"
-                        "\x24\x9b";
+    unsigned char *ipv4_packet = (unsigned char *)"\x5c\xac\x4c\xaa\xf5\xb5\x08\x95\x2a\xad\xd6\x4f\x08\x00\x45\x00"
+                                                  "\x00\x34\xc8\xc5\x40\x00\x3a\x06\xc2\x7f\x17\x2d\xdc\x5e\xc0\xa8"
+                                                  "\x01\x4b\x00\x50\x04\x59\x60\x26\x26\xa7\xba\x84\x24\x9b\x80\x10"
+                                                  "\x03\x9c\x97\xcd\x00\x00\x01\x01\x05\x0a\xba\x84\x24\x9a\xba\x84"
+                                                  "\x24\x9b";
     size_t ipv4_packet_size = 66;
-    char *udp_packet = "\x00\x90\xd0\xeb\x46\xe7\x00\x0e\x35\x78\x0c\x02\x08\x00\x45\x00"
-                       "\x00\x39\x15\x09\x00\x00\x80\x11\xa2\x56\xc0\xa8\x01\x03\xc0\xa8"
-                       "\x01\x01\x05\x73\x00\x35\x00\x25\x0a\xf6\x00\x03\x01\x00\x00\x01"
-                       "\x00\x00\x00\x00\x00\x00\x03\x77\x77\x77\x03\x77\x77\x77\x03\x63"
-                       "\x6f\x6d\x00\x00\x01\x00\x01";
+    unsigned char *udp_packet = (unsigned char *)"\x00\x90\xd0\xeb\x46\xe7\x00\x0e\x35\x78\x0c\x02\x08\x00\x45\x00"
+                                                 "\x00\x39\x15\x09\x00\x00\x80\x11\xa2\x56\xc0\xa8\x01\x03\xc0\xa8"
+                                                 "\x01\x01\x05\x73\x00\x35\x00\x25\x0a\xf6\x00\x03\x01\x00\x00\x01"
+                                                 "\x00\x00\x00\x00\x00\x00\x03\x77\x77\x77\x03\x77\x77\x77\x03\x63"
+                                                 "\x6f\x6d\x00\x00\x01\x00\x01";
     size_t udp_packet_size = 71;
-    char *icmp_packet = "\x08\x95\x2a\xad\xd6\x4f\x5c\xac\x4c\xaa\xf5\xb5\x08\x00\x45\x00"
-                        "\x00\x68\x0b\x98\x00\x00\x80\x01\xab\x60\xc0\xa8\x01\x4b\xc0\xa8"
-                        "\x01\x01\x03\x03\x80\xe3\x00\x00\x00\x00\x45\x00\x00\x4c\x00\x00"
-                        "\x40\x00\x40\x11\xb7\x04\xc0\xa8\x01\x01\xc0\xa8\x01\x4b\x00\x35"
-                        "\xc4\x95\x00\x38\xe9\x8d\x50\xc2\x81\x80\x00\x01\x00\x01\x00\x00"
-                        "\x00\x00\x03\x61\x70\x69\x06\x67\x69\x74\x68\x75\x62\x03\x63\x6f"
-                        "\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00\x01\x00\x01\x00\x00\x00\x02"
-                        "\x00\x04\xc0\x1e\xfc\x7f";
+    unsigned char *icmp_packet = (unsigned char *)"\x08\x95\x2a\xad\xd6\x4f\x5c\xac\x4c\xaa\xf5\xb5\x08\x00\x45\x00"
+                                                  "\x00\x68\x0b\x98\x00\x00\x80\x01\xab\x60\xc0\xa8\x01\x4b\xc0\xa8"
+                                                  "\x01\x01\x03\x03\x80\xe3\x00\x00\x00\x00\x45\x00\x00\x4c\x00\x00"
+                                                  "\x40\x00\x40\x11\xb7\x04\xc0\xa8\x01\x01\xc0\xa8\x01\x4b\x00\x35"
+                                                  "\xc4\x95\x00\x38\xe9\x8d\x50\xc2\x81\x80\x00\x01\x00\x01\x00\x00"
+                                                  "\x00\x00\x03\x61\x70\x69\x06\x67\x69\x74\x68\x75\x62\x03\x63\x6f"
+                                                  "\x6d\x00\x00\x01\x00\x01\xc0\x0c\x00\x01\x00\x01\x00\x00\x00\x02"
+                                                  "\x00\x04\xc0\x1e\xfc\x7f";
     size_t icmp_packet_size = 118;
-    char *arp_packet = "\x08\x95\x2a\xad\xd6\x4f\x5c\xac\x4c\xaa\xf5\xb5\x08\x06\x00\x01"
-                       "\x08\x00\x06\x04\x00\x01\x5c\xac\x4c\xaa\xf5\xb5\xc0\xa8\x01\x4b"
-                       "\x08\x95\x2a\xad\xd6\x4f\xc0\xa8\x01\x01";
+    unsigned char *arp_packet = (unsigned char *)"\x08\x95\x2a\xad\xd6\x4f\x5c\xac\x4c\xaa\xf5\xb5\x08\x06\x00\x01"
+                                                 "\x08\x00\x06\x04\x00\x01\x5c\xac\x4c\xaa\xf5\xb5\xc0\xa8\x01\x4b"
+                                                 "\x08\x95\x2a\xad\xd6\x4f\xc0\xa8\x01\x01";
     size_t arp_packet_size = 42;
     size_t slice_size = 0;
     void *slice = NULL;
@@ -909,67 +911,71 @@ CUTE_TEST_CASE(pktslicer_get_pkt_field_tests)
         const size_t slice_size;
         const unsigned char *slice;
         const char *pkt_field;
-        const char *packet;
+        const unsigned char *packet;
         const size_t packet_size;
     };
     struct expect_slices slices[] = {
-        {  6, "\x5c\xac\x4c\xaa\xf5\xb5", "eth.hwdst",     ipv4_packet, ipv4_packet_size },
-        {  6, "\x08\x95\x2a\xad\xd6\x4f", "eth.hwsrc",     ipv4_packet, ipv4_packet_size },
-        {  2, "\x08\x00",                 "eth.type",      ipv4_packet, ipv4_packet_size },
-        {  1, "\x04",                     "ip.version",    ipv4_packet, ipv4_packet_size },
-        {  1, "\x05",                     "ip.ihl",        ipv4_packet, ipv4_packet_size },
-        {  1, "\x00",                     "ip.tos",        ipv4_packet, ipv4_packet_size },
-        {  2, "\x00\x34",                 "ip.tlen",       ipv4_packet, ipv4_packet_size },
-        {  2, "\xc8\xc5",                 "ip.id",         ipv4_packet, ipv4_packet_size },
-        {  1, "\x02",                     "ip.flags",      ipv4_packet, ipv4_packet_size },
-        {  2, "\x00\x00",                 "ip.offset",     ipv4_packet, ipv4_packet_size },
-        {  1, "\x3a",                     "ip.ttl",        ipv4_packet, ipv4_packet_size },
-        {  1, "\x06",                     "ip.protocol",   ipv4_packet, ipv4_packet_size },
-        {  2, "\xc2\x7f",                 "ip.checksum",   ipv4_packet, ipv4_packet_size },
-        {  4, "\x17\x2d\xdc\x5e",         "ip.src",        ipv4_packet, ipv4_packet_size },
-        {  4, "\xc0\xa8\x01\x4b",         "ip.dst",        ipv4_packet, ipv4_packet_size },
-        { 32, "\x00\x50\x04\x59"
+        {  6, (unsigned char *)"\x5c\xac\x4c\xaa\xf5\xb5", "eth.hwdst",     ipv4_packet, ipv4_packet_size },
+        {  6, (unsigned char *)"\x08\x95\x2a\xad\xd6\x4f", "eth.hwsrc",     ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\x08\x00",                 "eth.type",      ipv4_packet, ipv4_packet_size },
+        {  1, (unsigned char *)"\x04",                     "ip.version",    ipv4_packet, ipv4_packet_size },
+        {  1, (unsigned char *)"\x05",                     "ip.ihl",        ipv4_packet, ipv4_packet_size },
+        {  1, (unsigned char *)"\x00",                     "ip.tos",        ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\x00\x34",                 "ip.tlen",       ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\xc8\xc5",                 "ip.id",         ipv4_packet, ipv4_packet_size },
+        {  1, (unsigned char *)"\x02",                     "ip.flags",      ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\x00\x00",                 "ip.offset",     ipv4_packet, ipv4_packet_size },
+        {  1, (unsigned char *)"\x3a",                     "ip.ttl",        ipv4_packet, ipv4_packet_size },
+        {  1, (unsigned char *)"\x06",                     "ip.protocol",   ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\xc2\x7f",                 "ip.checksum",   ipv4_packet, ipv4_packet_size },
+        {  4, (unsigned char *)"\x17\x2d\xdc\x5e",         "ip.src",        ipv4_packet, ipv4_packet_size },
+        {  4, (unsigned char *)"\xc0\xa8\x01\x4b",         "ip.dst",        ipv4_packet, ipv4_packet_size },
+        { 32, (unsigned char *)
+              "\x00\x50\x04\x59"
               "\x60\x26\x26\xa7"
               "\xba\x84\x24\x9b"
               "\x80\x10\x03\x9c"
               "\x97\xcd\x00\x00"
               "\x01\x01\x05\x0a"
               "\xba\x84\x24\x9a"
-              "\xba\x84\x24\x9b",         "ip.payload",    ipv4_packet, ipv4_packet_size },
-        {  2, "\x00\x50",                 "tcp.src",       ipv4_packet, ipv4_packet_size },
-        {  2, "\x04\x59",                 "tcp.dst",       ipv4_packet, ipv4_packet_size },
-        {  4, "\x60\x26\x26\xa7",         "tcp.seqno",     ipv4_packet, ipv4_packet_size },
-        {  4, "\xba\x84\x24\x9b",         "tcp.ackno",     ipv4_packet, ipv4_packet_size },
-        {  1, "\x08",                     "tcp.size",      ipv4_packet, ipv4_packet_size },
-        {  1, "\x00",                     "tcp.reserv",    ipv4_packet, ipv4_packet_size },
-        {  1, "\x10",                     "tcp.flags",     ipv4_packet, ipv4_packet_size },
-        {  2, "\x03\x9c",                 "tcp.wsize",     ipv4_packet, ipv4_packet_size },
-        {  2, "\x97\xcd",                 "tcp.checksum",  ipv4_packet, ipv4_packet_size },
-        {  2, "\x00\x00",                 "tcp.urgp",      ipv4_packet, ipv4_packet_size },
-        { 32, "\x00\x50\x04\x59"
+              "\xba\x84\x24\x9b",                          "ip.payload",    ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\x00\x50",                 "tcp.src",       ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\x04\x59",                 "tcp.dst",       ipv4_packet, ipv4_packet_size },
+        {  4, (unsigned char *)"\x60\x26\x26\xa7",         "tcp.seqno",     ipv4_packet, ipv4_packet_size },
+        {  4, (unsigned char *)"\xba\x84\x24\x9b",         "tcp.ackno",     ipv4_packet, ipv4_packet_size },
+        {  1, (unsigned char *)"\x08",                     "tcp.size",      ipv4_packet, ipv4_packet_size },
+        {  1, (unsigned char *)"\x00",                     "tcp.reserv",    ipv4_packet, ipv4_packet_size },
+        {  1, (unsigned char *)"\x10",                     "tcp.flags",     ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\x03\x9c",                 "tcp.wsize",     ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\x97\xcd",                 "tcp.checksum",  ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\x00\x00",                 "tcp.urgp",      ipv4_packet, ipv4_packet_size },
+        { 32, (unsigned char *)
+              "\x00\x50\x04\x59"
               "\x60\x26\x26\xa7"
               "\xba\x84\x24\x9b"
               "\x80\x10\x03\x9c"
               "\x97\xcd\x00\x00"
               "\x01\x01\x05\x0a"
               "\xba\x84\x24\x9a"
-              "\xba\x84\x24\x9b",         "tcp.payload",   ipv4_packet, ipv4_packet_size },
-        {  2, "\x05\x73",                 "udp.src",        udp_packet, udp_packet_size  },
-        {  2, "\x00\x35",                 "udp.dst",        udp_packet, udp_packet_size  },
-        {  2, "\x00\x25",                 "udp.size",       udp_packet, udp_packet_size  },
-        {  2, "\x0a\xf6",                 "udp.checksum",   udp_packet, udp_packet_size  },
-        { 29, "\x00\x03\x01\x00"
+              "\xba\x84\x24\x9b",                          "tcp.payload",   ipv4_packet, ipv4_packet_size },
+        {  2, (unsigned char *)"\x05\x73",                 "udp.src",        udp_packet, udp_packet_size  },
+        {  2, (unsigned char *)"\x00\x35",                 "udp.dst",        udp_packet, udp_packet_size  },
+        {  2, (unsigned char *)"\x00\x25",                 "udp.size",       udp_packet, udp_packet_size  },
+        {  2, (unsigned char *)"\x0a\xf6",                 "udp.checksum",   udp_packet, udp_packet_size  },
+        { 29, (unsigned char *)
+              "\x00\x03\x01\x00"
               "\x00\x01\x00\x00"
               "\x00\x00\x00\x00"
               "\x03\x77\x77\x77"
               "\x03\x77\x77\x77"
               "\x03\x63\x6f\x6d"
               "\x00\x00\x01\x00"
-              "\x01",                     "udp.payload",    udp_packet, udp_packet_size  },
-        {  1, "\x03",                     "icmp.type",     icmp_packet, icmp_packet_size },
-        {  1, "\x03",                     "icmp.code",     icmp_packet, icmp_packet_size },
-        {  2, "\x80\xe3",                 "icmp.checksum", icmp_packet, icmp_packet_size },
-        { 80, "\x00\x00\x00\x00"
+              "\x01",                                      "udp.payload",    udp_packet, udp_packet_size  },
+        {  1, (unsigned char *)"\x03",                     "icmp.type",     icmp_packet, icmp_packet_size },
+        {  1, (unsigned char *)"\x03",                     "icmp.code",     icmp_packet, icmp_packet_size },
+        {  2, (unsigned char *)"\x80\xe3",                 "icmp.checksum", icmp_packet, icmp_packet_size },
+        { 80, (unsigned char *)
+              "\x00\x00\x00\x00"
               "\x45\x00\x00\x4c"
               "\x00\x00\x40\x00"
               "\x40\x11\xb7\x04"
@@ -988,18 +994,20 @@ CUTE_TEST_CASE(pktslicer_get_pkt_field_tests)
               "\xc0\x0c\x00\x01"
               "\x00\x01\x00\x00"
               "\x00\x02\x00\x04"
-              "\xc0\x1e\xfc\x7f",         "icmp.payload",  icmp_packet, icmp_packet_size },
-        {  2, "\x00\x01",                 "arp.hwtype",     arp_packet, arp_packet_size  },
-        {  2, "\x08\x00",                 "arp.ptype",      arp_packet, arp_packet_size  },
-        {  1, "\x06",                     "arp.hwlen",      arp_packet, arp_packet_size  },
-        {  1, "\x04",                     "arp.plen",       arp_packet, arp_packet_size  },
-        {  2, "\x00\x01",                 "arp.opcode",     arp_packet, arp_packet_size  },
-        {  6, "\x5c\xac\x4c"
-              "\xaa\xf5\xb5",             "arp.hwsrc",      arp_packet, arp_packet_size  },
-        {  4, "\xc0\xa8\x01\x4b",         "arp.psrc",       arp_packet, arp_packet_size  },
-        {  6, "\x08\x95\x2a"
-              "\xad\xd6\x4f",             "arp.hwdst",      arp_packet, arp_packet_size  },
-        {  4, "\xc0\xa8\x01\x01",         "arp.pdst",       arp_packet, arp_packet_size  }
+              "\xc0\x1e\xfc\x7f",                          "icmp.payload",  icmp_packet, icmp_packet_size },
+        {  2, (unsigned char *)"\x00\x01",                 "arp.hwtype",     arp_packet, arp_packet_size  },
+        {  2, (unsigned char *)"\x08\x00",                 "arp.ptype",      arp_packet, arp_packet_size  },
+        {  1, (unsigned char *)"\x06",                     "arp.hwlen",      arp_packet, arp_packet_size  },
+        {  1, (unsigned char *)"\x04",                     "arp.plen",       arp_packet, arp_packet_size  },
+        {  2, (unsigned char *)"\x00\x01",                 "arp.opcode",     arp_packet, arp_packet_size  },
+        {  6, (unsigned char *)
+              "\x5c\xac\x4c"
+              "\xaa\xf5\xb5",                              "arp.hwsrc",      arp_packet, arp_packet_size  },
+        {  4, (unsigned char *)"\xc0\xa8\x01\x4b",         "arp.psrc",       arp_packet, arp_packet_size  },
+        {  6, (unsigned char *)
+              "\x08\x95\x2a"
+              "\xad\xd6\x4f",                              "arp.hwdst",      arp_packet, arp_packet_size  },
+        {  4, (unsigned char *)"\xc0\xa8\x01\x01",         "arp.pdst",       arp_packet, arp_packet_size  }
     };
     size_t slices_nr = sizeof(slices) / sizeof(slices[0]), s = 0;
     size_t b = 0;

@@ -58,13 +58,13 @@ unsigned char *mk_arp_dgram(size_t *bsize, const struct arp arph);
 
 unsigned char *mac2byte(const char *mac, size_t len);
 
-void *get_arp_hw_src_payload(const char *buf, const size_t buf_size, size_t *field_size);
+void *get_arp_hw_src_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size);
 
-void *get_arp_pt_src_payload(const char *buf, const size_t buf_size, size_t *field_size);
+void *get_arp_pt_src_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size);
 
-void *get_arp_hw_dst_payload(const char *buf, const size_t buf_size, size_t *field_size);
+void *get_arp_hw_dst_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size);
 
-void *get_arp_pt_dst_payload(const char *buf, const size_t buf_size, size_t *field_size);
+void *get_arp_pt_dst_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size);
 
 #include "linux/native_arp.h"
 

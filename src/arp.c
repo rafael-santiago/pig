@@ -31,7 +31,7 @@ typedef enum _arp_payload_field_index_t {
     kArpPayloadFieldIndexesNr
 }arp_payload_field_index_t;
 
-static void *get_arp_payload(arp_payload_field_index_t index, const char *buf, const size_t buf_size, size_t *field_size);
+static void *get_arp_payload(arp_payload_field_index_t index, const unsigned char *buf, const size_t buf_size, size_t *field_size);
 
 struct arp *parse_arp_dgram(const unsigned char *buf, const size_t bsize) {
     struct arp *arph = NULL;
@@ -120,7 +120,7 @@ unsigned char *mac2byte(const char *mac, size_t len) {
     return retval;
 }
 
-static void *get_arp_payload(arp_payload_field_index_t index, const char *buf, const size_t buf_size, size_t *field_size) {
+static void *get_arp_payload(arp_payload_field_index_t index, const unsigned char *buf, const size_t buf_size, size_t *field_size) {
     struct arp *phdr = NULL;
     void *payload = NULL;
     struct statement_case {
@@ -165,18 +165,18 @@ static void *get_arp_payload(arp_payload_field_index_t index, const char *buf, c
     return payload;
 }
 
-void *get_arp_hw_src_payload(const char *buf, const size_t buf_size, size_t *field_size) {
+void *get_arp_hw_src_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
     return get_arp_payload(kArpHwSrcPayload, buf, buf_size, field_size);
 }
 
-void *get_arp_pt_src_payload(const char *buf, const size_t buf_size, size_t *field_size) {
+void *get_arp_pt_src_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
     return get_arp_payload(kArpPtSrcPayload, buf, buf_size, field_size);
 }
 
-void *get_arp_hw_dst_payload(const char *buf, const size_t buf_size, size_t *field_size) {
+void *get_arp_hw_dst_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
     return get_arp_payload(kArpHwDstPayload, buf, buf_size, field_size);
 }
 
-void *get_arp_pt_dst_payload(const char *buf, const size_t buf_size, size_t *field_size) {
+void *get_arp_pt_dst_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
     return get_arp_payload(kArpPtDstPayload, buf, buf_size, field_size);
 }

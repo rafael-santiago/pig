@@ -34,6 +34,6 @@ unsigned short eval_ip4_chsum(const struct ip4 hdr);
 
 unsigned char *addr2byte(const char *addr, size_t len);
 
-void *get_ip4_payload(const char *buf, const size_t bsize, size_t *field_size);
+void *get_ip4_payload(const unsigned char *buf, const size_t bsize, size_t *field_size);
 
 #endif

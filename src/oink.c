@@ -29,9 +29,9 @@ static void fill_up_mac_addresses_by_arpinfo(struct ethernet_frame *eth, const s
 
 static int should_route(const unsigned int addr[4], const unsigned int nt_mask[4], const char *loiface);
 
-static int is_lopkt(const char *datagram, const size_t datagram_sz);
+static int is_lopkt(const unsigned char *datagram, const size_t datagram_sz);
 
-static int is_lopkt(const char *datagram, const size_t datagram_sz) {
+static int is_lopkt(const unsigned char *datagram, const size_t datagram_sz) {
     int retval = 0;
     unsigned int ip4_addr = 0;
     if (datagram != NULL && datagram_sz >= 20) {
@@ -80,7 +80,8 @@ static int should_route(const unsigned int addr[4], const unsigned int nt_mask[4
 static void fill_up_mac_addresses_by_ipinfo(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface, pigsty_conf_set_ctx *conf) {
     unsigned int nt_addr[4] = { 0, 0, 0, 0 };
     pig_hwaddr_ctx *hwa_p = (*hwaddr);
-    unsigned char *mac = NULL, *temp = NULL;
+    unsigned char *mac = NULL;
+    char *temp = NULL;
     in_addr_t addr;
     pigsty_field_ctx *fp = NULL;
 
@@ -133,7 +134,7 @@ static void fill_up_mac_addresses_by_ipinfo(struct ethernet_frame *eth, const st
                 addr = htonl(iph.dst);
                 temp = get_mac_by_addr(addr, loiface, PIG_ARP_TRIES_NR);
                 if (temp != NULL) {
-                    mac = mac2byte(temp, strlen(temp));
+                    mac = mac2byte(temp, strlen((char *)temp));
                     free(temp);
                     hwa_p = add_hwaddr_to_pig_hwaddr(hwa_p, mac, nt_addr, 4);
                     free(mac);

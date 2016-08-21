@@ -17,7 +17,7 @@
 
 #define get_byte_from_u32(v, b) ( ( (v) >> ( 24 - ( (b) * 8 ) ) ) & 0xff )
 
-typedef void *(*get_pkt_data_func)(const char *buf, const size_t buf_size, size_t *field_size);
+typedef void *(*get_pkt_data_func)(const unsigned char *buf, const size_t buf_size, size_t *field_size);
 
 struct pkt_field_boundaries {
     const char *name;

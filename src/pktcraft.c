@@ -197,7 +197,8 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     int exit_code = 1;
     int should_be_quiet = 0;
     unsigned int nt_mask_addr[4] = { 0, 0, 0, 0 };
-    unsigned char *gw_hwaddr = NULL, *temp = NULL;
+    unsigned char *gw_hwaddr = NULL;
+    char *temp = NULL;
     in_addr_t gw_in_addr = 0;
     pig_pktcrafter pktcrafter = random_pktcrafter;
 
