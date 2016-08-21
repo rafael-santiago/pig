@@ -64,6 +64,24 @@ static int singletest_pktcrafter(const pigsty_entry_ctx *pigsty,
                                  const unsigned int nt_mask_addr[4],
                                  const struct pktcraft_options_ctx user_options);
 
+static int endless_pktcrafter(const pigsty_entry_ctx *pigsty,
+                              const size_t signatures_count,
+                              pig_hwaddr_ctx *hwaddr,
+                              const pig_target_addr_ctx *addr,
+                              const int sockfd,
+                              const unsigned char *gw_hwaddr,
+                              const unsigned int nt_mask_addr[4],
+                              const struct pktcraft_options_ctx user_options);
+
+static int sequential_pktcrafter(const pigsty_entry_ctx *pigsty,
+                                 const size_t signatures_count,
+                                 pig_hwaddr_ctx *hwaddr,
+                                 const pig_target_addr_ctx *addr,
+                                 const int sockfd,
+                                 const unsigned char *gw_hwaddr,
+                                 const unsigned int nt_mask_addr[4],
+                                 const struct pktcraft_options_ctx user_options);
+
 static int random_pktcrafter(const pigsty_entry_ctx *pigsty,
                              const size_t signatures_count,
                              pig_hwaddr_ctx *hwaddr,
@@ -107,7 +125,7 @@ int pktcraft_help() {
     printf("usage: pig --signatures=file.0,file.1,(...),file.n "
            "--gateway=<gateway address> --net-mask=<network mask> "
            "--lo-iface=<network interface> [--timeout=<in msecs> "
-           "--no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n --no-gateway]\n\n"
+           "--no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n --no-gateway --loop=<random|sequential>]\n\n"
            "*** If you want to know more about some sub-task you should try: pig --sub-task=<name> --help\n___\n"
            "pig is Copyright (C) 2015-2016 by Rafael Santiago.\n\n"
            "Bug reports, feedback, etc: <voidbrainvoid@gmail.com> or <https://github.com/rafael-santiago/pig/issues>\n");
@@ -160,7 +178,7 @@ static int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
         }
     }
 
-    options->timeo = ((data != NULL) ? atoi(data) * 1000 : 10000);
+    options->timeo = ((data != NULL) ? atoi(data) : 10000) * 1000;
 
     options->should_be_quiet = (get_option("no-echo", NULL) != NULL);
     options->targets = get_option("targets", NULL);
@@ -257,7 +275,7 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
 
     if (user_options.no_gateway != NULL || gw_hwaddr != NULL) {
         if (user_options.single_test == NULL) {
-            pktcrafter = random_pktcrafter;
+            pktcrafter = endless_pktcrafter;
         } else {
             pktcrafter = singletest_pktcrafter;
         }
@@ -289,6 +307,59 @@ static int singletest_pktcrafter(const pigsty_entry_ctx *pigsty,
 
     return single_pktcraft(get_pigsty_entry_by_index(rand() % signatures_count, pigsty),
                            hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
+}
+
+static int endless_pktcrafter(const pigsty_entry_ctx *pigsty,
+                              const size_t signatures_count,
+                              pig_hwaddr_ctx *hwaddr,
+                              const pig_target_addr_ctx *addr,
+                              const int sockfd,
+                              const unsigned char *gw_hwaddr,
+                              const unsigned int nt_mask_addr[4],
+                              const struct pktcraft_options_ctx user_options) {
+    char *loop = NULL;
+    pig_pktcrafter pktcrafter = NULL;
+
+    loop = get_option("loop", "random");
+
+    if (strcmp(loop, "random") == 0) {
+        pktcrafter = random_pktcrafter;
+    } else if (strcmp(loop, "sequential") == 0) {
+        pktcrafter = sequential_pktcrafter;
+    } else {
+        printf("pig ERROR: --loop has unknown mode \"%s\".\n", loop);
+        return 1;
+    }
+
+    return pktcrafter(pigsty, signatures_count, hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
+}
+
+static int sequential_pktcrafter(const pigsty_entry_ctx *pigsty,
+                                 const size_t signatures_count,
+                                 pig_hwaddr_ctx *hwaddr,
+                                 const pig_target_addr_ctx *addr,
+                                 const int sockfd,
+                                 const unsigned char *gw_hwaddr,
+                                 const unsigned int nt_mask_addr[4],
+                                 const struct pktcraft_options_ctx user_options) {
+
+    const pigsty_entry_ctx *p = pigsty;
+    int retval = 0;
+
+    while (!g_pig_out) {
+
+        retval = single_pktcraft(p, hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
+
+        p = (p->next != NULL) ? p->next : pigsty;
+
+        usleep(user_options.timeo);
+    }
+
+    if (!user_options.should_be_quiet) {
+        printf("\npig INFO: exiting... please wait...\npig INFO: pig has gone.\n");
+    }
+
+    return retval;
 }
 
 static int random_pktcrafter(const pigsty_entry_ctx *pigsty,
