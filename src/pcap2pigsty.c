@@ -390,7 +390,7 @@ static int generic_dumper(FILE *pigsty, const pcap_record_ctx *record) {
         return 1;
     }
 
-    dump_xstring(pigsty, "eth.payload", record->data, record->hdr.incl_len);
+    dump_xstring(pigsty, "eth.payload", record->data + 14, record->hdr.incl_len - 14);
 
     return 0;
 }

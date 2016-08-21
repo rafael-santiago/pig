@@ -8,6 +8,7 @@
 #include "mkpkt.h"
 #include "memory.h"
 #include "lists.h"
+#include "eth.h"
 #include "ip.h"
 #include "tcp.h"
 #include "udp.h"
@@ -17,11 +18,13 @@
 #include "pigsty.h"
 #include <string.h>
 
-static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
+static void mk_ipv4_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
 
-//static void mk_ipv6_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf);
+//static void mk_ipv6_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf);
 
-static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
+static void mk_usr_arp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
+
+static void mk_usr_eth_frame(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs);
 
 static void mk_tcp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, const unsigned int src_addr[4], const unsigned int dst_addr[4], const int version);
 
@@ -52,27 +55,14 @@ unsigned char *mk_pkt(pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs, siz
     // }
     switch (version) {
         case 4:
-            retval = (unsigned char *) pig_newseg(0xffff);
-            mk_ipv4_dgram(retval, pktsize, conf, addrs);
+            mk_ipv4_dgram(&retval, pktsize, conf, addrs);
             break;
 
         default:
             if (is_arp_packet(conf)) {
-                pkt_size = 8;
-                fp = get_pigsty_conf_set_field(kArp_hwlen, conf);
-                if (fp == NULL) {
-                    pkt_size += 255; //  WARN(Santiago): It should never happen!!
-                } else {
-                    pkt_size += (*(unsigned char *)fp->data) * 2;
-                }
-                fp = get_pigsty_conf_set_field(kArp_plen, conf);
-                if (fp == NULL) {
-                    pkt_size += 255; //  WARN(Santiago): It should never happen too!!
-                } else {
-                    pkt_size += (*(unsigned char *)fp->data) * 2;
-                }
-                retval = (unsigned char *) pig_newseg(pkt_size);
-                mk_usr_arp_dgram(retval, pktsize, conf, addrs);
+                mk_usr_arp_dgram(&retval, pktsize, conf, addrs);
+            } else if (is_explicit_eth_frame(conf)) {
+                mk_usr_eth_frame(&retval, pktsize, conf, addrs);
             }
             break;
     }
@@ -95,12 +85,11 @@ static void mk_default_ipv4(struct ip4 *hdr) {
     hdr->payload = NULL;
 }
 
-static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs) {
+static void mk_ipv4_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs) {
     pigsty_conf_set_ctx *cp = NULL;
     struct ip4 iph;
     struct tcp tcph;
     struct udp udph;
-    char *temp = NULL;
     unsigned int src_addr[4] = {0, 0, 0, 0};
     unsigned int dst_addr[4] = {0, 0, 0, 0};
     size_t addrs_count = 0, addr_index = 0;
@@ -227,19 +216,17 @@ static void mk_ipv4_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_
     iph.chsum = 0;
     iph.chsum = eval_ip4_chsum(iph);
 
-    temp = mk_ip4_buffer(&iph, buf_size);
+    (*buf) = mk_ip4_buffer(&iph, buf_size);
 
-    memcpy(buf, temp, *buf_size % 0xffff);
     if (iph.payload != NULL) {
         free(iph.payload);
     }
-    free(temp);
 }
 
-//static void mk_ipv6_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf) {
+//static void mk_ipv6_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf) {
 //}
 
-static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs) {
+static void mk_usr_arp_dgram(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs) {
     pigsty_conf_set_ctx *cp = NULL;
     pigsty_field_ctx *fp = NULL;
     struct arp arph;
@@ -249,9 +236,9 @@ static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_s
     arph.dest_hw_addr = NULL;
     arph.src_pt_addr = NULL;
     arph.dest_pt_addr = NULL;
-    unsigned char *temp = NULL;
     unsigned int ipv4_addr = 0;
     size_t addrs_count = 0, addr_index = 0;
+
     for (cp = conf; cp != NULL; cp = cp->next) {
         switch (cp->field->index) {
 
@@ -339,10 +326,46 @@ static void mk_usr_arp_dgram(unsigned char *buf, size_t *buf_size, pigsty_conf_s
 
         }
     }
-    temp = mk_arp_dgram(buf_size, arph);
-    memcpy(buf, temp, *buf_size);
-    free(temp);
+
+    (*buf) = mk_arp_dgram(buf_size, arph);
+
     arp_header_free(&arph);
+}
+
+static void mk_usr_eth_frame(unsigned char **buf, size_t *buf_size, pigsty_conf_set_ctx *conf, pig_target_addr_ctx *addrs) {
+    pigsty_conf_set_ctx *cp = NULL;
+    struct ethernet_frame ethf;
+
+    ethf.payload = NULL;
+
+    for (cp = conf; cp != NULL; cp = cp->next) {
+
+        switch (cp->field->index) {
+            case kEth_hwdst:
+                memcpy(ethf.dest_hw_addr, cp->field->data, sizeof(ethf.dest_hw_addr));
+                break;
+
+            case kEth_hwsrc:
+                memcpy(ethf.src_hw_addr, cp->field->data, sizeof(ethf.src_hw_addr));
+                break;
+
+            case kEth_type:
+                ethf.ether_type = *(unsigned short *)cp->field->data;
+                break;
+
+            case kEth_payload:
+                ethf.payload = (unsigned char *) pig_newseg(cp->field->dsize);
+                memcpy(ethf.payload, cp->field->data, cp->field->dsize);
+                ethf.payload_size = cp->field->dsize;
+                break;
+
+        }
+
+    }
+
+    (*buf) = mk_ethernet_frame(buf_size, ethf);
+
+    free(ethf.payload);
 }
 
 static void mk_default_tcp(struct tcp *hdr) {
