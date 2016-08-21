@@ -23,9 +23,9 @@
 
 #define pig_get_net_mask_from_addr(a, m) ( ( (a) & (m) ) )
 
-static void fill_up_mac_addresses_by_ipinfo(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface);
+static void fill_up_mac_addresses_by_ipinfo(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface, pigsty_conf_set_ctx *conf);
 
-static void fill_up_mac_addresses_by_arpinfo(struct ethernet_frame *eth, const struct arp *arph);
+static void fill_up_mac_addresses_by_arpinfo(struct ethernet_frame *eth, const struct arp *arph, pigsty_conf_set_ctx *conf);
 
 static int should_route(const unsigned int addr[4], const unsigned int nt_mask[4], const char *loiface);
 
@@ -77,73 +77,115 @@ static int should_route(const unsigned int addr[4], const unsigned int nt_mask[4
              (pig_get_net_mask_from_addr(addr[3], nt_mask[3]) == pig_get_net_mask_from_addr(lo_addr[3], nt_mask[3])));
 }
 
-static void fill_up_mac_addresses_by_ipinfo(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface) {
+static void fill_up_mac_addresses_by_ipinfo(struct ethernet_frame *eth, const struct ip4 iph, pig_hwaddr_ctx **hwaddr, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface, pigsty_conf_set_ctx *conf) {
     unsigned int nt_addr[4] = { 0, 0, 0, 0 };
     pig_hwaddr_ctx *hwa_p = (*hwaddr);
     unsigned char *mac = NULL, *temp = NULL;
     in_addr_t addr;
+    pigsty_field_ctx *fp = NULL;
+
     //  Getting the src MAC address.
-    nt_addr[0] = iph.src;
-    if (!should_route(nt_addr, nt_mask, loiface)) {
-        mac = get_ph_addr_from_pig_hwaddr(nt_addr, hwa_p);
-        if (mac == NULL) {
-            addr = htonl(iph.src);
-            temp = get_mac_by_addr(addr, loiface, PIG_ARP_TRIES_NR);
-            if (temp != NULL) {
-                mac = mac2byte(temp, strlen(temp));
-                free(temp);
-                hwa_p = add_hwaddr_to_pig_hwaddr(hwa_p, mac, nt_addr, 4);
-                free(mac);
-                hwa_p = get_pig_hwaddr_tail(hwa_p);
-                if (hwa_p != NULL) {
-                    mac = &hwa_p->ph_addr[0];
+    if (conf != NULL) {
+        fp = get_pigsty_conf_set_field(kEth_hwsrc, conf);
+    }
+
+    if (fp == NULL) {
+        nt_addr[0] = iph.src;
+        if (!should_route(nt_addr, nt_mask, loiface)) {
+            mac = get_ph_addr_from_pig_hwaddr(nt_addr, hwa_p);
+            if (mac == NULL) {
+                addr = htonl(iph.src);
+                temp = get_mac_by_addr(addr, loiface, PIG_ARP_TRIES_NR);
+                if (temp != NULL) {
+                    mac = mac2byte(temp, strlen(temp));
+                    free(temp);
+                    hwa_p = add_hwaddr_to_pig_hwaddr(hwa_p, mac, nt_addr, 4);
+                    free(mac);
+                    hwa_p = get_pig_hwaddr_tail(hwa_p);
+                    if (hwa_p != NULL) {
+                        mac = &hwa_p->ph_addr[0];
+                    }
                 }
             }
         }
+    } else {
+        mac = (unsigned char *)fp->data;
     }
+
     if (mac == NULL) {
         //  WARN(Santiago): using the gateway's physical MAC.
         mac = (unsigned char *)gw_hwaddr;
     }
+
     memcpy(eth->src_hw_addr, mac, sizeof(eth->src_hw_addr));
     mac = NULL;
+
     //  Now, getting the dest MAC address.
-    nt_addr[0] = iph.dst;
-    if (!should_route(nt_addr, nt_mask, loiface)) {
-        mac = get_ph_addr_from_pig_hwaddr(nt_addr, hwa_p);
-        if (mac == NULL) {
-            addr = htonl(iph.dst);
-            temp = get_mac_by_addr(addr, loiface, PIG_ARP_TRIES_NR);
-            if (temp != NULL) {
-                mac = mac2byte(temp, strlen(temp));
-                free(temp);
-                hwa_p = add_hwaddr_to_pig_hwaddr(hwa_p, mac, nt_addr, 4);
-                free(mac);
-                hwa_p = get_pig_hwaddr_tail(hwa_p);
-                if (hwa_p != NULL) {
-                    mac = &hwa_p->ph_addr[0];
+    if (conf != NULL) {
+        fp = get_pigsty_conf_set_field(kEth_hwdst, conf);
+    }
+
+    if (fp == NULL) {
+        nt_addr[0] = iph.dst;
+        if (!should_route(nt_addr, nt_mask, loiface)) {
+            mac = get_ph_addr_from_pig_hwaddr(nt_addr, hwa_p);
+            if (mac == NULL) {
+                addr = htonl(iph.dst);
+                temp = get_mac_by_addr(addr, loiface, PIG_ARP_TRIES_NR);
+                if (temp != NULL) {
+                    mac = mac2byte(temp, strlen(temp));
+                    free(temp);
+                    hwa_p = add_hwaddr_to_pig_hwaddr(hwa_p, mac, nt_addr, 4);
+                    free(mac);
+                    hwa_p = get_pig_hwaddr_tail(hwa_p);
+                    if (hwa_p != NULL) {
+                        mac = &hwa_p->ph_addr[0];
+                    }
                 }
             }
         }
+    } else {
+        mac = (unsigned char *)fp->data;
     }
+
     if (mac == NULL) {
         //  WARN(Santiago): using the gateway's physical MAC.
         mac = (unsigned char *)gw_hwaddr;
     }
+
     memcpy(eth->dest_hw_addr, mac, 6);
 }
 
-static void fill_up_mac_addresses_by_arpinfo(struct ethernet_frame *eth, const struct arp *arph) {
+static void fill_up_mac_addresses_by_arpinfo(struct ethernet_frame *eth, const struct arp *arph, pigsty_conf_set_ctx *conf) {
+    pigsty_field_ctx *fp = NULL;
+    unsigned char *src = NULL, *dst = NULL;
+
     if (eth == NULL || arph == NULL) {
         return;
     }
+
+    if (conf != NULL) {
+        fp = get_pigsty_conf_set_field(kEth_hwsrc, conf);
+        if (fp != NULL) {
+            src = (unsigned char *)fp->data;
+        }
+
+        fp = get_pigsty_conf_set_field(kEth_hwdst, conf);
+        if (fp != NULL) {
+            dst = (unsigned char *)fp->data;
+        }
+    }
+
     memset(eth->src_hw_addr, 0xff, sizeof(eth->src_hw_addr));
     memset(eth->dest_hw_addr, 0xff, sizeof(eth->dest_hw_addr));
-    if (arph->hw_addr_len != 6) {
+
+    if (arph->hw_addr_len != 6 && (src == NULL || dst == NULL)) {
         return;
     }
-    memcpy(eth->src_hw_addr, arph->src_hw_addr, 6);
-    memcpy(eth->dest_hw_addr, arph->dest_hw_addr, 6);
+
+    memcpy(eth->src_hw_addr, (src != NULL) ? src : arph->src_hw_addr, 6);
+
+    memcpy(eth->dest_hw_addr, (dst != NULL) ? dst : arph->dest_hw_addr, 6);
 }
 
 int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_target_addr_ctx *addrs, const int sockfd, const unsigned char *gw_hwaddr, const unsigned int nt_mask[4], const char *loiface) {
@@ -163,7 +205,7 @@ int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_t
         if (!is_lo) {
             arph = parse_arp_dgram(eth.payload, eth.payload_size);
             eth.ether_type = ETHER_TYPE_ARP;
-            fill_up_mac_addresses_by_arpinfo(&eth, arph);
+            fill_up_mac_addresses_by_arpinfo(&eth, arph, signature->conf);
             packet = mk_ethernet_frame(&packet_size, eth);
             free(eth.payload);
             arp_header_free(arph);
@@ -175,8 +217,7 @@ int oink(const pigsty_entry_ctx *signature, pig_hwaddr_ctx **hwaddr, const pig_t
         if (!is_lo) {
             parse_ip4_dgram(&iph_p, eth.payload, eth.payload_size);
             eth.ether_type = ETHER_TYPE_IP;
-            //  TODO(Santiago): Only fill up the unset fields (not explicitly present into the signature context).
-            fill_up_mac_addresses_by_ipinfo(&eth, iph, hwaddr, gw_hwaddr, nt_mask, loiface);
+            fill_up_mac_addresses_by_ipinfo(&eth, iph, hwaddr, gw_hwaddr, nt_mask, loiface, signature->conf);
             if (iph.payload != NULL) {
                 free(iph.payload);
             }
