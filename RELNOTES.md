@@ -1,5 +1,29 @@
 # pig - Release Notes
 
+## Version: 0.0.4
+
+### Features
+
+- Introducing the concept of sub-tasks.
+
+- ``PCAP`` files importing.
+
+- ``Ethernet`` frame composing.
+
+- Operation modes for the endless crafter (``random`` [the default] and ``sequential``).
+
+- Now the application can also be built using ``Clang`` (``GCC`` remains the default).
+
+- Including a file with additional remarks about how to build the application.
+
+- Including a how to for the new sub-task related with ``PCAP`` importing.
+
+### Bugfixes
+
+- When using --no-echo option the gateway's physical address is not really acquired [``commit-id``: #1e21cf].
+
+- On string parsing [``commit-id``: #d707ed].
+
 ## Version: 0.0.3
 
 ### Features
