@@ -1,0 +1,65 @@
+.TH pig 1 "August 22, 2016" "version 0.0.4" "USER COMMANDS"
+.SH NAME
+pig \- a packet crafting tool
+.SH SYNOPSIS
+.B pig [\fIOPTIONS\fR]
+.SH DESCRIPTION
+\fIPig\fR (which can be understood as \fIP\fRacket \fIi\fRntruder \fIg\fRenerator) is a Linux packet crafting tool.
+You can use \fIPig\fR to test your IDS/IPS among other stuff.
+.PP
+\fIPig\fR brings a bunch of well-known attack signatures ready to be used and you can expand this collection
+with more specific things according to your requirements.
+.PP
+Until now it is possible to create \fIIPv4\fR signatures with transport layer based on \fITCP\fR, \fIUDP\fR and \fIICMP\fR.
+You can also create signatures based on \fIARP\fR protocol, besides building up the packet since its \fIEthernet\fR frame.
+
+.SH OPTIONS
+.TP
+\-\-signatures=\fIfoo.pigsty,bar.pigsty\fR
+Indicates the signature file paths. Take a look at \fI/usr/local/share/pig/pigsty\fR directory (or equivalent in your system).
+
+.TP
+\-\-targets=\fI<ip list>\fR
+Specifies the targets which can be used during the crafting task.
+
+.TP
+\-\-gateway=\fI<addr>\fR
+Specifies the gateway's address.
+
+.TP
+\-\-net-mask=\fI<mask>\fR
+Specifies the network's mask.
+
+.TP
+\-\-lo-iface=\fI<iface name>\fR
+Specifies the name of the network interface which will be used during the crafting task.
+
+.TP
+\-\-version
+Shows the application version.
+
+.TP
+\-\-sub-task=\fI<task>\fR
+Asks the execution of a specific task. Call it with the option \fI\-\-help\fR in order
+to know more about the related task.
+
+.TP
+\-\-help
+Shows the general help.
+
+.PP
+.SH EXIT STATUS
+If the execution succeeds pig returns zero, otherwise non zero value will be returned.
+
+.PP
+.SH
+SEE ALSO
+.TP
+\fI/usr/local/share/pig/doc\fR (or equivalent in your system)
+.PP
+.SH
+HOMEPAGE
+.TP
+https://github.com/rafael-santiago/pig
+.SH AUTHOR
+Rafael Santiago <voidbrainvoid@gmail.com>

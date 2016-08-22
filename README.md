@@ -31,6 +31,16 @@ After this command you should find the ``pig`` binary under the path ``src/bin``
 
 If for some reason you are having build troubles you should try to read some remarks present in [``BUILD.md``](https://github.com/rafael-santiago/pig/blob/master/doc/BUILD.md).
 
+# How to install it?
+
+For installing you need to be inside the ``src`` sub-directory and call:
+
+``hefesto --install``
+
+For uninstalling, being inside the ``src`` sub-directory you should call:
+
+``hefesto --uninstall``
+
 # The pigsty files
 
 ``Pigsty files`` are plain text files where you can define a set of packet signatures. There is a specific syntax to be

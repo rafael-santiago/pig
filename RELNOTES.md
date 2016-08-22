@@ -18,6 +18,10 @@
 
 - Including a how to for the new sub-task related with ``PCAP`` importing.
 
+- Addition of installing and uninstalling build tasks.
+
+- Now also including a pretty basic ``man`` page.
+
 ### Bugfixes
 
 - When using --no-echo option the gateway's physical address is not really acquired [``commit-id``: #1e21cf].

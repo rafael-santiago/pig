@@ -6,6 +6,7 @@
 #
 #
 include Toolsets.hsl
+include Install.hsl
 include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
 
 var sources type list;
@@ -25,6 +26,8 @@ pig.preloading() {
 project pig : toolset $chosen_toolset : dependencies $depchain : $sources, $includes, $cflags, $libraries, $ldflags, "pig";
 
 pig.prologue() {
+    install_handler();
+
     $sources.ls(".*\\.c$");
 
     $depchain = get_c_cpp_deps();
@@ -61,4 +64,40 @@ pig.epilogue() {
             hefesto.sys.echo("\n*** BUILD SUCCESS.\n");
         }
     }
+}
+
+local function install_handler() : result type none {
+    var option type list;
+
+    $option = hefesto.sys.get_option("install");
+    if ($option.count() > 0) {
+        var exit_code type int;
+        $exit_code = 1;
+        if (are_you_sure()) {
+            $exit_code = pig_install();
+            if ($exit_code == 0) {
+                hefesto.sys.echo("INFO: pig was successfully installed.\n");
+            }
+        }
+        hefesto.project.abort($exit_code);
+    }
+
+    $option = hefesto.sys.get_option("uninstall");
+    if ($option.count() > 0) {
+        if (are_you_sure()) {
+            pig_uninstall();
+        }
+        hefesto.project.abort(0);
+    }
+}
+
+local function are_you_sure() : result type int {
+    var opt type string;
+
+    $opt = "?";
+    while ($opt != "y" && $opt != "n") {
+        $opt = hefesto.sys.prompt("Are you sure? [y/n] ");
+    }
+
+    result ($opt == "y");
 }
