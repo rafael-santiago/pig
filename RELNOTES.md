@@ -28,6 +28,8 @@
 
 - On string parsing [``commit-id``: #d707ed].
 
+- SIGSEGV received on invalid ip.protocol entries [``commit-id``: #242424].
+
 ## Version: 0.0.3
 
 ### Features
