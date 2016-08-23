@@ -125,12 +125,12 @@ have strong meaning for you. You must use these fields to create your further si
 When creating a signature you do not need specify all data. If you specify only the most relevant packet parts
 the remaining parts will be filled up with default values. The ``checksums`` are **always** recalculated.
 
-Tip: take a look in subdirectory ``pigsty``. You will find lots of signature files and you will see that is
+Tip: take a look in sub-directory ``pigsty``. You will find lots of signature files and you will see that is
 pretty simple define new ones.
 
 ## Specifying IP addresses geographically
 
-Yes, this is possible. In order to use this feature you just need to specify the values listed on ``Table 2``
+Yes, it is possible. In order to use this feature you just need to specify the values listed on ``Table 2``
 in ``ip adddress`` typed fields.
 
 **Table 2**: IPs by geographic area.
@@ -145,7 +145,7 @@ in ``ip adddress`` typed fields.
 ## Specifying my own addresses
 
 You should in any ``ip address`` typed field use ``user-defined-ip`` as value. Note that you need to use the
-command line option ``--targets`` in this case. See section "``Using pig``" for more information.
+command line option ``--targets`` in this case. See section [Using pig](#using-pig) for more information.
 
 # Contribute sending more packet signatures
 
@@ -172,13 +172,16 @@ Do you want to know more about each option, huh?... So let's go:
 Supposing that we want to generate ``DDos`` based traffic:
 
 ```
-pig --signatures=pigsty/ddos.pigsty --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+pig --signatures=pigsty/ddos.pigsty\
+> --gateway=10.0.2.2\
+> --net-mask=255.255.255.0 --lo-iface=eth0
 ```
 
 Now we want to messing up with everything:
 
 ```
-pig --signatures=pigsty/ddos.pigsty,pigsty/attackresponses.pigsty,pigsty/badtraffic.pigsty,pigsty/backdoors.pigsty --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+pig --signatures=pigsty/ddos.pigsty,pigsty/attackresponses.pigsty,pigsty/badtraffic.pigsty,pigsty/backdoors.pigsty\
+> --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
 ```
 
 ## Extra options
@@ -198,14 +201,18 @@ Use the ``--targets`` option. You can specify a list based on exact IPs, IP mask
 Look this:
 
 ```
-pig --signatures=pigsty/local-mess.pigsty --targets=192.30.70.3,192.30.70.*,192.30.70.0/9 --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+pig --signatures=pigsty/local-mess.pigsty\
+> --targets=192.30.70.3,192.30.70.*,192.30.70.0/9\
+> --gateway=10.0.2.2\
+> --net-mask=255.255.255.0\
+> --lo-iface=eth0
 ```
 
 ### Not using the gateway
 
 This is useful when the loaded signatures will not send data outside the current network. In order to flag it you need to use
 the option ``--no-gateway``. When the ``--no-gateway``  option is used you do not need to specify the gateway's address
-because the packets will not flow outside the current segment. As result to inform the network mask becomes irrelevant too.
+because the packets will not flow outside the current segment. As a result to inform the network mask becomes irrelevant too.
 
 For instance:
 
@@ -226,10 +233,11 @@ requirement is common when you use this application as support for ``system test
 to do this you should try to use the option ``--single-test``:
 
 ```
-pig --signature=pigsty/syn-scan.pigsty --targets=127.0.0.1 --single-test --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+pig --signature=pigsty/syn-scan.pigsty --targets=127.0.0.1 --single-test --gateway=10.0.2.2\
+> --net-mask=255.255.255.0 --lo-iface=eth0
 ```
 
-After run this command ``pig`` will select only one signature from the file ``syn-scan.pigsty`` and try to send it and then exit.
+After running this command ``pig`` will select only one signature from the file ``syn-scan.pigsty`` and try to send it and then exit.
 If some error has occurred during the process ``pig`` will exit with ``exit-code`` equals to ``1`` otherwise ``pig`` will exit
 with ``exit-code`` equals to ``0``.
 
@@ -241,7 +249,7 @@ previous defined timeout.
 You can define how ``pig`` traverses the loaded packets for sending them using the option ``--loop=<mode>``. Until now
 the modes are two: ``random`` (the default) and ``sequential``.
 
-The ``sequential`` mode will re-iterate the signatures when arriving at the end of the loaded packet signatures.
+The ``sequential`` mode will re-iterate the signatures when it hits the end of the loaded packet signatures list.
 
 ### The sub-tasks
 
@@ -249,7 +257,7 @@ Sub-tasks are useful minor tasks related with packet crafting which are shipped 
 your crafting session. These task can be acessed using the option ``--sub-task=<task-name>``.
 
 By the fact of practically being sub-programs, the sub-tasks have their own idiosyncrasies and due to it
-the details about them are in their own manual. Take a look at the ``Table 3`` for following up to it.
+the details about them follows in their own manual. Take a look at the ``Table 3`` for following up to it.
 
 **Table 3**: The ``pig`` sub-tasks.
 

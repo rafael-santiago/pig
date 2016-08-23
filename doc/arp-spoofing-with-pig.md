@@ -127,7 +127,9 @@ Now in ``TARDIS`` let's create the following ``pigsty`` file:
 Now let's activate our "force field" ;)
 
 ```
-doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty --lo-iface=eth1 --no-gateway --timeout=2
+doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty\
+> --lo-iface=eth1\
+> --no-gateway --timeout=2
 pig INFO: a packet based on signature "TARDIS force field" was sent.
 pig INFO: a packet based on signature "TARDIS force field" was sent.
 pig INFO: a packet based on signature "TARDIS force field" was sent.
@@ -210,7 +212,13 @@ Take a look at the ``Table 1`` to know more about them.
 The general usage changes a little. Because now it is necessary to inform the referenced data. For instance:
 
 ```
-doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty --hw-src-addr="\"00:de:ad:be:ef:00\"" --proto-src-addr=192.30.70.3 --hw-dst-addr="\"08:00:27:00:80:ad\"" --proto-dst-addr=192.30.70.10 --lo-iface=eth1 --no-gateway --timeout=2
+doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty\
+> --hw-src-addr="\"00:de:ad:be:ef:00\""\
+> --proto-src-addr=192.30.70.3\
+> --hw-dst-addr="\"08:00:27:00:80:ad\""\
+> --proto-dst-addr=192.30.70.10\
+> --lo-iface=eth1\
+> --no-gateway --timeout=2
 pig INFO: a packet based on signature "TARDIS force field" was sent.
 pig INFO: a packet based on signature "TARDIS force field" was sent.
 pig INFO: a packet based on signature "TARDIS force field" was sent.
@@ -230,5 +238,11 @@ Note that in the ``ARP`` field indirections related with the protocol address yo
 Using it you can flood the network with anomalous ``ARP`` packets and in some point you can do (simulate) some ``DoS``. Who knows...
 
 ```
-doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty --hw-src-addr="\"00:de:ad:be:ef:00\"" --proto-src-addr=user-defined-ip --hw-dst-addr="\"08:00:27:00:80:ad\"" --proto-dst-addr=192.30.70.10 --targets=192.30.70.1/8 --no-gateway --timeout=2
+doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty\
+> --hw-src-addr="\"00:de:ad:be:ef:00\""\
+> --proto-src-addr=user-defined-ip\
+> --hw-dst-addr="\"08:00:27:00:80:ad\""\
+> --proto-dst-addr=192.30.70.10\
+> --targets=192.30.70.1/8\
+> --no-gateway --timeout=2
 ```

@@ -11,7 +11,7 @@ Then when ``GCC`` is not installed nor accessible, ``Clang`` is attempted.
 
 This new automation introduces a new dependency which is the ``Hefesto's Clang`` toolset script files.
 If you just pulled the ``0.0.4`` changes into your old local copy and is using an old ``Hefesto's``
-installation maybe your should being facing errors like these during the build:
+installation maybe you be facing errors like these during the build:
 
 ```
 hefesto WARNING: unable to resolve file name "~/toolsets/clang/clang-app.hsl"

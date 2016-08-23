@@ -25,7 +25,7 @@ you@SOMEWHERE:~/over/the/hacked/rainbow# pig --sub-task=pcap-import\
 
 Now you can use ``crime-scene.pigsty`` to reconstruct the attack. However, in this specific case the usage of
 ``--loop=sequential`` should be necessary. Bear in mind that it is useful to see how your Network protections
-react. Do not be naive thinking that it will restabilish all connections... Ha-ha!
+react. Do not be naive thinking that it will restabilish the connections... Ha-ha!
 
 The ``--pigsty`` option does not overwrite a previous existent pigsty. If it already exists the imported
 data will be appended to it.
