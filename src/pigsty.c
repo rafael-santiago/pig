@@ -525,80 +525,104 @@ static int verify_string(const char *buffer) {
 
 static int verify_u1(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval == 0x0 || retval == 0x1);
+    return ((errno != ERANGE) && (retval == 0x0 || retval == 0x1));
 }
 
 static int verify_u3(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval <= 0x7);
+    return (errno != ERANGE && retval <= 0x7);
 }
 
 static int verify_u4(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval <= 0xf);
+    return (errno != ERANGE && retval <= 0xf);
 }
 
 static int verify_u6(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval <= 0x3f);
+    return (errno != ERANGE && retval <= 0x3f);
 }
 
 static int verify_u8(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval <= 0xff);
+    return (errno != ERANGE && retval <= 0xff);
 }
 
 static int verify_u13(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
     return (errno != ERANGE && retval <= 0x1fff);
 }
 
 static int verify_u16(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
     return (errno != ERANGE && retval <= 0xffff);
 }
 
 static int verify_u32(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
     return (errno != ERANGE && retval <= 0xffffffff);
 }
