@@ -257,7 +257,32 @@ the details about them are in their own manual. Take a look at the ``Table 3`` f
 |:---------------------:|:------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:|
 |     ``pcap-import``   |     Imports packet from a PCAP file into a pigsty file | [``cat doc/pcap-import.md``](https://github.com/rafael-santiago/pig/blob/master/doc/pcap-import.md)|
 
-## Testing from scratch
+## Pig tricks
+
+Until now you can build up packets based on ``IPv4`` having ``UDP`` or ``TCP`` in their transport layer. You can also build
+up ``ARP`` packets.
+
+However, you can still build up packets starting from the ``Ethernet`` frame. The nice thing about it is the possibility
+of virtually building up anything above the ``Ethernet's`` payload.
+
+For instance, even ``pig`` until now, does not offering support for cooked ``IPv6`` building up, you can still build
+it up using a raw ``Ethernet`` based pigsty. Look:
+
+```
+[ eth.hwdst = "5C:AC:4C:AA:F5:B5",
+  eth.hwsrc = "08:95:2A:AD:D6:4F",
+  eth.type = 0x86DD,
+  eth.payload = "\x60\x00\x00\x00\x00\x20\x3a\xff\xfe\x80\x00\x00\x00\x00\x00\x00\x0a\x95\x2a\xff\xfe\xad\xd6\x4f\xfe\x80\x00\x00\x00\x00\x00\x00\x55\x51\x00\xc2\x18\x0f\xdb\x46\x88\x00\x32\x01\xe0\x00\x00\x00\xfe\x80\x00\x00\x00\x00\x00\x00\x0a\x95\x2a\xff\xfe\xad\xd6\x4f\x02\x01\x08\x95\x2a\xad\xd6\x4f",
+  signature = "IPv6 from Sparta" ]
+```
+
+Taking in consideration that the inclusion of the destination and source ``MAC`` addresses inside an "Ethernet pigsty" is
+optional we can get the job done even without using any ``plush field``.
+
+It is nice when you have to test new protocols over your environment among other anomalous funny stuff. On this raw way,
+``pig`` can keep itself useful to you.
+
+## Testing pig from scratch
 
 Save the following data as ``"oink.pigsty"``:
 
