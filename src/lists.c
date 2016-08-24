@@ -9,6 +9,7 @@
 #include "memory.h"
 #include "netmask.h"
 #include "to_ipv4.h"
+#include "mkrnd.h"
 #include <string.h>
 
 static pigsty_conf_set_ctx *get_pigsty_conf_set_tail(pigsty_conf_set_ctx *conf);
@@ -62,10 +63,10 @@ void del_pigsty_conf_set(pigsty_conf_set_ctx *confs) {
 pigsty_entry_ctx *add_signature_to_pigsty_entry(pigsty_entry_ctx *entries, const char *signature) {
     pigsty_entry_ctx *head = entries, *p;
     if (head == NULL) {
-	new_pigsty_entry(head);
-	p = head;
+        new_pigsty_entry(head);
+        p = head;
     } else {
-	p = get_pigsty_entry_tail(entries);
+        p = get_pigsty_entry_tail(entries);
         new_pigsty_entry(p->next);
         p = p->next;
     }
@@ -121,17 +122,17 @@ size_t get_pigsty_conf_set_count(pigsty_conf_set_ctx *conf) {
     return count;
 }
 
-size_t get_pigsty_entry_count(pigsty_entry_ctx *entries) {
+size_t get_pigsty_entry_count(const pigsty_entry_ctx *entries) {
     size_t count = 0;
-    pigsty_entry_ctx *ep = NULL;
+    const pigsty_entry_ctx *ep = NULL;
     for (ep = entries; ep != NULL; ep = ep->next) {
         count++;
     }
     return count;
 }
 
-pigsty_entry_ctx *get_pigsty_entry_by_index(const size_t index, pigsty_entry_ctx *entries) {
-    pigsty_entry_ctx *ep = NULL;
+const pigsty_entry_ctx *get_pigsty_entry_by_index(const size_t index, const pigsty_entry_ctx *entries) {
+    const pigsty_entry_ctx *ep = NULL;
     size_t count = 0;
     for (ep = entries; ep != NULL; ep = ep->next) {
         if (count == index) {

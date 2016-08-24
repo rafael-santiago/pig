@@ -1,11 +1,12 @@
 #
-#                                Copyright (C) 2015 by Rafael Santiago
+#                          Copyright (C) 2015, 2016 by Rafael Santiago
 #
 # This is a free software. You can redistribute it and/or modify under
 # the terms of the GNU General Public License version 2.
 #
 #
-include ~/toolsets/gcc/gcc-app.hsl
+include Toolsets.hsl
+include Install.hsl
 include ~/toolsets/common/utils/lang/c/dependency_scanner.hsl
 
 var sources type list;
@@ -16,13 +17,24 @@ var ldflags type list;
 
 var depchain type string;
 
-project pig : toolset "gcc-c-app" : dependencies $depchain : $sources, $includes, $cflags, $libraries, $ldflags, "pig";
+var chosen_toolset type string;
+
+pig.preloading() {
+    $chosen_toolset = get_toolset_name();
+}
+
+project pig : toolset $chosen_toolset : dependencies $depchain : $sources, $includes, $cflags, $libraries, $ldflags, "pig";
 
 pig.prologue() {
+    install_handler();
+
     $sources.ls(".*\\.c$");
+
     $depchain = get_c_cpp_deps();
+
     var native_stuff type string;
     $native_stuff = hefesto.sys.os_name();
+
     if (hefesto.sys.cd($native_stuff)) {
         $sources.ls(".*\\.c$");
         $depchain = $depchain + get_c_cpp_deps();
@@ -30,6 +42,12 @@ pig.prologue() {
     } else {
         hefesto.sys.echo("ERROR: subdirectory \"" + $native_stuff + "\" not found.\n");
         hefesto.project.abort(1);
+
+    }
+
+    if ($chosen_toolset == "clang-c-app") {
+        # Disabling boring-useless-chicken-shit warnings on Clang.
+        $cflags.add_item("-Wno-switch");
     }
 }
 
@@ -37,7 +55,7 @@ pig.epilogue() {
     if (hefesto.sys.last_forge_result() == 0) {
         var exit_code type int;
         hefesto.sys.cd("utest");
-        $exit_code = hefesto.sys.forge("pig-utests", "Forgefile.hsl", "--obj-output-dir=obj --bin-output-dir=bin");
+        $exit_code = hefesto.sys.forge("pig-utests", "Forgefile.hsl", "--obj-output-dir=obj --bin-output-dir=bin --toolset=" + $chosen_toolset);
         hefesto.sys.cd("..");
         if ($exit_code != 0) {
             hefesto.sys.echo("\n~~~ UNIT TESTS FAILURE!\n");
@@ -46,4 +64,40 @@ pig.epilogue() {
             hefesto.sys.echo("\n*** BUILD SUCCESS.\n");
         }
     }
+}
+
+local function install_handler() : result type none {
+    var option type list;
+
+    $option = hefesto.sys.get_option("install");
+    if ($option.count() > 0) {
+        var exit_code type int;
+        $exit_code = 1;
+        if (are_you_sure()) {
+            $exit_code = pig_install();
+            if ($exit_code == 0) {
+                hefesto.sys.echo("INFO: pig was successfully installed.\n");
+            }
+        }
+        hefesto.project.abort($exit_code);
+    }
+
+    $option = hefesto.sys.get_option("uninstall");
+    if ($option.count() > 0) {
+        if (are_you_sure()) {
+            pig_uninstall();
+        }
+        hefesto.project.abort(0);
+    }
+}
+
+local function are_you_sure() : result type int {
+    var opt type string;
+
+    $opt = "?";
+    while ($opt != "y" && $opt != "n") {
+        $opt = hefesto.sys.prompt("Are you sure? [y/n] ");
+    }
+
+    result ($opt == "y");
 }

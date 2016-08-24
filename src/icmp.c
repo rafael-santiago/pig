@@ -83,3 +83,37 @@ unsigned short eval_icmp_chsum(const struct icmp hdr) {
     }
     return (unsigned short)(~sum);
 }
+
+void *get_icmp_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
+    struct icmp hdr;
+    struct icmp *phdr = &hdr;
+    void *payload = NULL;
+    size_t offset = 0;
+
+    if (field_size != NULL) {
+        *field_size = 0;
+    }
+
+    if (buf == NULL) {
+        return NULL;
+    }
+
+    if ((buf[0] >> 4) != 4) {
+        return NULL;
+    }
+
+    offset = 4 * (buf[0] & 0x0f);
+
+    parse_icmp_dgram(&phdr, buf + offset, buf_size - offset);
+
+    if (field_size != NULL) {
+        *field_size = phdr->payload_size;
+    }
+
+    payload = pig_newseg(phdr->payload_size);
+    memcpy(payload, phdr->payload, phdr->payload_size);
+
+    free(phdr->payload);
+
+    return payload;
+}

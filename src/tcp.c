@@ -7,6 +7,7 @@
  */
 #include "tcp.h"
 #include "memory.h"
+#include <string.h>
 
 void parse_tcp_dgram(struct tcp **hdr, const unsigned char *buf, size_t bsize) {
     struct tcp *tcp = *hdr;
@@ -131,4 +132,37 @@ unsigned short eval_tcp_ip4_chsum(const struct tcp hdr, const unsigned int src_a
         retval = (retval >> 16) + (retval & 0x0000ffff);
     }
     return (unsigned short)(~retval);
+}
+
+void *get_tcp_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
+    struct tcp hdr;
+    struct tcp *phdr = &hdr;
+    size_t offset = 0;
+    void *payload = NULL;
+
+    if (field_size != NULL) {
+        *field_size = 0;
+    }
+
+    if (buf == NULL) {
+        return NULL;
+    }
+
+    if ((buf[0] >> 4) != 4) {
+        return NULL;
+    }
+
+    parse_tcp_dgram(&phdr, buf + offset, buf_size - offset);
+
+    if (field_size != NULL) {
+        *field_size = phdr->payload_size;
+    }
+
+    payload = pig_newseg(phdr->payload_size);
+    memcpy(payload, phdr->payload, phdr->payload_size);
+
+    free(phdr->payload);
+
+    return payload;
+
 }

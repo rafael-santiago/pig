@@ -16,6 +16,8 @@ int init_loopback_raw_socket();
 
 int inject(const unsigned char *packet, const size_t packet_size, const int sockfd);
 
+int inject_lo(const unsigned char *packet, const size_t packet_size, const int sockfd);
+
 void deinit_raw_socket(const int sockfd);
 
 #endif

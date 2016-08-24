@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 
-#define PIG_VERSION "0.0.3"
+#define PIG_VERSION "0.0.4"
 
 typedef enum _pig_fields {
     kIpv4_version = 0, kIpv4_ihl, kIpv4_tos, kIpv4_tlen, kIpv4_id, kIpv4_flags,
@@ -19,7 +19,8 @@ typedef enum _pig_fields {
     kTcp_psh, kTcp_rst, kTcp_syn, kTcp_fin, kTcp_wsize, kTcp_checksum, kTcp_urgp, kTcp_payload,
     kUdp_src, kUdp_dst, kUdp_size, kUdp_checksum, kUdp_payload, kIcmp_type, kIcmp_code, kIcmp_checksum,
     kIcmp_payload, kArp_hwtype, kArp_ptype, kArp_hwlen, kArp_plen, kArp_opcode, kArp_hwsrc, kArp_psrc,
-    kArp_hwdst, kArp_pdst, kSignature, kRefresh, kRandom, kUnk, kMaxPigFields
+    kArp_hwdst, kArp_pdst, kEth_hwdst, kEth_hwsrc, kEth_type, kEth_payload,
+    kSignature, kRefresh, kRandom, kUnk, kMaxPigFields
 }pig_field_t;
 
 typedef struct _pigsty_field {
@@ -61,5 +62,34 @@ typedef struct _pig_hwaddr {
     unsigned int nt_addr[4];
     struct _pig_hwaddr *next;
 }pig_hwaddr_ctx;
+
+typedef struct _pcap_global_header_t {
+    unsigned int magic_number;
+    unsigned short version_major;
+    unsigned short version_minor;
+    int thiszone;
+    unsigned int sigfigs;
+    unsigned int snaplen;
+    unsigned int network;
+}pcap_global_header_t;
+
+typedef struct _pcap_record_header_t {
+    unsigned int ts_sec;
+    unsigned int ts_usec;
+    unsigned int incl_len;
+    unsigned int orig_len;
+}pcap_record_header_t;
+
+typedef struct _pcap_record_ctx {
+    pcap_record_header_t hdr;
+    unsigned char *data;
+    struct _pcap_record_ctx *next;
+}pcap_record_ctx;
+
+typedef struct _pcap_file_ctx {
+    pcap_global_header_t hdr;
+    pcap_record_ctx *rec;
+    char *path;
+}pcap_file_ctx;
 
 #endif

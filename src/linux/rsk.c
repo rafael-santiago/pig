@@ -70,11 +70,11 @@ void lin_rsk_close(const int sockfd) {
     close(sockfd);
 }
 
-int lin_rsk_sendto(const char *buffer, size_t buffer_size, const int sockfd) {
+int lin_rsk_sendto(const unsigned char *buffer, size_t buffer_size, const int sockfd) {
     return sendto(sockfd, buffer, buffer_size, 0, NULL, 0);
 }
 
-int lin_rsk_lo_sendto(const char *buffer, size_t buffer_size, const int sockfd) {
+int lin_rsk_lo_sendto(const unsigned char *buffer, size_t buffer_size, const int sockfd) {
     struct sockaddr_in sk_in = { 0 };
     unsigned int ipv4_addr = 0;
     unsigned short dst_port = 0;

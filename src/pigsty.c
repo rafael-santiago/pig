@@ -13,8 +13,11 @@
 #include "to_str.h"
 #include "options.h"
 #include "arp.h"
+#include "eth.h"
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
+#include <errno.h>
 
 #define is_pigsty_blank(c) ( (c) == ' ' || (c) == '\t' || (c) == '\n' || (c) == '\r' )
 
@@ -86,6 +89,10 @@ static int verify_required_fields_arp(pigsty_conf_set_ctx *arp_set);
 
 static int verify_required_datagram_fields(pigsty_conf_set_ctx *set, const int *fields, const size_t fields_size);
 
+static int is_xpacket(const pigsty_conf_set_ctx *conf, const pig_field_t floor_limit, const pig_field_t ceil_limit, const int exclusive_mode);
+
+static int check_eth_frame_sanity(const pigsty_conf_set_ctx *conf, int *ip_version);
+
 static struct signature_fields SIGNATURE_FIELDS[] = {
     {   "ip.version",  kIpv4_version, verify_ip_version},
     {       "ip.ihl",      kIpv4_ihl,         verify_u4},
@@ -134,6 +141,10 @@ static struct signature_fields SIGNATURE_FIELDS[] = {
     {     "arp.psrc",      kArp_psrc,  verify_arp_paddr},
     {    "arp.hwdst",     kArp_hwdst,   verify_mac_addr},
     {     "arp.pdst",      kArp_pdst,  verify_arp_paddr},
+    {    "eth.hwdst",     kEth_hwdst,   verify_mac_addr},
+    {    "eth.hwsrc",     kEth_hwsrc,   verify_mac_addr},
+    {     "eth.type",      kEth_type,        verify_u16},
+    {  "eth.payload",   kEth_payload,     verify_string},
     {    "signature",     kSignature,     verify_string}
 };
 
@@ -177,13 +188,39 @@ static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *ent
 }
 
 int is_arp_packet(const pigsty_conf_set_ctx *conf) {
+    return is_xpacket(conf, kArp_hwtype, kArp_pdst, 0);
+}
+
+int is_explicit_eth_frame(const pigsty_conf_set_ctx *conf) {
+    return is_xpacket(conf, kEth_hwdst, kEth_payload, 0);
+}
+
+static int is_xpacket(const pigsty_conf_set_ctx *conf, const pig_field_t floor_limit, const pig_field_t ceil_limit, const int exclusive_mode) {
     const pigsty_conf_set_ctx *cp = NULL;
-    int is_arp = 1;
-    for (cp = conf; cp != NULL && is_arp; cp = cp->next) {
-        is_arp = (cp->field->index >= kArp_hwtype &&
-                  cp->field->index <= kArp_pdst);
+    int is = 1;
+
+    for (cp = conf; cp != NULL && is; cp = cp->next) {
+        is = (cp->field->index >= floor_limit &&
+              cp->field->index <= ceil_limit);
+
+        if (exclusive_mode == 0) {
+            //  INFO(Santiago): This comparing mode allows the existence of other packet fields from other datagram types
+            //                  into the pigsty (e.g.: Ethernet frames). Then having one which we are looking for is sufficient
+            //                  to be what we are looking for. If it is still "not found" let's traversing all pigsty to get
+            //                  our final impression about its packet type.
+            if (is) {
+                //  WARN(Santiago): Yes, I find it vulgar but I did not find other more elegant and simpler way
+                //                  to get out of this loop. So, excuse me, but...
+                break;//..goodbye!
+            } else {
+                if (cp->next != NULL) {
+                    is = 1;
+                }
+            }
+        }
     }
-    return is_arp;
+
+    return is;
 }
 
 static char *get_pigsty_file_data(const char *filepath) {
@@ -247,11 +284,13 @@ static char *get_next_pigsty_word(char *buffer, char **next) {
             if (*end_bp == '\"') {
                 end_bp++;
                 while (*end_bp != '\"' && *end_bp != 0) {
-                    end_bp++;
                     if (*end_bp == '\\') {
                         end_bp += 2;
-                    } else if (*end_bp == '\n') {
-                        g_line_nr++;
+                    } else {
+                        if (*end_bp == '\n') {
+                            g_line_nr++;
+                        }
+                        end_bp++;
                     }
                 }
                 if (*end_bp != 0) {
@@ -402,6 +441,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     buffer = *next;
     token = get_next_pigsty_word(buffer, next);
     while (all_ok && **next != 0 && token != NULL) {
+
         switch (state) {
             case 0:  //  field existence verifying
                 field_index = get_pigsty_field_index(token);
@@ -485,82 +525,106 @@ static int verify_string(const char *buffer) {
 
 static int verify_u1(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval == 0x0 || retval == 0x1);
+    return ((errno != ERANGE) && (retval == 0x0 || retval == 0x1));
 }
 
 static int verify_u3(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval >= 0x0 && retval <= 0x7);
+    return (errno != ERANGE && retval <= 0x7);
 }
 
 static int verify_u4(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval >= 0x0 && retval <= 0xf);
+    return (errno != ERANGE && retval <= 0xf);
 }
 
 static int verify_u6(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval >= 0x0 && retval <= 0x3f);
+    return (errno != ERANGE && retval <= 0x3f);
 }
 
 static int verify_u8(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval >= 0x0 && retval <= 0xff);
+    return (errno != ERANGE && retval <= 0xff);
 }
 
 static int verify_u13(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval >= 0x0 && retval <= 0x1fff);
+    return (errno != ERANGE && retval <= 0x1fff);
 }
 
 static int verify_u16(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval >= 0x0 && retval <= 0xffff);
+    return (errno != ERANGE && retval <= 0xffff);
 }
 
 static int verify_u32(const char *buffer) {
     int retval = -1;
+    errno = ERANGE;
     if (verify_hex(buffer)) {
         retval = strtoul(buffer + 2, NULL, 16);
+        errno = 0;
     } else if (verify_int(buffer)) {
         retval = atoi(buffer);
+        errno = 0;
     }
-    return (retval >= 0x0 && retval <= 0xffffffff);
+    return (errno != ERANGE && retval <= 0xffffffff);
 }
 
 int verify_ipv4_addr(const char *buffer) {
@@ -743,27 +807,47 @@ static int verify_required_fields_arp(pigsty_conf_set_ctx *arp_set) {
 static int verify_required_fields(pigsty_entry_ctx *entry) {
     pigsty_entry_ctx *ep;
     pigsty_conf_set_ctx *cp;
-    int retval = 1, is_arp = 0;
+    int retval = 1, is_arp = 0, is_eth = 0;
     int ip_version = 0;
     int transport_layer = 0;
     int ifield_floor = 0, ifield_ceil = 0;
     int tfield_floor = 0, tfield_ceil = 0;
     char *hint = NULL;
+
+    if (entry == NULL) {
+        return 0;
+    }
+
     for (ep = entry; ep != NULL && retval == 1; ep = ep->next) {
+
         //  INFO(Santiago): verifying the IP mandatory fields.
         ip_version = 0;
-        for (cp = ep->conf; cp != NULL && ip_version == 0; cp = cp->next) {
-            if (cp->field->index == kIpv4_version && cp->field->data != NULL) {
-                ip_version = *(int *)cp->field->data;
+        is_eth = is_explicit_eth_frame(ep->conf);
+        is_arp = is_arp_packet(ep->conf);
+
+        if (!is_eth && !is_arp) {
+            for (cp = ep->conf; cp != NULL && ip_version == 0; cp = cp->next) {
+                if (cp->field->index == kIpv4_version && cp->field->data != NULL) {
+                    ip_version = *(int *)cp->field->data;
+                }
             }
-        }
-        if (!(is_arp = is_arp_packet(entry->conf))) {
+
             if (ip_version == 0) {
                 printf("pig PANIC: signature %s: ip.version missing.\n", ep->signature_name);
                 retval = 0;
             }
         }
+
+        if (is_eth) {
+            retval = check_eth_frame_sanity(ep->conf, &ip_version);
+
+            if (retval == 0) {
+                printf("pig PANIC: mismatch between the eth.type and the used datagram fields into a explicit ethernet frame.\n");
+            }
+        }
+
         if (retval == 1) {
+
             switch(ip_version) {
                 case 4:
                     ifield_floor = kIpv4_version;
@@ -781,15 +865,24 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                         ifield_ceil = kArp_pdst;
                         retval = verify_required_fields_arp(ep->conf);
                     } else {
-                        retval = 0;
+                        //  INFO(Santiago): Ethernet frame which has a explicit payload or invalid packet. Let's see...
+                        for (cp = ep->conf; cp != NULL && retval == 1; cp = cp->next) {
+                            retval = (cp->field->index >= kEth_hwdst && cp->field->index <= kEth_payload);
+                            if (retval == 0) {
+                                printf("pig PANIC: non ethernet field inside a raw ethernet frame.\n");
+                            }
+                        }
                     }
                     break;
             }
+
         }
+
         if (retval == 0) {
             printf("pig PANIC: on signature \"%s\".\n", ep->signature_name);
             continue;
         }
+
         //  INFO(Santiago): verifying the transport layer mandatory fields.
         transport_layer = -1;
         for (cp = ep->conf; cp != NULL && transport_layer == -1; cp = cp->next) {
@@ -797,7 +890,9 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                 transport_layer = *(int *)cp->field->data;
             }
         }
+
         if (transport_layer > -1) {
+
             switch (transport_layer) {
                 case 1:
                     tfield_floor = kIcmp_type;
@@ -818,22 +913,29 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                     retval = 1; //  INFO(Santiago): just skipping.
                     break;
             }
+
             if (retval == 0) {
                 retval = 1;
                 for (cp = ep->conf; cp != NULL && retval; cp = cp->next) {
                     retval = (cp->field->index >= tfield_floor && cp->field->index <= tfield_ceil) ||
-                             (cp->field->index >= ifield_floor && cp->field->index <= ifield_ceil);
+                             (cp->field->index >= ifield_floor && cp->field->index <= ifield_ceil) ||
+                             (cp->field->index >= kEth_hwdst && cp->field->index <= kEth_payload);
                 }
+
                 if (retval == 0) {
                     printf("pig PANIC: signature %s: field mismatching. Did you mixed up some protocol fields?\n", ep->signature_name);
                 }
             }
+
         } else {
+
             for (cp = ep->conf; cp != NULL && retval == 1; cp = cp->next) {
                 if (is_arp) {
-                    retval = (cp->field->index >= kArp_hwtype && cp->field->index <= kArp_pdst);
+                    retval = (cp->field->index >= kArp_hwtype && cp->field->index <= kArp_pdst) ||
+                             (cp->field->index >= kEth_hwdst && cp->field->index <= kEth_payload);
                 }
             }
+
             if (retval == 0) {
                 if (is_arp) {
                     hint = " (it seems an ARP signature)";
@@ -843,6 +945,62 @@ static int verify_required_fields(pigsty_entry_ctx *entry) {
                 printf("pig PANIC: signature %s: field mismatching. Did you mixed up some protocol fields?%s\n", ep->signature_name, hint);
             }
         }
+
     }
+
     return retval;
+}
+
+static int check_eth_frame_sanity(const pigsty_conf_set_ctx *conf, int *ip_version) {
+    short ether_type = -1;
+    int normal = 1;
+    const pigsty_conf_set_ctx *cp = NULL;
+    int must_neg = -1;
+
+    for (cp = conf; cp != NULL && ether_type == -1; cp = cp->next) {
+        if (cp->field->index == kEth_type) {
+            ether_type = *(unsigned short *)cp->field->data;
+        }
+    }
+
+    switch (ether_type) {
+        case ETHER_TYPE_ARP:
+            must_neg = 0;
+            break;
+
+        case ETHER_TYPE_IP:
+            must_neg = 1;
+            if (ip_version != NULL) {
+                for (cp = conf; cp != NULL; cp = cp->next) {
+                    if (cp->field->index == kIpv4_version) {
+                        *ip_version = *(int *)cp->field->data;
+                    }
+                }
+            }
+            break;
+    }
+
+    if (ether_type == ETHER_TYPE_ARP || ether_type == ETHER_TYPE_IP) {
+
+        for (cp = conf; cp != NULL && normal == 1; cp = cp->next) {
+
+            //  WARN(Santiago): If a user is specifying the ethernet frame's payload is quite crazy
+            //                  use the cooked datagram fields. So, here the ethernet frame range stops at kEth_type.
+            normal = (cp->field->index != kEth_payload);
+
+            if (normal == 0 || (cp->field->index >= kEth_hwdst && cp->field->index <= kEth_type)) {
+                continue;
+            }
+
+            normal = (cp->field->index >= kArp_hwtype && cp->field->index <= kArp_pdst);
+
+            if (must_neg) {
+                normal = !normal;
+            }
+
+        }
+
+    }
+
+    return normal;
 }

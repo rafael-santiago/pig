@@ -5,7 +5,7 @@
 # the terms of the GNU General Public License version 2.
 #
 #
-include ~/toolsets/gcc/gcc-app.hsl
+include ../Toolsets.hsl
 
 var sources type list;
 var includes type list;
@@ -13,13 +13,19 @@ var cflags type list;
 var libraries type list;
 var ldflags type list;
 
-project pig-utests : toolset "gcc-c-app" : $sources, $includes, $cflags, $libraries, $ldflags, "put" ;
+var chosen_toolset type string;
+
+pig-utests.preloading() {
+    $chosen_toolset = get_toolset_name();
+}
+
+project pig-utests : toolset $chosen_toolset : $sources, $includes, $cflags, $libraries, $ldflags, "put" ;
 
 pig-utests.prologue() {
     var exit_code type int;
     $exit_code = 1;
     if (hefesto.sys.cd("cutest/src")) {
-        $exit_code = hefesto.sys.forge("cutest", "Forgefile.hsl", "--obj-output-dir=obj --bin-output-dir=lib");
+        $exit_code = hefesto.sys.forge("cutest", "Forgefile.hsl", "--obj-output-dir=obj --bin-output-dir=lib --toolset=" + $chosen_toolset);
         hefesto.sys.cd("../..");
         if ($exit_code == 0) {
             $sources.ls(".*\\.c$");

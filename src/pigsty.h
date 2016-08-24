@@ -16,4 +16,6 @@ int verify_ipv4_addr(const char *buffer);
 
 int is_arp_packet(const pigsty_conf_set_ctx *conf);
 
+int is_explicit_eth_frame(const pigsty_conf_set_ctx *conf);
+
 #endif

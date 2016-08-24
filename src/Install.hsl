@@ -1,0 +1,212 @@
+#
+#                                Copyright (C) 2016 by Rafael Santiago
+#
+# This is a free software. You can redistribute it and/or modify under
+# the terms of the GNU General Public License version 2.
+#
+#
+include ~/fsutil.hsl
+
+local function cp_binary_file() : result type int {
+    var bin type list;
+
+    if (hefesto.sys.cd("bin")) {
+        $bin.ls("pig");
+        hefesto.sys.cd("..");
+    }
+
+    if ($bin.count() == 0) {
+        if (hefesto.sys.run("hefesto") == 0) {
+            result cp_binary_file();
+        }
+    }
+
+    var bindir type string;
+    var binfile type string;
+
+    $bindir = "/usr/local/bin";
+    $binfile = "pig";
+
+    mktree($bindir);
+
+    if (isfile(hefesto.sys.make_path($bindir, $binfile))) {
+
+        var option type string;
+
+        $option = "?";
+
+        while ($option != "y" && $option != "n") {
+            $option = hefesto.sys.prompt("You have already a binary under path \"" + hefesto.sys.make_path($bindir, $binfile) + "\".\n" +
+                                         "Do you want to replace it? [y/n] ");
+        }
+
+        if ($option == "n") {
+            hefesto.sys.echo("WARNING: The installation was canceled.\n");
+            result 1;
+        }
+
+    }
+
+    var exit_code type int;
+
+    $exit_code = 1;
+
+    if (hefesto.sys.cp("bin/pig", hefesto.sys.make_path($bindir, $binfile))) {
+        $exit_code = 0;
+    }
+
+    result $exit_code;
+}
+
+local function cp_pigsties() : result type int {
+    var oldcwd type string;
+    $oldcwd = hefesto.sys.pwd();
+
+    if (hefesto.sys.cd("../pigsty") != 1) {
+        result 1;
+    }
+
+    var pigsties type list;
+    $pigsties.ls(".*\\.pigsty$");
+
+    var dst_root type string;
+    $dst_root = "/usr/local/share/pig/pigsty";
+
+    mktree($dst_root);
+
+    var p type int;
+    $p = 0;
+    while ($p < $pigsties.count()) {
+        var src_item type string;
+        $src_item = $pigsties.item($p);
+
+        var filename type string;
+        $filename = filenamefrompath($src_item);
+
+        if (hefesto.sys.cp($src_item, hefesto.sys.make_path($dst_root, $filename)) != 1) {
+            result 1;
+        }
+
+        $p = $p + 1;
+    }
+
+    hefesto.sys.cd($oldcwd);
+
+    result 0;
+}
+
+function pig_install() : result type int {
+    var exit_code type int;
+    var src_files type list;
+    var dst_paths type list;
+
+    $exit_code = cp_binary_file();
+
+    if ($exit_code != 0) {
+        result $exit_code;
+    }
+
+    $src_files.add_item("../README.md");
+    $dst_paths.add_item("/usr/local/share/pig/doc/README.md");
+
+    $src_files.add_item("../doc/arp-spoofing-with-pig.md");
+    $dst_paths.add_item("/usr/local/share/pig/doc/arp-spoofing-with-pig.md");
+
+    $src_files.add_item("../doc/pcap-import.md");
+    $dst_paths.add_item("/usr/local/share/pig/doc/pcap-import.md");
+
+    $src_files.add_item("../doc/man/pig.1");
+    $dst_paths.add_item("/usr/local/man/man1/pig.1");
+
+
+    var f type int;
+
+    $f = 0;
+
+    while ($f < $src_files.count() && $exit_code == 0) {
+        var dst_item type string;
+
+        $dst_item = $dst_paths.item($f);
+
+        mktree(pathfromfilepath($dst_item));
+
+        if (hefesto.sys.cp($src_files.item($f), $dst_item) != 1) {
+            hefesto.sys.echo("ERROR: during " + $src_files.item($f) + " copying.\n");
+            $exit_code = 1;
+        }
+
+        $f = $f + 1;
+    }
+
+    if ($exit_code == 0) {
+        $exit_code = cp_pigsties();
+    }
+
+    if ($exit_code != 0) {
+        hefesto.sys.echo("INFO: rolling back...\n");
+        pig_uninstall();
+        hefesto.sys.echo("INFO: done.\n");
+    }
+
+    result $exit_code;
+}
+
+function pig_uninstall() : result type none {
+    var files2burn type list;
+
+    $files2burn.add_item("/usr/local/bin/pig");
+    $files2burn.add_item("/usr/local/man/man1/pig.1");
+    $files2burn.add_item("/usr/local/share/pig/doc/README.md");
+    $files2burn.add_item("/usr/local/share/pig/doc/arp-spoofing-with-pig.md");
+    $files2burn.add_item("/usr/local/share/pig/doc/pcap-import.md");
+    $files2burn.add_item("/usr/local/share/pig/doc");
+    $files2burn.add_item("/usr/local/share/pig/pigsty");
+    $files2burn.add_item("/usr/local/share/pig");
+
+    rm_pigsties();
+
+    var f type int;
+
+    $f = 0;
+
+    while ($f < $files2burn.count()) {
+
+        var file_item type string;
+
+        $file_item = $files2burn.item($f);
+
+        if (isfile($file_item)) {
+            hefesto.sys.rm($file_item);
+        } else {
+            rmtree($file_item);
+        }
+
+        $f = $f + 1;
+    }
+}
+
+local function rm_pigsties() : result type none {
+    var oldcwd type string;
+
+    $oldcwd = hefesto.sys.pwd();
+
+    var pigsty_root type string;
+
+    $pigsty_root = "/usr/local/share/pig/pigsty";
+
+    if (hefesto.sys.cd($pigsty_root)) {
+        var pigsties type list;
+        $pigsties.ls(".*\\.pigsty$");
+        var p type int;
+        $p = 0;
+        while ($p < $pigsties.count()) {
+            var pigsty type string;
+            $pigsty = $pigsties.item($p);
+            hefesto.sys.rm($pigsty);
+            $p = $p + 1;
+        }
+        hefesto.sys.cd($oldcwd);
+        hefesto.sys.rmdir($pigsty_root);
+    }
+
+}

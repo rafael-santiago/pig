@@ -23,6 +23,16 @@
 #define getnibble(n) ( isxdigit(n) && isalpha(n) ? toupper(n) - 55 :\
                        isxdigit(n) && isdigit(n) ? n - 48 : n )
 
+typedef enum _arp_payload_field_index_t {
+    kArpHwSrcPayload,
+    kArpPtSrcPayload,
+    kArpHwDstPayload,
+    kArpPtDstPayload,
+    kArpPayloadFieldIndexesNr
+}arp_payload_field_index_t;
+
+static void *get_arp_payload(arp_payload_field_index_t index, const unsigned char *buf, const size_t buf_size, size_t *field_size);
+
 struct arp *parse_arp_dgram(const unsigned char *buf, const size_t bsize) {
     struct arp *arph = NULL;
     if (buf == NULL) {
@@ -108,4 +118,65 @@ unsigned char *mac2byte(const char *mac, size_t len) {
         *r = ((*r) << 4) | getnibble(*m);
     }
     return retval;
+}
+
+static void *get_arp_payload(arp_payload_field_index_t index, const unsigned char *buf, const size_t buf_size, size_t *field_size) {
+    struct arp *phdr = NULL;
+    void *payload = NULL;
+    struct statement_case {
+        unsigned char *payload;
+        unsigned char *payload_size;
+    };
+    struct statement_case non_boring_switch_case[kArpPayloadFieldIndexesNr];
+
+    if (field_size != NULL) {
+        *field_size = 0;
+    }
+
+    phdr = parse_arp_dgram(buf, buf_size);
+
+    non_boring_switch_case[kArpHwSrcPayload].payload = phdr->src_hw_addr;
+    non_boring_switch_case[kArpHwSrcPayload].payload_size = &phdr->hw_addr_len;
+
+    non_boring_switch_case[kArpPtSrcPayload].payload = phdr->src_pt_addr;
+    non_boring_switch_case[kArpPtSrcPayload].payload_size = &phdr->pt_addr_len;
+
+    non_boring_switch_case[kArpHwDstPayload].payload = phdr->dest_hw_addr;
+    non_boring_switch_case[kArpHwDstPayload].payload_size = &phdr->hw_addr_len;
+
+    non_boring_switch_case[kArpPtDstPayload].payload = phdr->dest_pt_addr;
+    non_boring_switch_case[kArpPtDstPayload].payload_size = &phdr->pt_addr_len;
+
+    if (phdr == NULL) {
+        return NULL;
+    }
+
+    index = index % kArpPayloadFieldIndexesNr;
+
+    if (field_size != NULL) {
+        *field_size = (size_t)*non_boring_switch_case[index].payload_size;
+    }
+
+    payload = pig_newseg(*non_boring_switch_case[index].payload_size);
+    memcpy(payload, non_boring_switch_case[index].payload, (size_t)*non_boring_switch_case[index].payload_size);
+
+    arp_header_free(phdr);
+
+    return payload;
+}
+
+void *get_arp_hw_src_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
+    return get_arp_payload(kArpHwSrcPayload, buf, buf_size, field_size);
+}
+
+void *get_arp_pt_src_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
+    return get_arp_payload(kArpPtSrcPayload, buf, buf_size, field_size);
+}
+
+void *get_arp_hw_dst_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
+    return get_arp_payload(kArpHwDstPayload, buf, buf_size, field_size);
+}
+
+void *get_arp_pt_dst_payload(const unsigned char *buf, const size_t buf_size, size_t *field_size) {
+    return get_arp_payload(kArpPtDstPayload, buf, buf_size, field_size);
 }

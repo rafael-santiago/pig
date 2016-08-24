@@ -13,14 +13,14 @@
 Although this text not being an extensive resource about ``ARP``, I think that is important to define (even superficially) what
 it is for every newbie in this subject reading this document.
 
-The ``ARP`` protocol is responsible to inform the hardware and protocol's addresses from a host to other. As hardware
+The ``ARP`` protocol is responsible to inform the hardware and protocol's addresses from a host to another. As hardware
 address stands for the ``MAC address`` and protocol address the ``Network address``. Nowadays the most used network
 protocol is the ``IP`` (Internet Protocol). The protocol address in this context stands for the ``IP address``. Being more
 specific an ``IPv4`` address because we do not use ``ARP`` inside ``IPv6`` networks but this is another story totally out of
 scope by now.
 
 When we got an ``ARP`` packet saying that some hardware address has some protocol address we got a ``Reverse ARP`` (RARP).
-In a ``ARP`` what defines if it is a reverse ARP or not is a field called ``operation code``.
+In a ``ARP`` packet what defines if it is a reverse ARP or not is a field called ``operation code``.
 
 Ah yes, ``ARP`` is ``A``ddress ``R``esolution ``P``rotocol.
 
@@ -58,7 +58,7 @@ Here is the idea. The art of deceiving.
 
 >"Repeat a lie a thousand times and it becomes the truth."
 
-Unfortunately the ``ARP`` protocol implements this World *modus operandi*. In this case I would say that ``ARP`` is ``World compliant``.
+Unfortunately the ``ARP`` protocol implements this World *modus operandi*. In this case, I would say that ``ARP`` is ``World compliant``.
 
 ## Making your little pig become a liar
 
@@ -127,7 +127,9 @@ Now in ``TARDIS`` let's create the following ``pigsty`` file:
 Now let's activate our "force field" ;)
 
 ```
-doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty --lo-iface=eth1 --no-gateway --timeout=2
+doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty\
+> --lo-iface=eth1\
+> --no-gateway --timeout=2
 pig INFO: a packet based on signature "TARDIS force field" was sent.
 pig INFO: a packet based on signature "TARDIS force field" was sent.
 pig INFO: a packet based on signature "TARDIS force field" was sent.
@@ -170,8 +172,8 @@ IP address             Physical address        Type
 It has the exact MAC address defined in the ``TARDIS force field``.
 
 Maybe you do not understand why the option ``--no-gateway`` was used... It was used because ``ARP`` packets are non-routable.
-In other words it will never passthru a gateway in order to go to another network. So the gateway's address and the network
-mask are pretty useless in this situation. The choice for a small timeout is because we need to flood and keep it on.
+In other words, it will never passthru a gateway in order to go to another network. So the gateway's address and the network
+mask are pretty useless in this situation. The choice for a short timeout is because we need to flood and keep it on.
 
 ## Making your little pig become a professional liar
 
@@ -207,10 +209,16 @@ Take a look at the ``Table 1`` to know more about them.
 | ``hw-dst-addr``      |   The hardware destination address|     string    | --hw-src-addr="\"aa:bb:cc:dd:ee:ff\""  |
 | ``proto-dst-addr``   |   The protocol destination address| ipv4 address  | --proto-dst-addr=192.30.70.10          |
 
-The usage changes in order that now it is necessary to inform these referenced data. For instance:
+The general usage changes a little. Because now it is necessary to inform the referenced data. For instance:
 
 ```
-doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty --hw-src-addr="\"00:de:ad:be:ef:00\"" --proto-src-addr=192.30.70.3 --hw-dst-addr="\"08:00:27:00:80:ad\"" --proto-dst-addr=192.30.70.10 --lo-iface=eth1 --no-gateway --timeout=2
+doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty\
+> --hw-src-addr="\"00:de:ad:be:ef:00\""\
+> --proto-src-addr=192.30.70.3\
+> --hw-dst-addr="\"08:00:27:00:80:ad\""\
+> --proto-dst-addr=192.30.70.10\
+> --lo-iface=eth1\
+> --no-gateway --timeout=2
 pig INFO: a packet based on signature "TARDIS force field" was sent.
 pig INFO: a packet based on signature "TARDIS force field" was sent.
 pig INFO: a packet based on signature "TARDIS force field" was sent.
@@ -230,7 +238,11 @@ Note that in the ``ARP`` field indirections related with the protocol address yo
 Using it you can flood the network with anomalous ``ARP`` packets and in some point you can do (simulate) some ``DoS``. Who knows...
 
 ```
-doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty --hw-src-addr="\"00:de:ad:be:ef:00\"" --proto-src-addr=user-defined-ip --hw-dst-addr="\"08:00:27:00:80:ad\"" --proto-dst-addr=192.30.70.10 --targets=192.30.70.1/8 --no-gateway --timeout=2
+doctor@TARDIS:~/src/pig/src# bin/pig --signatures=force-field.pigsty\
+> --hw-src-addr="\"00:de:ad:be:ef:00\""\
+> --proto-src-addr=user-defined-ip\
+> --hw-dst-addr="\"08:00:27:00:80:ad\""\
+> --proto-dst-addr=192.30.70.10\
+> --targets=192.30.70.1/8\
+> --no-gateway --timeout=2
 ```
-
-Bye!
