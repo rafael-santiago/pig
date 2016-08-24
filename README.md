@@ -9,14 +9,17 @@ with more specific things according to your requirements.
 Until now it is possible to create ``IPv4`` signatures with transport layer based on ``TCP``, ``UDP`` and ``ICMP``.
 You can also create signatures based on ``ARP`` protocol, besides building up the packet since its ``Ethernet`` frame.
 
+If you arrived here by my [2600](https://www.2600.com) article from the ``SPRING 2016`` [issue](https://store.2600.com/collections/2010-2015/products/spring-2016)
+keep reading the following documentation sections because this little ``Pig`` has been evolving since then.
+
 # How to clone this repo?
 
 It is pretty simple:
 
 ```
-git clone https://github.com/rafael-santiago/pig pig
-cd pig
-git submodule update --init
+someones@err..InTheWolf:~/src# git clone https://github.com/rafael-santiago/pig pig
+someones@err..InTheWolf:~/src# cd pig
+someones@err..InTheWolf:~/src/pig# git submodule update --init
 ```
 
 # How to build it?
@@ -25,9 +28,12 @@ You need to use the [``Hefesto``](https://github.com/rafael-santiago/hefesto) to
 the steps to put ``Hefesto`` working on your system. Move to the ``pig`` sub-directory named as ``src`` and run
 the following command:
 
-``hefesto``
+```
+someones@err..InTheWolf:~/src/pig/src# hefesto
+```
 
-After this command you should find the ``pig`` binary under the path ``src/bin``.
+After this command you should find the ``pig`` binary under the path ``src/bin``. You can use the binary relatively from
+``src/bin`` or [install it](#how-to-install-it).
 
 If for some reason you are having build troubles you should try to read some remarks present in [``BUILD.md``](https://github.com/rafael-santiago/pig/blob/master/doc/BUILD.md).
 
@@ -35,11 +41,15 @@ If for some reason you are having build troubles you should try to read some rem
 
 For installing you need to be inside the ``src`` sub-directory and call:
 
-``hefesto --install``
+```
+someones@err..InTheWolf:~/src/pig/src# hefesto --install
+```
 
 For uninstalling, being inside the ``src`` sub-directory you should call:
 
-``hefesto --uninstall``
+```
+someones@err..InTheWolf:~/src/pig/src# hefesto --uninstall
+```
 
 # The pigsty files
 
@@ -172,7 +182,7 @@ Do you want to know more about each option, huh?... So let's go:
 Supposing that we want to generate ``DDos`` based traffic:
 
 ```
-pig --signatures=pigsty/ddos.pigsty\
+someones@err..InTheWolf:~# pig --signatures=pigsty/ddos.pigsty\
 > --gateway=10.0.2.2\
 > --net-mask=255.255.255.0 --lo-iface=eth0
 ```
@@ -180,7 +190,8 @@ pig --signatures=pigsty/ddos.pigsty\
 Now we want to messing up with everything:
 
 ```
-pig --signatures=pigsty/ddos.pigsty,pigsty/attackresponses.pigsty,pigsty/badtraffic.pigsty,pigsty/backdoors.pigsty\
+someones@err..InTheWolf:~# pig --signatures=pigsty/ddos.pigsty,pigsty/attackresponses.pigsty,\
+> pigsty/badtraffic.pigsty,pigsty/backdoors.pigsty\
 > --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
 ```
 
@@ -201,7 +212,7 @@ Use the ``--targets`` option. You can specify a list based on exact IPs, IP mask
 Look this:
 
 ```
-pig --signatures=pigsty/local-mess.pigsty\
+someones@err..InTheWolf:~# pig --signatures=pigsty/local-mess.pigsty\
 > --targets=192.30.70.3,192.30.70.*,192.30.70.0/9\
 > --gateway=10.0.2.2\
 > --net-mask=255.255.255.0\
@@ -217,7 +228,7 @@ because the packets will not flow outside the current segment. As a result to in
 For instance:
 
 ```
-pig --signatures=pigsty/local_traffic.pigsty --no-gateway --lo-iface=eth2
+someones@err..InTheWolf:~# pig --signatures=pigsty/local_traffic.pigsty --no-gateway --lo-iface=eth2
 ```
 
 In the sample above the ethernet frame will not be a pig's responsibility anymore. For this reason ``pig`` will not complain
@@ -233,8 +244,8 @@ requirement is common when you use this application as support for ``system test
 to do this you should try to use the option ``--single-test``:
 
 ```
-pig --signature=pigsty/syn-scan.pigsty --targets=127.0.0.1 --single-test --gateway=10.0.2.2\
-> --net-mask=255.255.255.0 --lo-iface=eth0
+someones@err..InTheWolf:~# pig --signature=pigsty/syn-scan.pigsty --targets=127.0.0.1 --single-test\
+> --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
 ```
 
 After running this command ``pig`` will select only one signature from the file ``syn-scan.pigsty`` and try to send it and then exit.
@@ -266,6 +277,8 @@ the details about them follows in their own manual. Take a look at the ``Table 3
 |     ``pcap-import``   |     Imports packet from a PCAP file into a pigsty file | [``cat doc/pcap-import.md``](https://github.com/rafael-santiago/pig/blob/master/doc/pcap-import.md)|
 
 ## Pig tricks
+
+### From the Ethernet frame to the topmost layer...
 
 Until now you can build up packets based on ``IPv4`` having ``UDP`` or ``TCP`` in their transport layer. You can also build
 up ``ARP`` packets.
@@ -310,16 +323,17 @@ Save the following data as ``"oink.pigsty"``:
 On another ``tty`` run the ``netcat`` in ``UDP mode`` listen for connections on port ``1008``:
 
 ```
-nc -u -l -p 1008
+someones@err..InTheWolf:~# nc -u -l -p 1008
 ```
 
-Now run ``pig`` using this ``pigsty file`` and informing as target the ``loopback``:
+Now run ``pig`` using the ``"oink.pigsty"``, informing as target the ``loopback``:
 
 ```
-pig --signatures=oink.pigsty --targets=127.0.0.1 --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
+someones@err..InTheWolf:~# pig --signatures=oink.pigsty --targets=127.0.0.1\
+> --gateway=10.0.2.2 --net-mask=255.255.255.0 --lo-iface=eth0
 ```
 
-The ``netcat`` should start receive several ``oinks`` and... yes, congrats!! ``pig`` is up and running on your system! ;)
+The ``netcat`` should start receiving several ``oinks`` and... yes, congrats!! ``pig`` is up and running on your system! ;)
 
 Try to sniff your Network to get more information about these ``UDP packets`` that are flowing around your interfaces...
 
