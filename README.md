@@ -83,8 +83,8 @@ have strong meaning for you. You must use these fields to create your further si
 | ``signature``   | The signature name |       -       |     string    | ``signature = "Udp flood"``         |
 | ``eth.hwdst``   | Ethernet Dest. MAC |   *Ethernet*  |     MAC       | ``eth.hwdst = "00:de:ad:be:ef:00"`` |
 | ``eth.hwsrc``   | Ethernet Source MAC|   *Ethernet*  |     MAC       | ``eth.hwsrc = "00:de:ad:be:ef:00"`` |
-| ``eth.payload`` | Ethernet Pauload   |   *Ethernet*  |     string    | ``eth.payload = "f\x00ob\x04r"``    |
 | ``eth.type``    |     Ether type     |   *Ethernet*  |     number    |     ``eth.type = 0x0800``           |
+| ``eth.payload`` | Ethernet Payload   |   *Ethernet*  |     string    | ``eth.payload = "f\x00ob\x04r"``    |
 |``ip.version``   |    IP version      |      *IP*     |     number    |      ``ip.version = 4``             |
 |  ``ip.ihl``     | Internet Header Len|      *IP*     |     number    |         ``ip.ihl = 5``              |
 |  ``ip.tos``     |    Type of service |      *IP*     |     number    |         ``ip.tos = 0 ``             |
