@@ -107,7 +107,7 @@ have strong meaning for you. You must use these fields to create your further si
 |   ``tcp.urg``   |  TCP urg. flag     |      *TCP*    |       bit     |       ``tcp.urg = 0``               |
 |   ``tcp.ack``   |  TCP ack. flag     |      *TCP*    |       bit     |       ``tcp.ack = 1``               |
 |   ``tcp.psh``   |  TCP psh. flag     |      *TCP*    |       bit     |       ``tcp.psh = 0``               |
-|   ``tcp.rst``   |  TCP psh. flag     |      *TCP*    |       bit     |       ``tcp.rst = 0``               |
+|   ``tcp.rst``   |  TCP rst. flag     |      *TCP*    |       bit     |       ``tcp.rst = 0``               |
 |   ``tcp.syn``   |  TCP syn. flag     |      *TCP*    |       bit     |       ``tcp.syn = 0``               |
 |   ``tcp.fin``   |  TCP fin. flag     |      *TCP*    |       bit     |       ``tcp.fin = 0``               |
 |  ``tcp.wsize``  |  TCP window size   |      *TCP*    |     number    |       ``tcp.wsize = 0``             |
