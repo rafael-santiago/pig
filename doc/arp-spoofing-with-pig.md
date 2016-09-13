@@ -4,7 +4,7 @@
 
 ----
 
-**Abstract**: Now ``pig`` has the ability of sending ``ARP`` packets and in this document I will show how to do this, explaining some details and particularities involved.
+**Abstract**: Now ``pig`` has the ability of sending ``ARP`` packets and in this document I will show how to do it. Explaining some details and particularities involved.
 
 ----
 
