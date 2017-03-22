@@ -8,6 +8,7 @@
 #include "run_pig_run.h"
 #include "pktcraft.h"
 #include "pcap_import.h"
+#include "shell.h"
 #include "options.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,7 +24,8 @@ int run_pig_run() {
     };
     pig_task_exec pig_task = pktcraft;
     struct pig_subtask subtasks[] = {
-        { "pcap-import", pcap_import }
+        { "pcap-import", pcap_import },
+        { "shell", shell }
     };
     size_t subtasks_nr = sizeof(subtasks) / sizeof(subtasks[0]);
     size_t s = 0;

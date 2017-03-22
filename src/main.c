@@ -8,17 +8,12 @@
 #include "types.h"
 #include "options.h"
 #include "run_pig_run.h"
+#include "watchdogs.h"
 #include "pktcraft.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
 #include <time.h>
-
-static void sigint_watchdog(int signr);
-
-static void sigint_watchdog(int signr) {
-    stop_pktcraft();
-}
 
 int main(int argc, char **argv) {
     int exit_code = 1;
@@ -31,8 +26,8 @@ int main(int argc, char **argv) {
     }
 
     if (argc > 1) {
-        signal(SIGINT, sigint_watchdog);
-        signal(SIGTERM, sigint_watchdog);
+        signal(SIGINT, pktcrafter_sigint_watchdog);
+        signal(SIGTERM, pktcrafter_sigint_watchdog);
         exit_code = run_pig_run();
     } else {
         exit_code = pktcraft_help();
