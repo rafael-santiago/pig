@@ -12,6 +12,8 @@
 #include <string.h>
 #include <stdio.h>
 #include <signal.h>
+#include <unistd.h>
+#include <termios.h>
 
 #define PIG_SHELL_CMDBUF_LEN 0xffff
 
@@ -35,6 +37,8 @@ static int g_pig_shell_exit = 0;
 static int shell_command_exec(const char *cmd);
 
 static int exec_compound_cmd(const char *cmd);
+
+static unsigned char getch(void);
 
 static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
     { "[",      NULL },
@@ -71,9 +75,21 @@ int quit_shell(void) {
     g_pig_shell_exit = 1;
 }
 
+static unsigned char getch(void) {
+    unsigned char c;
+    struct termios attr, oldattr;
+    tcgetattr(STDIN_FILENO,&attr);
+    oldattr = attr;
+    attr.c_lflag = ~(ICANON | ECHO);
+    tcsetattr(STDIN_FILENO, TCSANOW, &attr);
+    read(STDIN_FILENO, &c, 1);
+    tcsetattr(STDIN_FILENO, TCSANOW, &oldattr);
+    return c;
+}
+
 static int shell_prompt(void) {
     char cmdbuf[PIG_SHELL_CMDBUF_LEN], lchar = '?';
-    size_t c = 0;
+    size_t c = 0, lc = 0;
     int exit_code = 0;
 
     signal(SIGINT, shell_sigint_watchdog);
@@ -82,9 +98,28 @@ static int shell_prompt(void) {
     memset(cmdbuf, 0, PIG_SHELL_CMDBUF_LEN);
 
     printf("%s", PIG_SHELL_PROMPT);
+    fflush(stdout);
 
     while (!g_pig_shell_exit) {
-        lchar = cmdbuf[c] = fgetc(stdin);
+        lchar = getch();
+
+        if (lchar == 27) {
+            getch();
+            switch ((lchar=getch())) {
+                case 'A': // INFO(Rafael): UP key.
+                    printf("(((( UP ))))\n");
+                    break;
+
+                case 'B': // INFO(Rafael): Down key.
+                    printf("(((( DOWN ))))\n");
+                    break;
+            }
+            continue;
+        } else {
+            cmdbuf[c] = lchar;
+            printf("%c", lchar);
+            fflush(stdout);
+        }
 
         if (g_pig_shell_exit) {
             printf("-- SIGNAL caught, bye! --\n");
@@ -92,21 +127,49 @@ static int shell_prompt(void) {
         }
 
         switch (lchar) {
-            case '\n':
+            case 3:
+                g_pig_shell_exit = 1;
+                break;
+
+            case 126:
+                printf("\b -- IGNORED key event, command buffer cleared. --\n");
+                fflush(stdout);
+                goto shell_prompt_reset;
+                break;
+
+            case 127:
+                if (lc > 0) {
+                    cmdbuf[c] = 0;
+                    c--;
+                    lc--;
+                    printf("\b \b");
+                    fflush(stdout);
+                }
+                break;
+
+            case '\r':
+                printf("\n");
+                fflush(stdout);
                 if (c > 0 && cmdbuf[c - 1] == '\\') {
                     printf("%s", PIG_SHELL_CONTINUE);
+                    fflush(stdout);
+                    lc = 0;
                     c--;
                 } else {
                     cmdbuf[c] = 0;
                     exit_code = shell_command_exec(cmdbuf);
+shell_prompt_reset:
                     c = 0;
+                    lc = 0;
                     memset(cmdbuf, 0, PIG_SHELL_CMDBUF_LEN);
                     printf("%s", PIG_SHELL_PROMPT);
+                    fflush(stdout);
                 }
                 break;
 
             default:
                 c = (c + 1) % PIG_SHELL_CMDBUF_LEN;
+                lc++;
                 break;
         }
     }
