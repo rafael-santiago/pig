@@ -97,7 +97,7 @@ static void add_char_to_cmdbuf(char cmdbuf[PIG_SHELL_CMDBUF_LEN], size_t *pos, c
         return;
     }
 
-    if (c == 0) {
+    if (c == 127) {
         if (*pos == 0) {
             return;
         }
@@ -111,6 +111,13 @@ static void add_char_to_cmdbuf(char cmdbuf[PIG_SHELL_CMDBUF_LEN], size_t *pos, c
                 cmdbuf[p] = cmdbuf[p + 1];
             }
             *pos -= 1;
+        }
+    } else if (c == 126) {
+        if (cmdbuf[*pos] == 0) {
+            return;
+        }
+        for (p = *pos; cmdbuf[p] != 0; p++) {
+            cmdbuf[p] = cmdbuf[p + 1];
         }
     } else if (cmdbuf[*pos] == 0) {
         cmdbuf[*pos] = c;
@@ -146,15 +153,17 @@ static int shell_prompt(void) {
         if (lchar == 27) {
             getch();
             switch ((lchar=getch())) {
-                case 'A': // INFO(Rafael): UP key.
+                case 'A': // INFO(Rafael): Up arrow.
+                    // TODO(Rafael): History browse.
                     printf("(((( UP ))))\n");
                     break;
 
-                case 'B': // INFO(Rafael): Down key.
+                case 'B': // INFO(Rafael): Down arrow.
+                    // TODO(Rafael): History browse.
                     printf("(((( DOWN ))))\n");
                     break;
 
-                case 'D':
+                case 'D': // INFO(Rafael): Left arrow.
                     if (lc > 0) {
                         lc--;
                         c--;
@@ -163,7 +172,7 @@ static int shell_prompt(void) {
                     }
                     break;
 
-                case 'C':
+                case 'C': // INFO(Rafael): Right arrow.
                     if (cmdbuf[lc] != 0 && lc < PIG_SHELL_CMDBUF_LEN) {
                         lc++;
                         c++;
@@ -171,14 +180,40 @@ static int shell_prompt(void) {
                         fflush(stdout);
                     }
                     break;
+
+                case 52:  // INFO(Rafael): End key.
+                    sk = getch();
+                    if (sk == 126) {
+                        while (cmdbuf[c] != 0) {
+                            lc++;
+                            c++;
+                            printf("\033[1C");
+                            fflush(stdout);
+                        }
+                    } else {
+                        printf("\b -- IGNORED key event, command buffer cleared. --\n", sk);
+                        fflush(stdout);
+                        goto shell_prompt_reset;
+                    }
+                    break;
+
+                case 51: // INFO(Rafael): Delete key.
+                    sk = getch();
+                    if (sk == 126) {
+                        add_char_to_cmdbuf(cmdbuf, &c, 126);
+                        printf("\033[s\033[K");
+                        printf("\r%s%s", (continue_line == 0) ? PIG_SHELL_PROMPT : PIG_SHELL_CONTINUE, &cmdbuf[pc]);
+                        printf("\033[u");
+                        fflush(stdout);
+                    }
+                    break;
             }
             continue;
         } else {
-            if (lchar != '\r' && lchar != 126 && lchar != 127) {
+            if (lchar != '\r' && lchar != 127) {
                 add_char_to_cmdbuf(cmdbuf, &c, lchar);
             }
             printf("\033[s");
-            fflush(stdout);
             printf("\r%s%s", (continue_line == 0) ? PIG_SHELL_PROMPT : PIG_SHELL_CONTINUE, &cmdbuf[pc]);
             printf("\033[u");
             if (lchar != 126 && lchar != 127) {
@@ -194,25 +229,17 @@ static int shell_prompt(void) {
 
         switch (lchar) {
             case 3:
-                g_pig_shell_exit = 1;
-                break;
-
-            case 126:
-                sk = getch();
-                if (sk == 3) {
-                    // TODO(Rafael): Delete.
-                } else if (sk == 4) {
-                    // MAYBE(Rafael): End.
-                } else {
-                    printf("\b -- IGNORED key event, command buffer cleared. --\n");
-                    fflush(stdout);
+                if (continue_line) {
+                    printf("\n");
                     goto shell_prompt_reset;
+                } else {
+                    g_pig_shell_exit = 1;
                 }
                 break;
 
             case 127:
                 if (lc > 0) {
-                    add_char_to_cmdbuf(cmdbuf, &c, 0);
+                    add_char_to_cmdbuf(cmdbuf, &c, 127);
                     lc--;
                     printf("\b \033[s\033[K");
                     printf("\r%s%s", (continue_line == 0) ? PIG_SHELL_PROMPT : PIG_SHELL_CONTINUE, &cmdbuf[pc]);
@@ -234,14 +261,14 @@ static int shell_prompt(void) {
                     cmdbuf[c] = 0;
                     pc = c;
                 } else {
-                    pc = 0;
-                    continue_line = 0;
                     while (cmdbuf[c] != 0) {
                         c++;
                     }
                     cmdbuf[c] = 0;
                     exit_code = shell_command_exec(cmdbuf);
 shell_prompt_reset:
+                    pc = 0;
+                    continue_line = 0;
                     c = 0;
                     lc = 0;
                     memset(cmdbuf, 0, PIG_SHELL_CMDBUF_LEN);
