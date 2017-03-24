@@ -21,6 +21,8 @@
 
 #define PIG_SHELL_CONTINUE "... "
 
+#define PIG_MAX_HISTORY_NR 100
+
 typedef int (*pigshell_cmdtrap)(const char *cmd);
 
 struct compound_cmd_traps_ctx {
@@ -138,6 +140,8 @@ static int shell_prompt(void) {
     size_t c = 0, lc = 0, pc = 0;
     int exit_code = 0;
     int continue_line = 0;
+    char history[PIG_MAX_HISTORY_NR][PIG_SHELL_CMDBUF_LEN];
+    size_t h = 0, hc = 0;
 
     signal(SIGINT, shell_sigint_watchdog);
     signal(SIGTERM, shell_sigint_watchdog);
@@ -153,14 +157,31 @@ static int shell_prompt(void) {
         if (lchar == 27) {
             getch();
             switch ((lchar=getch())) {
-                case 'A': // INFO(Rafael): Up arrow.
-                    // TODO(Rafael): History browse.
-                    printf("(((( UP ))))\n");
-                    break;
-
-                case 'B': // INFO(Rafael): Down arrow.
-                    // TODO(Rafael): History browse.
-                    printf("(((( DOWN ))))\n");
+                case 'A': // INFO(Rafael): Up/Down arrows.
+                case 'B':
+                    if (continue_line) {
+                        printf("\n");
+                    }
+                    while (c > 0) {
+                        printf("\b \b");
+                        c--;
+                    }
+                    strncpy(cmdbuf, history[hc], PIG_SHELL_CMDBUF_LEN - 1);
+                    printf("\r%s%s", PIG_SHELL_PROMPT, cmdbuf);
+                    fflush(stdout);
+                    c = strlen(cmdbuf);
+                    lc = strlen(cmdbuf);
+                    pc = 0;
+                    continue_line = 0;
+                    if (lchar == 'A') {
+                        if (hc > 0) {
+                            hc--;
+                        }
+                    } else {
+                        if (hc < h) {
+                            hc++;
+                        }
+                    }
                     break;
 
                 case 'D': // INFO(Rafael): Left arrow.
@@ -266,6 +287,11 @@ static int shell_prompt(void) {
                     }
                     cmdbuf[c] = 0;
                     exit_code = shell_command_exec(cmdbuf);
+                    if (strlen(cmdbuf) > 0) {
+                        strncpy(history[h], cmdbuf, PIG_SHELL_CMDBUF_LEN - 1);
+                        h = (h + 1) % PIG_MAX_HISTORY_NR;
+                        hc = h - 1;
+                    }
 shell_prompt_reset:
                     pc = 0;
                     continue_line = 0;
