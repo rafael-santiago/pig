@@ -18,4 +18,8 @@ int is_arp_packet(const pigsty_conf_set_ctx *conf);
 
 int is_explicit_eth_frame(const pigsty_conf_set_ctx *conf);
 
+pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *buffer);
+
+int compile_pigsty_buffer(const char *data);
+
 #endif

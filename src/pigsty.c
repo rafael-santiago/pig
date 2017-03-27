@@ -27,8 +27,6 @@ static char *get_pigsty_file_data(const char *filepath);
 
 static int compile_next_buffered_pigsty_entry(char *buffer, char **next);
 
-static int compile_pigsty_buffer(const char *data);
-
 static char *skip_pigsty_comment(char *buffer);
 
 static char *skip_pigsty_blank(char *buffer);
@@ -72,8 +70,6 @@ static int verify_int(const char *buffer);
 static int verify_hex(const char *buffer);
 
 static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *entries, char *buffer, char **next);
-
-static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *data);
 
 static int verify_required_fields(pigsty_entry_ctx *entry);
 
@@ -176,7 +172,7 @@ pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char
     return entry;
 }
 
-static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *buffer) {
+pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *buffer) {
     char *data = (char *) buffer;
     char *next_data = NULL;
     entry = mk_pigsty_entry_from_compiled_buffer(entry, data, &next_data);
@@ -501,7 +497,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     return all_ok;
 }
 
-static int compile_pigsty_buffer(const char *buffer) {
+int compile_pigsty_buffer(const char *buffer) {
     int all_ok = 1;
     char *data = (char *) buffer;
     char *next_data = NULL;

@@ -319,7 +319,7 @@ CUTE_TEST_CASE(to_ipv4_tests)
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(pigsty_entry_ctx_tests)
-    pigsty_entry_ctx *pigsty = NULL, *p;
+    pigsty_entry_ctx *pigsty = NULL, *p, *oink, *roc, *boo;
     const pigsty_entry_ctx *p_item = NULL;
     pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
     pigsty = add_signature_to_pigsty_entry(pigsty, "roc!");
@@ -340,6 +340,25 @@ CUTE_TEST_CASE(pigsty_entry_ctx_tests)
     p_item = get_pigsty_entry_by_index(-1, pigsty);
     CUTE_CHECK("p != NULL", p_item == NULL);
     del_pigsty_entry(pigsty);
+    pigsty = NULL;
+    pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
+    oink = pigsty;
+    pigsty = add_signature_to_pigsty_entry(pigsty, "roc!");
+    roc = oink->next;
+    pigsty = add_signature_to_pigsty_entry(pigsty, "boo.");
+    boo = roc->next;
+    CUTE_ASSERT(rm_pigsty_entry(NULL, "(null)") == 0);
+    CUTE_ASSERT(rm_pigsty_entry(NULL, NULL) == 0);
+    CUTE_ASSERT(rm_pigsty_entry(&pigsty, NULL) == 0);
+    CUTE_ASSERT(rm_pigsty_entry(&pigsty, "roc!") == 1);
+    CUTE_ASSERT(pigsty != NULL);
+    CUTE_ASSERT(pigsty->next == boo);
+    CUTE_ASSERT(pigsty->next->next == NULL);
+    CUTE_ASSERT(pigsty == oink);
+    CUTE_ASSERT(rm_pigsty_entry(&pigsty, "oink") == 1);
+    CUTE_ASSERT(pigsty == boo);
+    CUTE_ASSERT(rm_pigsty_entry(&pigsty, "boo.") == 1);
+    CUTE_ASSERT(pigsty == NULL);
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(pigsty_conf_set_ctx_tests)

@@ -273,3 +273,27 @@ pig_hwaddr_ctx *get_pig_hwaddr_tail(pig_hwaddr_ctx *hwaddr) {
     for (p = hwaddr; p->next != NULL; p = p->next);
     return p;
 }
+
+int rm_pigsty_entry(pigsty_entry_ctx **entries, const char *signature_name) {
+    pigsty_entry_ctx *ep = NULL, *lp = NULL;
+
+    if (entries == NULL || signature_name == NULL) {
+        return 0;
+    }
+
+    for (ep = *entries; ep != NULL; lp = ep, ep = ep->next) {
+        if (strcmp(ep->signature_name, signature_name) == 0) {
+            if (lp == NULL) {
+                *entries = ep->next;
+                ep->next = NULL;
+            } else {
+                lp->next = ep->next;
+                ep->next = NULL;
+            }
+            del_pigsty_entry(ep);
+            return 1;
+        }
+    }
+
+    return 0;
+}

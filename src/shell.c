@@ -8,6 +8,9 @@
 #include "shell.h"
 #include "options.h"
 #include "watchdogs.h"
+#include "types.h"
+#include "pigsty.h"
+#include "lists.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -36,6 +39,8 @@ static int shell_prompt(void);
 
 static int g_pig_shell_exit = 0;
 
+static pigsty_entry_ctx *g_pigsty_head = NULL, *g_pigsty_tail = NULL;
+
 static int shell_command_exec(const char *cmd);
 
 static int exec_compound_cmd(const char *cmd);
@@ -44,11 +49,23 @@ static unsigned char getch(void);
 
 static void add_char_to_cmdbuf(char cmdbuf[PIG_SHELL_CMDBUF_LEN], size_t *pos, const char c);
 
+static void append_pigsty_data(pigsty_entry_ctx *data);
+
+static int add_pigsty_cmdtrap(const char *cmd);
+
+static int pigsty_ld_cmdtrap(const char *cmd);
+
+static int pigsty_ls_cmdtrap(const char *cmd);
+
+static int pigsty_rm_cmdtrap(const char *cmd);
+
+static int pigsty_cmdtrap(const char *cmd);
+
 static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
-    { "[",      NULL },
+    { "[",       add_pigsty_cmdtrap },
     { "flood ",  NULL },
     { "oink ",   NULL },
-    { "pigsty ", NULL },
+    { "pigsty ", pigsty_cmdtrap },
     { "set ",    NULL },
     { "unset ",  NULL }
 };
@@ -56,9 +73,9 @@ static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
 static size_t g_pigshell_traps_nr = sizeof(g_pigshell_traps) / sizeof(g_pigshell_traps[0]);
 
 static struct compound_cmd_traps_ctx g_pigshell_pigsty_traps[] = {
-    { "ld ", NULL },
-    { "ls ", NULL },
-    { "rm ", NULL }
+    { "ld ", pigsty_ld_cmdtrap },
+    { "ls", pigsty_ls_cmdtrap  },
+    { "rm ", pigsty_rm_cmdtrap }
 };
 
 static size_t g_pigshell_pigsty_traps_nr = sizeof(g_pigshell_pigsty_traps) / sizeof(g_pigshell_pigsty_traps[0]);
@@ -309,6 +326,9 @@ shell_prompt_reset:
                 break;
         }
     }
+    del_pigsty_entry(g_pigsty_head);
+    g_pigsty_tail = NULL;
+    g_pigsty_head = NULL;
     printf("\n");
     return 0;
 }
@@ -356,10 +376,161 @@ static int exec_compound_cmd(const char *cmd) {
     while (t < g_pigshell_traps_nr) {
         if (g_pigshell_traps[t].trap != NULL &&
             strstr(cmd, g_pigshell_traps[t].cmd) == cmd) {
-            return g_pigshell_traps[t].trap(cmd + strlen(g_pigshell_traps[t].cmd) + 1);
+            return g_pigshell_traps[t].trap(cmd + ( strcmp(g_pigshell_traps[t].cmd, "[") == 0 ? 0 :
+                                                              strlen(g_pigshell_traps[t].cmd) ) );
         }
         t++;
     }
 
     return -1;
 }
+
+static void append_pigsty_data(pigsty_entry_ctx *data) {
+    if (data == NULL) {
+        return;
+    }
+
+    if (g_pigsty_tail == NULL) {
+        g_pigsty_head = data;
+        g_pigsty_tail = get_pigsty_entry_tail(g_pigsty_head);
+    } else {
+        g_pigsty_tail->next = data;
+        g_pigsty_tail = get_pigsty_entry_tail(data);
+    }
+}
+
+static int add_pigsty_cmdtrap(const char *cmd) {
+    pigsty_entry_ctx *np = NULL, *p = NULL;
+
+    if (compile_pigsty_buffer(cmd)) {
+        return 1;
+    }
+
+    np = make_pigsty_data_from_loaded_data(NULL, cmd);
+
+    if (np == NULL) {
+        return 1;
+    }
+
+    append_pigsty_data(np);
+
+    return 0;
+}
+
+static int pigsty_ld_cmdtrap(const char *cmd) {
+    const char *cp = cmd;
+    char temp[255] = "";
+    size_t t = 0;
+    pigsty_entry_ctx *np = NULL;
+
+    while (*cp != 0) {
+        if (*cp == ',') {
+            temp[t] = 0;
+            np = load_pigsty_data_from_file(NULL, temp);
+            append_pigsty_data(np);
+            t = 0;
+            temp[0] = 0;
+        } else {
+            if (t == 0 && *cp == ' ') {
+                cp++;
+                continue;
+            }
+            temp[t] = *cp;
+            t = (t + 1) % sizeof(temp);
+        }
+        cp++;
+    }
+
+    if (temp[0] != 0) {
+        temp[t] = 0;
+        np = load_pigsty_data_from_file(NULL, temp);
+        append_pigsty_data(np);
+    }
+
+    return 1;
+}
+
+static int pigsty_ls_cmdtrap(const char *cmd) {
+    pigsty_entry_ctx *hp = NULL;
+    size_t total_printed = 0;
+
+    if (g_pigsty_head == NULL) {
+        return 0;
+    }
+
+    printf("-- SIGNATURES\n\n");
+
+    for (hp = g_pigsty_head; hp != NULL; hp = hp->next) {
+        if (*cmd == 0) {
+            printf("\t* %s\n", hp->signature_name);
+            total_printed++;
+        } else if (strstr(hp->signature_name, cmd+1) != NULL) {
+            printf("\t* %s\n", hp->signature_name);
+            total_printed++;
+        }
+    }
+
+    if (total_printed == 0) {
+        printf("No entries were found. --\n");
+    } else {
+        printf("\n%d %s --\n", total_printed, total_printed > 1 ? "entries were found." : "entry was found.");
+    }
+
+    return 0;
+}
+
+static int pigsty_rm_cmdtrap(const char *cmd) {
+    const char *cp = cmd;
+    char temp[255] = "";
+    size_t t = 0;
+    pigsty_entry_ctx *np = NULL;
+    size_t rt = 0;
+
+    while (*cp != 0) {
+        if (*cp == ',') {
+            temp[t] = 0;
+            if (rm_pigsty_entry(&g_pigsty_head, temp) == 0) {
+                printf("WARN: the signature '%s' was not found.\n", temp);
+            } else {
+                rt++;
+            }
+            t = 0;
+            temp[0] = 0;
+        } else {
+            if (t == 0 && *cp == ' ') {
+                cp++;
+                continue;
+            }
+            temp[t] = *cp;
+            t = (t + 1) % sizeof(temp);
+        }
+        cp++;
+    }
+
+    if (temp[0] != 0) {
+        temp[t] = 0;
+        if (rm_pigsty_entry(&g_pigsty_head, temp) == 0) {
+            printf("WARN: the signature '%s' was not found.\n", temp);
+        } else {
+            rt++;
+        }
+    }
+
+    if (rt > 0) {
+        printf("%d %s --\n", rt, (rt > 1) ? "entries were removed." : "entry was removed.");
+    }
+
+    return 1;
+}
+
+static int pigsty_cmdtrap(const char *cmd) {
+    size_t t;
+    for (t = 0; t < g_pigshell_pigsty_traps_nr; t++) {
+        if (strstr(cmd, g_pigshell_pigsty_traps[t].cmd) == cmd) {
+            return g_pigshell_pigsty_traps[t].trap(cmd + strlen(g_pigshell_pigsty_traps[t].cmd));
+        }
+    }
+    printf("Unknown sub-command: '%s'.\n", cmd);
+    return 1;
+}
+
