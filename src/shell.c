@@ -26,6 +26,16 @@
 
 #define PIG_MAX_HISTORY_NR 100
 
+#define PIG_SHELL_ESCAPE_KEY            0x1b
+#define PIG_SHELL_UP_KEY                0x41
+#define PIG_SHELL_DOWN_KEY              0x42
+#define PIG_SHELL_LEFT_KEY              0x44
+#define PIG_SHELL_RIGHT_KEY             0x43
+#define PIG_SHELL_END_KEY               0x34
+#define PIG_SHELL_DELETE_KEY            0x33
+#define PIG_SHELL_CTRL_C                0x03
+#define PIG_SHELL_BACKSPACE_KEY         0x7f
+
 typedef int (*pigshell_cmdtrap)(const char *cmd);
 
 struct compound_cmd_traps_ctx {
@@ -75,9 +85,9 @@ static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
 static size_t g_pigshell_traps_nr = sizeof(g_pigshell_traps) / sizeof(g_pigshell_traps[0]);
 
 static struct compound_cmd_traps_ctx g_pigshell_pigsty_traps[] = {
-    { "ld ", pigsty_ld_cmdtrap      },
-    { "ls", pigsty_ls_cmdtrap       },
-    { "rm ", pigsty_rm_cmdtrap      },
+    { "ld ",   pigsty_ld_cmdtrap    },
+    { "ls",    pigsty_ls_cmdtrap    },
+    { "rm ",   pigsty_rm_cmdtrap    },
     { "clear", pigsty_clear_cmdtrap }
 };
 
@@ -119,7 +129,7 @@ static void add_char_to_cmdbuf(char cmdbuf[PIG_SHELL_CMDBUF_LEN], size_t *pos, c
         return;
     }
 
-    if (c == 127) {
+    if (c == PIG_SHELL_BACKSPACE_KEY) {
         if (*pos == 0) {
             return;
         }
@@ -174,11 +184,11 @@ static int shell_prompt(void) {
     while (!g_pig_shell_exit) {
         lchar = getch();
 
-        if (lchar == 27) {
+        if (lchar == PIG_SHELL_ESCAPE_KEY) {
             getch();
             switch ((lchar=getch())) {
-                case 'A': // INFO(Rafael): Up/Down arrows.
-                case 'B':
+                case PIG_SHELL_UP_KEY: // INFO(Rafael): Up/Down arrows.
+                case PIG_SHELL_DOWN_KEY:
                     if (continue_line) {
                         printf("\n");
                     }
@@ -193,7 +203,7 @@ static int shell_prompt(void) {
                     lc = strlen(cmdbuf);
                     pc = 0;
                     continue_line = 0;
-                    if (lchar == 'A') {
+                    if (lchar == PIG_SHELL_UP_KEY) {
                         if (hc > 0) {
                             hc--;
                         }
@@ -204,7 +214,7 @@ static int shell_prompt(void) {
                     }
                     break;
 
-                case 'D': // INFO(Rafael): Left arrow.
+                case PIG_SHELL_LEFT_KEY: // INFO(Rafael): Left arrow.
                     if (lc > 0) {
                         lc--;
                         c--;
@@ -213,7 +223,7 @@ static int shell_prompt(void) {
                     }
                     break;
 
-                case 'C': // INFO(Rafael): Right arrow.
+                case PIG_SHELL_RIGHT_KEY: // INFO(Rafael): Right arrow.
                     if (cmdbuf[lc] != 0 && lc < PIG_SHELL_CMDBUF_LEN) {
                         lc++;
                         c++;
@@ -222,7 +232,7 @@ static int shell_prompt(void) {
                     }
                     break;
 
-                case 52:  // INFO(Rafael): End key.
+                case PIG_SHELL_END_KEY:  // INFO(Rafael): End key.
                     sk = getch();
                     if (sk == 126) {
                         while (cmdbuf[c] != 0) {
@@ -238,7 +248,7 @@ static int shell_prompt(void) {
                     }
                     break;
 
-                case 51: // INFO(Rafael): Delete key.
+                case PIG_SHELL_DELETE_KEY: // INFO(Rafael): Delete key.
                     sk = getch();
                     if (sk == 126) {
                         add_char_to_cmdbuf(cmdbuf, &c, 126);
@@ -251,13 +261,13 @@ static int shell_prompt(void) {
             }
             continue;
         } else {
-            if (lchar != '\r' && lchar != 127) {
+            if (lchar != '\r' && lchar != PIG_SHELL_BACKSPACE_KEY) {
                 add_char_to_cmdbuf(cmdbuf, &c, lchar);
             }
             printf("\033[s");
             printf("\r%s%s", (continue_line == 0) ? PIG_SHELL_PROMPT : PIG_SHELL_CONTINUE, &cmdbuf[pc]);
             printf("\033[u");
-            if (lchar != 126 && lchar != 127) {
+            if (lchar != 126 && lchar != PIG_SHELL_BACKSPACE_KEY) {
                 printf("\033[1C");
             }
             fflush(stdout);
@@ -269,7 +279,7 @@ static int shell_prompt(void) {
         }
 
         switch (lchar) {
-            case 3:
+            case PIG_SHELL_CTRL_C:
                 if (continue_line) {
                     printf("\n");
                     goto shell_prompt_reset;
@@ -278,9 +288,9 @@ static int shell_prompt(void) {
                 }
                 break;
 
-            case 127:
+            case PIG_SHELL_BACKSPACE_KEY:
                 if (lc > 0) {
-                    add_char_to_cmdbuf(cmdbuf, &c, 127);
+                    add_char_to_cmdbuf(cmdbuf, &c, PIG_SHELL_BACKSPACE_KEY);
                     lc--;
                     printf("\b \033[s\033[K");
                     printf("\r%s%s", (continue_line == 0) ? PIG_SHELL_PROMPT : PIG_SHELL_CONTINUE, &cmdbuf[pc]);
