@@ -1000,3 +1000,7 @@ static int check_eth_frame_sanity(const pigsty_conf_set_ctx *conf, int *ip_versi
 
     return normal;
 }
+
+void reset_compile_pigsty_line_ct(void) {
+    g_line_nr = 1;
+}

@@ -49,7 +49,7 @@ static unsigned char getch(void);
 
 static void add_char_to_cmdbuf(char cmdbuf[PIG_SHELL_CMDBUF_LEN], size_t *pos, const char c);
 
-static void append_pigsty_data(pigsty_entry_ctx *data);
+static int append_pigsty_data(pigsty_entry_ctx *data);
 
 static int add_pigsty_cmdtrap(const char *cmd);
 
@@ -59,23 +59,26 @@ static int pigsty_ls_cmdtrap(const char *cmd);
 
 static int pigsty_rm_cmdtrap(const char *cmd);
 
+static int pigsty_clear_cmdtrap(const char *cmd);
+
 static int pigsty_cmdtrap(const char *cmd);
 
 static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
     { "[",       add_pigsty_cmdtrap },
-    { "flood ",  NULL },
-    { "oink ",   NULL },
-    { "pigsty ", pigsty_cmdtrap },
-    { "set ",    NULL },
-    { "unset ",  NULL }
+    { "flood ",  NULL               },
+    { "oink ",   NULL               },
+    { "pigsty ", pigsty_cmdtrap     },
+    { "set ",    NULL               },
+    { "unset ",  NULL               }
 };
 
 static size_t g_pigshell_traps_nr = sizeof(g_pigshell_traps) / sizeof(g_pigshell_traps[0]);
 
 static struct compound_cmd_traps_ctx g_pigshell_pigsty_traps[] = {
-    { "ld ", pigsty_ld_cmdtrap },
-    { "ls", pigsty_ls_cmdtrap  },
-    { "rm ", pigsty_rm_cmdtrap }
+    { "ld ", pigsty_ld_cmdtrap      },
+    { "ls", pigsty_ls_cmdtrap       },
+    { "rm ", pigsty_rm_cmdtrap      },
+    { "clear", pigsty_clear_cmdtrap }
 };
 
 static size_t g_pigshell_pigsty_traps_nr = sizeof(g_pigshell_pigsty_traps) / sizeof(g_pigshell_pigsty_traps[0]);
@@ -385,9 +388,34 @@ static int exec_compound_cmd(const char *cmd) {
     return -1;
 }
 
-static void append_pigsty_data(pigsty_entry_ctx *data) {
+static int append_pigsty_data(pigsty_entry_ctx *data) {
+    pigsty_entry_ctx *dp, *np;
+    int added = 0;
+
     if (data == NULL) {
-        return;
+        return 0;
+    }
+
+    np = NULL;
+
+    if (g_pigsty_head != NULL) {
+        for (dp = data; dp != NULL; dp = np) {
+            np = dp->next;
+            if (get_pigsty_entry_signature_name(dp->signature_name, g_pigsty_head) != NULL) {
+                printf("WARN: a signature named as '%s' was previously load, this new one will be skipped.\n", dp->signature_name);
+                rm_pigsty_entry(&data, dp->signature_name);
+            } else {
+                added++;
+            }
+        }
+    } else {
+        for (dp = data; dp != NULL; dp = dp->next) {
+            added++;
+        }
+    }
+
+    if (added == 0) {
+        return 0;
     }
 
     if (g_pigsty_tail == NULL) {
@@ -397,12 +425,17 @@ static void append_pigsty_data(pigsty_entry_ctx *data) {
         g_pigsty_tail->next = data;
         g_pigsty_tail = get_pigsty_entry_tail(data);
     }
+
+    return added;
 }
 
 static int add_pigsty_cmdtrap(const char *cmd) {
     pigsty_entry_ctx *np = NULL, *p = NULL;
+    int add_nr = 0;
 
-    if (compile_pigsty_buffer(cmd)) {
+    reset_compile_pigsty_line_ct();
+
+    if (compile_pigsty_buffer(cmd) == 0) {
         return 1;
     }
 
@@ -412,7 +445,21 @@ static int add_pigsty_cmdtrap(const char *cmd) {
         return 1;
     }
 
-    append_pigsty_data(np);
+    add_nr = append_pigsty_data(np);
+
+    switch (add_nr) {
+        case 0:
+            printf("no signatures were added. --\n");
+            break;
+
+        case 1:
+            printf("1 signature was added. --\n");
+            break;
+
+        default:
+            printf("%d signatures were added. --\n", add_nr);
+            break;
+    }
 
     return 0;
 }
@@ -534,3 +581,8 @@ static int pigsty_cmdtrap(const char *cmd) {
     return 1;
 }
 
+static int pigsty_clear_cmdtrap(const char *cmd) {
+    del_pigsty_entry(g_pigsty_head);
+    g_pigsty_head = g_pigsty_tail = NULL;
+    return 0;
+}

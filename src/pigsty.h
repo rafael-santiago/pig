@@ -22,4 +22,6 @@ pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, con
 
 int compile_pigsty_buffer(const char *data);
 
+void reset_compile_pigsty_line_ct(void);
+
 #endif
