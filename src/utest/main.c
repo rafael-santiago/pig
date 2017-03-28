@@ -22,6 +22,7 @@
 #include "../pcap.h"
 #include "../pktslicer.h"
 #include "../pcap2pigsty.h"
+#include "../strglob.h"
 #include "pcap_data.h"
 #include <cutest.h>
 #include <stdlib.h>
@@ -1501,6 +1502,40 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
 
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(strglob_tests)
+    struct strglob_tests_ctx {
+        const char *str;
+        const char *pattern;
+        int result;
+    };
+    struct strglob_tests_ctx tests[] = {
+        { NULL,                         NULL                                                       , 0 },
+        { "abc",                        "abc"                                                      , 1 },
+        { "abc",                        "ab"                                                       , 0 },
+        { "abc",                        "a?c"                                                      , 1 },
+        { "abc",                        "ab[abdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.c]", 1 },
+        { "abc",                        "ab[abdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.?]", 0 },
+        { "ab*",                        "ab[c*]"                                                   , 1 },
+        { "ab*",                        "ab[*c]"                                                   , 1 },
+        { "abc",                        "ab*"                                                      , 1 },
+        { "strglob.c",                  "strglo*.c"                                                , 1 },
+        { "parangaricutirimirruaru!!!", "*"                                                        , 1 },
+        { "parangaritititero",          "?"                                                        , 0 },
+        { "parangaritititero",          "?*"                                                       , 1 },
+        { "parangaricutirimirruaru",    "paran*"                                                   , 1 },
+        { "parangaricutirimirruaru",    "parruari"                                                 , 0 },
+        { "parangaricutirimirruaru",    "paran*garicuti"                                           , 0 },
+        { "parangaricutirimirruaru",    "paran*garicutirimirruaru"                                 , 1 },
+        { "parangaricutirimirruaru",    "paran*ru"                                                 , 1 },
+        { "hell yeah!",                 "*yeah!"                                                   , 1 }
+    };
+    size_t tests_nr = sizeof(tests) / sizeof(tests[0]), t;
+
+    for (t = 0; t < tests_nr; t++) {
+        CUTE_ASSERT(strglob(tests[t].str, tests[t].pattern) == tests[t].result);
+    }
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -1528,6 +1563,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(pcap_loading_tests);
     CUTE_RUN_TEST(pktslicer_get_pkt_field_tests);
     CUTE_RUN_TEST(pcap2pigsty_tests);
+    CUTE_RUN_TEST(strglob_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(run_tests)
