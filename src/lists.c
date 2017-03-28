@@ -10,6 +10,7 @@
 #include "netmask.h"
 #include "to_ipv4.h"
 #include "mkrnd.h"
+#include "strglob.h"
 #include <string.h>
 
 static pigsty_conf_set_ctx *get_pigsty_conf_set_tail(pigsty_conf_set_ctx *conf);
@@ -275,14 +276,19 @@ pig_hwaddr_ctx *get_pig_hwaddr_tail(pig_hwaddr_ctx *hwaddr) {
 }
 
 int rm_pigsty_entry(pigsty_entry_ctx **entries, const char *signature_name) {
-    pigsty_entry_ctx *ep = NULL, *lp = NULL;
+    pigsty_entry_ctx *ep = NULL, *lp = NULL, *np = NULL;
+    int rt = 0;
 
     if (entries == NULL || signature_name == NULL) {
         return 0;
     }
 
-    for (ep = *entries; ep != NULL; lp = ep, ep = ep->next) {
-        if (strcmp(ep->signature_name, signature_name) == 0) {
+    ep = *entries;
+
+    while (ep != NULL) {
+        if (strglob(ep->signature_name, signature_name)) {
+            np = ep->next;
+
             if (lp == NULL) {
                 *entries = ep->next;
                 ep->next = NULL;
@@ -290,10 +296,16 @@ int rm_pigsty_entry(pigsty_entry_ctx **entries, const char *signature_name) {
                 lp->next = ep->next;
                 ep->next = NULL;
             }
+
             del_pigsty_entry(ep);
-            return 1;
+            rt++;
+
+            ep = np;
+        } else {
+            lp = ep;
+            ep = ep->next;
         }
     }
 
-    return 0;
+    return rt;
 }

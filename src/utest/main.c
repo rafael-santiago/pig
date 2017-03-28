@@ -1518,6 +1518,7 @@ CUTE_TEST_CASE(strglob_tests)
         { "ab*",                        "ab[c*]"                                                   , 1 },
         { "ab*",                        "ab[*c]"                                                   , 1 },
         { "abc",                        "ab*"                                                      , 1 },
+        { "abc",                        "abc*"                                                     , 1 },
         { "strglob.c",                  "strglo*.c"                                                , 1 },
         { "parangaricutirimirruaru!!!", "*"                                                        , 1 },
         { "parangaritititero",          "?"                                                        , 0 },

@@ -11,6 +11,7 @@
 #include "types.h"
 #include "pigsty.h"
 #include "lists.h"
+#include "strglob.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -89,6 +90,8 @@ static int set_cmdtrap(const char *cmd);
 static int unset_cmdtrap(const char *cmd);
 
 static void pigshell_pack_options(void);
+
+static char *get_next_cmdarg(const char *cmd, const char **next);
 
 static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
     { "[",       0, add_pigsty_cmdtrap },
@@ -518,41 +521,27 @@ static int add_pigsty_cmdtrap(const char *cmd) {
 }
 
 static int pigsty_ld_cmdtrap(const char *cmd) {
-    const char *cp = cmd;
-    char temp[255] = "";
+    const char *cp = cmd, *next = NULL, *arg = NULL;
     size_t t = 0;
     pigsty_entry_ctx *np = NULL;
 
-    while (*cp != 0) {
-        if (*cp == ',') {
-            temp[t] = 0;
-            np = load_pigsty_data_from_file(NULL, temp);
-            append_pigsty_data(np);
-            t = 0;
-            temp[0] = 0;
-        } else {
-            if (t == 0 && *cp == ' ') {
-                cp++;
-                continue;
-            }
-            temp[t] = *cp;
-            t = (t + 1) % sizeof(temp);
-        }
-        cp++;
-    }
+    arg = get_next_cmdarg(cp, &next);
+    cp = next;
 
-    if (temp[0] != 0) {
-        temp[t] = 0;
-        np = load_pigsty_data_from_file(NULL, temp);
+    while (arg != NULL) {
+        np = load_pigsty_data_from_file(NULL, arg);
         append_pigsty_data(np);
+        arg = get_next_cmdarg(cp, &next);
+        cp = next;
     }
 
-    return 1;
+    return 0;
 }
 
 static int pigsty_ls_cmdtrap(const char *cmd) {
     pigsty_entry_ctx *hp = NULL;
     size_t total_printed = 0;
+    const char *arg = NULL, *next = NULL, *cp = cmd;
 
     if (g_pigsty_head == NULL) {
         return 0;
@@ -560,13 +549,27 @@ static int pigsty_ls_cmdtrap(const char *cmd) {
 
     printf("-- SIGNATURES\n\n");
 
-    for (hp = g_pigsty_head; hp != NULL; hp = hp->next) {
-        if (*cmd == 0) {
-            printf("\t* %s\n", hp->signature_name);
-            total_printed++;
-        } else if (strstr(hp->signature_name, cmd+1) != NULL) {
-            printf("\t* %s\n", hp->signature_name);
-            total_printed++;
+    if (*cmd == 0) {
+        for (hp = g_pigsty_head; hp != NULL; hp = hp->next) {
+            if (*cmd == 0) {
+                printf("\t* %s\n", hp->signature_name);
+                total_printed++;
+            }
+        }
+    } else {
+        arg = get_next_cmdarg(cp, &next);
+        cp = next;
+
+        while (arg != NULL) {
+            for (hp = g_pigsty_head; hp != NULL; hp = hp->next) {
+                if (strglob(hp->signature_name, arg)) {
+                    printf("\t* %s\n", hp->signature_name);
+                    total_printed++;
+                }
+            }
+
+            arg = get_next_cmdarg(cp, &next);
+            cp = next;
         }
     }
 
@@ -580,40 +583,20 @@ static int pigsty_ls_cmdtrap(const char *cmd) {
 }
 
 static int pigsty_rm_cmdtrap(const char *cmd) {
-    const char *cp = cmd;
-    char temp[255] = "";
-    size_t t = 0;
-    pigsty_entry_ctx *np = NULL;
-    size_t rt = 0;
+    const char *cp = cmd, *next = NULL, *arg = NULL;
+    size_t rt = 0, t;
 
-    while (*cp != 0) {
-        if (*cp == ',') {
-            temp[t] = 0;
-            if (rm_pigsty_entry(&g_pigsty_head, temp) == 0) {
-                printf("WARN: the signature '%s' was not found.\n", temp);
-            } else {
-                rt++;
-            }
-            t = 0;
-            temp[0] = 0;
-        } else {
-            if (t == 0 && *cp == ' ') {
-                cp++;
-                continue;
-            }
-            temp[t] = *cp;
-            t = (t + 1) % sizeof(temp);
-        }
-        cp++;
-    }
+    arg = get_next_cmdarg(cp, &next);
+    cp = next;
 
-    if (temp[0] != 0) {
-        temp[t] = 0;
-        if (rm_pigsty_entry(&g_pigsty_head, temp) == 0) {
-            printf("WARN: the signature '%s' was not found.\n", temp);
+    while (arg != NULL) {
+        if ((t = rm_pigsty_entry(&g_pigsty_head, arg)) == 0) {
+            printf("WARN: the signature '%s' was not found.\n", arg);
         } else {
-            rt++;
+            rt += t;
         }
+        arg = get_next_cmdarg(cp, &next);
+        cp = next;
     }
 
     if (rt > 0) {
@@ -650,6 +633,7 @@ static int set_cmdtrap(const char *cmd) {
     char temp[255] = "";
     char data[255] = "";
     int a;
+    const char *arg = NULL, *cp = cmd, *next = NULL;
 
     if (cmd == NULL) {
         return 1;
@@ -662,28 +646,36 @@ static int set_cmdtrap(const char *cmd) {
         return 0;
     }
 
-    sprintf(data, "--%s", cmd);
-    sprintf(option, "--%s", cmd);
-    op = strstr(option, "=");
-    if (op != NULL) {
-        *op = 0;
-    }
+    arg = get_next_cmdarg(cp, &next);
+    cp = next;
 
-    for (a = 0; a < g_pig_shell_argc; a++) {
-        sprintf(temp, "%s", g_pig_shell_argv[a]);
-        op = strstr(temp, "=");
+    while (arg != NULL) {
+        sprintf(data, "--%s", arg);
+        sprintf(option, "--%s", arg);
+        op = strstr(option, "=");
         if (op != NULL) {
             *op = 0;
         }
-        if (strcmp(temp, option) == 0) {
-            goto set_cmdtrap_registering;
+
+        for (a = 0; a < g_pig_shell_argc; a++) {
+            sprintf(temp, "%s", g_pig_shell_argv[a]);
+            op = strstr(temp, "=");
+            if (op != NULL) {
+                *op = 0;
+            }
+            if (strcmp(temp, option) == 0) {
+                goto set_cmdtrap_registering;
+            }
         }
+
+        g_pig_shell_argc = a + 1;
+
+        set_cmdtrap_registering:
+        strncpy(g_pig_shell_argv[a], data, PIG_SHELL_ARGV_LEN - 1);
+
+        arg = get_next_cmdarg(cp, &next);
+        cp = next;
     }
-
-    g_pig_shell_argc = a + 1;
-
-set_cmdtrap_registering:
-    strncpy(g_pig_shell_argv[a], data, PIG_SHELL_ARGV_LEN - 1);
 
     register_options(g_pig_shell_argc, (char **)g_pig_shell_argv);
 
@@ -694,25 +686,42 @@ static int unset_cmdtrap(const char *cmd) {
     char option[255] = "";
     char temp[255] = "", *tp = NULL;
     int a;
+    const char *arg = NULL, *next = NULL, *cp = cmd;
+    int unset_nr = 0;
 
     if (cmd == NULL) {
         return 1;
     }
 
-    sprintf(option, "--%s", cmd);
+    arg = get_next_cmdarg(cp, &next);
+    cp = next;
 
-    for (a = 0; a < g_pig_shell_argc; a++) {
-        sprintf(temp, "%s", g_pig_shell_argv[a]);
-        tp = strstr(temp, "=");
-        if (tp != NULL) {
-            *tp = 0;
+    while (arg != NULL) {
+
+        sprintf(option, "--%s", arg);
+
+        for (a = 0; a < g_pig_shell_argc; a++) {
+            sprintf(temp, "%s", g_pig_shell_argv[a]);
+            tp = strstr(temp, "=");
+
+            if (tp != NULL) {
+                *tp = 0;
+            }
+
+            if (strglob(temp, option)) {
+                g_pig_shell_argv[a][0] = 0;
+                unset_nr++;
+            }
         }
-        if (strcmp(temp, option) == 0) {
-            g_pig_shell_argv[a][0] = 0;
-            pigshell_pack_options();
-            register_options(g_pig_shell_argc, (char **)g_pig_shell_argv);
-            return 0;
-        }
+
+        arg = get_next_cmdarg(cp, &next);
+        cp = next;
+    }
+
+    if (unset_nr > 0) {
+        pigshell_pack_options();
+        register_options(g_pig_shell_argc, (char **)g_pig_shell_argv);
+        return 0;
     }
 
     printf("WARN: option '%s' could not be unset because it does not exist.\n");
@@ -730,4 +739,47 @@ static void pigshell_pack_options(void) {
             g_pig_shell_argc--;
         }
     }
+}
+
+static char *get_next_cmdarg(const char *cmd, const char **next) {
+    const char *cp = cmd, *arg = NULL;
+    static char curr_arg[255] = "";
+
+    if (cmd == NULL || *cmd == 0 || next == NULL) {
+        return NULL;
+    }
+
+    arg = cp;
+
+    while (*arg == ' ') {
+        arg++;
+    }
+
+    while (*cp != ',' && *cp != 0) {
+        if (*cp == '\"') {
+            cp++;
+            while (*cp != '"' && *cp != 0) {
+                if (*cp == '\\') {
+                    cp++;
+                }
+                cp++;
+            }
+        }
+        cp++;
+    }
+
+    *next = cp + (*cp == ',');
+
+    if (*arg == '"') {
+        arg++;
+    }
+
+    memset(curr_arg, 0, sizeof(curr_arg));
+    memcpy(curr_arg, arg, *next - arg - (*cp == ','));
+
+    if (curr_arg[strlen(curr_arg) - 1] == '\"') {
+        curr_arg[strlen(curr_arg) - 1] = 0;
+    }
+
+    return &curr_arg[0];
 }
