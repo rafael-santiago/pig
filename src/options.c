@@ -47,3 +47,11 @@ char *get_option(const char *option, char *default_value) {
     }
     return retval;
 }
+
+char **get_argv(void) {
+    return g_argv;
+}
+
+int get_argc(void) {
+    return g_argc;
+}

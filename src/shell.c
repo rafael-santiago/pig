@@ -26,6 +26,10 @@
 
 #define PIG_MAX_HISTORY_NR 100
 
+#define PIG_SHELL_ARGV_NR 1000
+
+#define PIG_SHELL_ARGV_LEN 8192
+
 #define PIG_SHELL_ESCAPE_KEY            0x1b
 #define PIG_SHELL_UP_KEY                0x41
 #define PIG_SHELL_DOWN_KEY              0x42
@@ -40,6 +44,7 @@ typedef int (*pigshell_cmdtrap)(const char *cmd);
 
 struct compound_cmd_traps_ctx {
     const char *cmd;
+    int match_exact;
     pigshell_cmdtrap trap;
 };
 
@@ -49,7 +54,13 @@ static int shell_prompt(void);
 
 static int g_pig_shell_exit = 0;
 
+static char g_pig_shell_argv[PIG_SHELL_ARGV_NR][PIG_SHELL_ARGV_LEN];
+
+static int g_pig_shell_argc = 0;
+
 static pigsty_entry_ctx *g_pigsty_head = NULL, *g_pigsty_tail = NULL;
+
+static void pig_shell_init(void);
 
 static int shell_command_exec(const char *cmd);
 
@@ -73,22 +84,33 @@ static int pigsty_clear_cmdtrap(const char *cmd);
 
 static int pigsty_cmdtrap(const char *cmd);
 
+static int set_cmdtrap(const char *cmd);
+
+static int unset_cmdtrap(const char *cmd);
+
+static void pigshell_pack_options(void);
+
 static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
-    { "[",       add_pigsty_cmdtrap },
-    { "flood ",  NULL               },
-    { "oink ",   NULL               },
-    { "pigsty ", pigsty_cmdtrap     },
-    { "set ",    NULL               },
-    { "unset ",  NULL               }
+    { "[",       0, add_pigsty_cmdtrap },
+    // TODO(Rafael): Yep.
+    { "flood ",  0, NULL               },
+    { "flood",   1, NULL               },
+    { "oink ",   0, NULL               },
+    { "oink",    1, NULL               },
+    { "pigsty ", 0, pigsty_cmdtrap     },
+    { "set ",    0, set_cmdtrap        },
+    { "set",     1, set_cmdtrap        },
+    { "unset ",  0, unset_cmdtrap      }
 };
 
 static size_t g_pigshell_traps_nr = sizeof(g_pigshell_traps) / sizeof(g_pigshell_traps[0]);
 
 static struct compound_cmd_traps_ctx g_pigshell_pigsty_traps[] = {
-    { "ld ",   pigsty_ld_cmdtrap    },
-    { "ls",    pigsty_ls_cmdtrap    },
-    { "rm ",   pigsty_rm_cmdtrap    },
-    { "clear", pigsty_clear_cmdtrap }
+    { "ld ",   0, pigsty_ld_cmdtrap    },
+    { "ls ",   0, pigsty_ls_cmdtrap    },
+    { "ls",    1, pigsty_ls_cmdtrap    },
+    { "rm ",   0, pigsty_rm_cmdtrap    },
+    { "clear", 0, pigsty_clear_cmdtrap }
 };
 
 static size_t g_pigshell_pigsty_traps_nr = sizeof(g_pigshell_pigsty_traps) / sizeof(g_pigshell_pigsty_traps[0]);
@@ -128,6 +150,8 @@ static void add_char_to_cmdbuf(char cmdbuf[PIG_SHELL_CMDBUF_LEN], size_t *pos, c
     if (*pos >= PIG_SHELL_CMDBUF_LEN) {
         return;
     }
+
+    // CLUE(Rafael): Here sometimes to add is to erase.
 
     if (c == PIG_SHELL_BACKSPACE_KEY) {
         if (*pos == 0) {
@@ -173,6 +197,8 @@ static int shell_prompt(void) {
     char history[PIG_MAX_HISTORY_NR][PIG_SHELL_CMDBUF_LEN];
     size_t h = 0, hc = 0;
 
+    pig_shell_init();
+
     signal(SIGINT, shell_sigint_watchdog);
     signal(SIGTERM, shell_sigint_watchdog);
 
@@ -187,7 +213,7 @@ static int shell_prompt(void) {
         if (lchar == PIG_SHELL_ESCAPE_KEY) {
             getch();
             switch ((lchar=getch())) {
-                case PIG_SHELL_UP_KEY: // INFO(Rafael): Up/Down arrows.
+                case PIG_SHELL_UP_KEY:
                 case PIG_SHELL_DOWN_KEY:
                     if (continue_line) {
                         printf("\n");
@@ -214,7 +240,7 @@ static int shell_prompt(void) {
                     }
                     break;
 
-                case PIG_SHELL_LEFT_KEY: // INFO(Rafael): Left arrow.
+                case PIG_SHELL_LEFT_KEY:
                     if (lc > 0) {
                         lc--;
                         c--;
@@ -223,7 +249,7 @@ static int shell_prompt(void) {
                     }
                     break;
 
-                case PIG_SHELL_RIGHT_KEY: // INFO(Rafael): Right arrow.
+                case PIG_SHELL_RIGHT_KEY:
                     if (cmdbuf[lc] != 0 && lc < PIG_SHELL_CMDBUF_LEN) {
                         lc++;
                         c++;
@@ -232,7 +258,7 @@ static int shell_prompt(void) {
                     }
                     break;
 
-                case PIG_SHELL_END_KEY:  // INFO(Rafael): End key.
+                case PIG_SHELL_END_KEY:
                     sk = getch();
                     if (sk == 126) {
                         while (cmdbuf[c] != 0) {
@@ -248,7 +274,7 @@ static int shell_prompt(void) {
                     }
                     break;
 
-                case PIG_SHELL_DELETE_KEY: // INFO(Rafael): Delete key.
+                case PIG_SHELL_DELETE_KEY:
                     sk = getch();
                     if (sk == 126) {
                         add_char_to_cmdbuf(cmdbuf, &c, 126);
@@ -383,14 +409,31 @@ static int shell_command_exec(const char *cmd) {
     return exit_code;
 }
 
+static void pig_shell_init(void) {
+    char **argv = get_argv();
+    int argc = get_argc();
+
+    for (g_pig_shell_argc = 0; g_pig_shell_argc < argc; g_pig_shell_argc++) {
+        strncpy(g_pig_shell_argv[g_pig_shell_argc], argv[g_pig_shell_argc], PIG_SHELL_ARGV_LEN - 1);
+    }
+
+    /* INFO(Rafael): Those options were previously registered by the main() function. We do not have to
+                     worry about option registering issues here. */
+}
+
 static int exec_compound_cmd(const char *cmd) {
     size_t t = 0;
+    int matches = 0;
 
     while (t < g_pigshell_traps_nr) {
-        if (g_pigshell_traps[t].trap != NULL &&
-            strstr(cmd, g_pigshell_traps[t].cmd) == cmd) {
-            return g_pigshell_traps[t].trap(cmd + ( strcmp(g_pigshell_traps[t].cmd, "[") == 0 ? 0 :
-                                                              strlen(g_pigshell_traps[t].cmd) ) );
+        if (g_pigshell_traps[t].trap != NULL) {
+            matches = (!g_pigshell_traps[t].match_exact) ?
+                        (strstr(cmd, g_pigshell_traps[t].cmd) == cmd) :
+                        (strcmp(cmd, g_pigshell_traps[t].cmd) == 0);
+            if (matches) {
+                return g_pigshell_traps[t].trap(cmd + ( strcmp(g_pigshell_traps[t].cmd, "[") == 0 ? 0 :
+                                                                  strlen(g_pigshell_traps[t].cmd) ) );
+            }
         }
         t++;
     }
@@ -582,8 +625,13 @@ static int pigsty_rm_cmdtrap(const char *cmd) {
 
 static int pigsty_cmdtrap(const char *cmd) {
     size_t t;
+    int matches = 0;
+
     for (t = 0; t < g_pigshell_pigsty_traps_nr; t++) {
-        if (strstr(cmd, g_pigshell_pigsty_traps[t].cmd) == cmd) {
+        matches = (!g_pigshell_pigsty_traps[t].match_exact) ?
+                    (strstr(cmd, g_pigshell_pigsty_traps[t].cmd) == cmd) :
+                    (strcmp(cmd, g_pigshell_pigsty_traps[t].cmd) == 0);
+        if (matches) {
             return g_pigshell_pigsty_traps[t].trap(cmd + strlen(g_pigshell_pigsty_traps[t].cmd));
         }
     }
@@ -595,4 +643,91 @@ static int pigsty_clear_cmdtrap(const char *cmd) {
     del_pigsty_entry(g_pigsty_head);
     g_pigsty_head = g_pigsty_tail = NULL;
     return 0;
+}
+
+static int set_cmdtrap(const char *cmd) {
+    char option[255] = "", *op = NULL;
+    char temp[255] = "";
+    char data[255] = "";
+    int a;
+
+    if (cmd == NULL) {
+        return 1;
+    }
+
+    if (*cmd == 0) {
+        for (a = 0; a < g_pig_shell_argc; a++) {
+            printf("\t%s\n", g_pig_shell_argv[a]);
+        }
+        return 0;
+    }
+
+    sprintf(data, "--%s", cmd);
+    sprintf(option, "--%s", cmd);
+    op = strstr(option, "=");
+    if (op != NULL) {
+        *op = 0;
+    }
+
+    for (a = 0; a < g_pig_shell_argc; a++) {
+        sprintf(temp, "%s", g_pig_shell_argv[a]);
+        op = strstr(temp, "=");
+        if (op != NULL) {
+            *op = 0;
+        }
+        if (strcmp(temp, option) == 0) {
+            goto set_cmdtrap_registering;
+        }
+    }
+
+    g_pig_shell_argc = a + 1;
+
+set_cmdtrap_registering:
+    strncpy(g_pig_shell_argv[a], data, PIG_SHELL_ARGV_LEN - 1);
+
+    register_options(g_pig_shell_argc, (char **)g_pig_shell_argv);
+
+    return 0;
+}
+
+static int unset_cmdtrap(const char *cmd) {
+    char option[255] = "";
+    char temp[255] = "", *tp = NULL;
+    int a;
+
+    if (cmd == NULL) {
+        return 1;
+    }
+
+    sprintf(option, "--%s", cmd);
+
+    for (a = 0; a < g_pig_shell_argc; a++) {
+        sprintf(temp, "%s", g_pig_shell_argv[a]);
+        tp = strstr(temp, "=");
+        if (tp != NULL) {
+            *tp = 0;
+        }
+        if (strcmp(temp, option) == 0) {
+            g_pig_shell_argv[a][0] = 0;
+            pigshell_pack_options();
+            register_options(g_pig_shell_argc, (char **)g_pig_shell_argv);
+            return 0;
+        }
+    }
+
+    printf("WARN: option '%s' could not be unset because it does not exist.\n");
+
+    return 1;
+}
+
+static void pigshell_pack_options(void) {
+    int a;
+
+    for (a = 0; a < g_pig_shell_argc; a++) {
+        if (g_pig_shell_argv[a][0] == 0 && (a + 1) < PIG_SHELL_ARGV_NR) {
+            strncpy(g_pig_shell_argv[a], g_pig_shell_argv[a+1], PIG_SHELL_ARGV_LEN - 1);
+            a--;
+            g_pig_shell_argc--;
+        }
+    }
 }

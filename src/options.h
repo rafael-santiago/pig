@@ -12,4 +12,8 @@ void register_options(const int argc, char **argv);
 
 char *get_option(const char *option, char *default_value);
 
+char **get_argv(void);
+
+int get_argc(void);
+
 #endif
