@@ -12,6 +12,7 @@
 #include "pigsty.h"
 #include "lists.h"
 #include "strglob.h"
+#include "memory.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -55,13 +56,15 @@ static int shell_prompt(void);
 
 static int g_pig_shell_exit = 0;
 
-static char g_pig_shell_argv[PIG_SHELL_ARGV_NR][PIG_SHELL_ARGV_LEN];
+static char **g_pig_shell_argv = NULL;
 
 static int g_pig_shell_argc = 0;
 
 static pigsty_entry_ctx *g_pigsty_head = NULL, *g_pigsty_tail = NULL;
 
 static void pig_shell_init(void);
+
+static void pig_shell_deinit(void);
 
 static int shell_command_exec(const char *cmd);
 
@@ -371,7 +374,12 @@ shell_prompt_reset:
     del_pigsty_entry(g_pigsty_head);
     g_pigsty_tail = NULL;
     g_pigsty_head = NULL;
+
+    pig_shell_deinit();
+
+
     printf("\n");
+
     return 0;
 }
 
@@ -411,10 +419,15 @@ static int shell_command_exec(const char *cmd) {
 
     return exit_code;
 }
-
 static void pig_shell_init(void) {
     char **argv = get_argv();
     int argc = get_argc();
+
+    g_pig_shell_argv = (char **) pig_newseg(sizeof(char *) * PIG_SHELL_ARGV_NR);
+
+    for (g_pig_shell_argc = 0; g_pig_shell_argc < PIG_SHELL_ARGV_NR; g_pig_shell_argc++) {
+        g_pig_shell_argv[g_pig_shell_argc] = (char *) pig_newseg(sizeof(char) * PIG_SHELL_ARGV_LEN);
+    }
 
     for (g_pig_shell_argc = 0; g_pig_shell_argc < argc; g_pig_shell_argc++) {
         strncpy(g_pig_shell_argv[g_pig_shell_argc], argv[g_pig_shell_argc], PIG_SHELL_ARGV_LEN - 1);
@@ -422,6 +435,21 @@ static void pig_shell_init(void) {
 
     /* INFO(Rafael): Those options were previously registered by the main() function. We do not have to
                      worry about option registering issues here. */
+}
+
+static void pig_shell_deinit(void) {
+    if (g_pig_shell_argv != NULL) {
+        register_options(0, NULL);
+
+        for (g_pig_shell_argc = 0; g_pig_shell_argc < PIG_SHELL_ARGV_NR; g_pig_shell_argc++) {
+            free(g_pig_shell_argv[g_pig_shell_argc]);
+        }
+
+        g_pig_shell_argc = 0;
+
+        free(g_pig_shell_argv);
+        g_pig_shell_argv = NULL;
+    }
 }
 
 static int exec_compound_cmd(const char *cmd) {
@@ -677,7 +705,7 @@ static int set_cmdtrap(const char *cmd) {
         cp = next;
     }
 
-    register_options(g_pig_shell_argc, (char **)g_pig_shell_argv);
+    register_options(g_pig_shell_argc, g_pig_shell_argv);
 
     return 0;
 }
@@ -720,7 +748,7 @@ static int unset_cmdtrap(const char *cmd) {
 
     if (unset_nr > 0) {
         pigshell_pack_options();
-        register_options(g_pig_shell_argc, (char **)g_pig_shell_argv);
+        register_options(g_pig_shell_argc, g_pig_shell_argv);
         return 0;
     }
 
@@ -744,6 +772,7 @@ static void pigshell_pack_options(void) {
 static char *get_next_cmdarg(const char *cmd, const char **next) {
     const char *cp = cmd, *arg = NULL;
     static char curr_arg[255] = "";
+    int sq = 0;
 
     if (cmd == NULL || *cmd == 0 || next == NULL) {
         return NULL;
@@ -772,12 +801,13 @@ static char *get_next_cmdarg(const char *cmd, const char **next) {
 
     if (*arg == '"') {
         arg++;
+        sq = 1;
     }
 
     memset(curr_arg, 0, sizeof(curr_arg));
     memcpy(curr_arg, arg, *next - arg - (*cp == ','));
 
-    if (curr_arg[strlen(curr_arg) - 1] == '\"') {
+    if (sq && curr_arg[strlen(curr_arg) - 1] == '\"') {
         curr_arg[strlen(curr_arg) - 1] = 0;
     }
 
