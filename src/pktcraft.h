@@ -20,6 +20,7 @@ struct pktcraft_options_ctx {
     char *no_gateway;
     int should_be_quiet;
     int timeo;
+    unsigned int times_nr;
     pigsty_entry_ctx *pigsty;
 };
 
@@ -32,5 +33,7 @@ int pktcraft_help();
 int parse_pktcraft_options(struct pktcraft_options_ctx *options);
 
 int exec_pktcraft(const struct pktcraft_options_ctx user_options);
+
+int pktcraft_aborted(void);
 
 #endif

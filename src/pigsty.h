@@ -24,4 +24,6 @@ int compile_pigsty_buffer(const char *data);
 
 void reset_compile_pigsty_line_ct(void);
 
+int verify_int(const char *buffer);
+
 #endif

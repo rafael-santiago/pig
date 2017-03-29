@@ -101,8 +101,7 @@ static int flood_cmdtrap(const char *cmd);
 
 static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
     { "[",       0, add_pigsty_cmdtrap },
-    // TODO(Rafael): Yep.
-    { "flood ",  0, NULL               },
+    { "flood ",  0, flood_cmdtrap      },
     { "flood",   1, flood_cmdtrap      },
     { "oink ",   0, NULL               },
     { "oink",    1, NULL               },
@@ -820,6 +819,7 @@ static char *get_next_cmdarg(const char *cmd, const char **next) {
 static int flood_cmdtrap(const char *cmd) {
     struct pktcraft_options_ctx options;
     int exit_code = 0;
+    const char *arg = NULL, *cp = NULL, *next = NULL;
 
     options.pigsty = g_pigsty_head;
 
@@ -827,19 +827,35 @@ static int flood_cmdtrap(const char *cmd) {
         return 1;
     }
 
-    if (*cmd == 0) {
-        signal(SIGINT, pktcrafter_sigint_watchdog);
-        signal(SIGTERM, pktcrafter_sigint_watchdog);
+    cp = cmd;
+    arg = get_next_cmdarg(cp, &next);
+    cp = next;
 
-        exit_code = exec_pktcraft(options);
-
-        printf("\nWARN: Your shell will come back within 3 secs...\n");
-
-        sleep(3);
-
-        signal(SIGINT, shell_sigint_watchdog);
-        signal(SIGTERM, shell_sigint_watchdog);
+    while (arg != NULL) {
+        if (verify_int(arg) == 0) {
+            printf("ERROR: invalid number of times '%s'.\n", arg);
+            return 1;
+        }
+        options.times_nr += atoi(arg);
+        arg = get_next_cmdarg(cp, &next);
+        cp = next;
     }
+
+    signal(SIGINT, pktcrafter_sigint_watchdog);
+    signal(SIGTERM, pktcrafter_sigint_watchdog);
+
+    exit_code = exec_pktcraft(options);
+
+    if (pktcraft_aborted()) {
+        // INFO(Rafael): Avoiding users with impatient nervous hands... ;)
+        printf("\nINFO: Your shell will come back within 3 secs...\n");
+        sleep(3);
+    } else if (exit_code == 0 && options.times_nr > 1) {
+        printf("\n%d signatures sent. --\n", options.times_nr);
+    }
+
+    signal(SIGINT, shell_sigint_watchdog);
+    signal(SIGTERM, shell_sigint_watchdog);
 
     return exit_code;
 }

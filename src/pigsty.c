@@ -65,8 +65,6 @@ static int verify_arp_paddr(const char *buffer);
 
 static int get_pigsty_field_index(const char *field);
 
-static int verify_int(const char *buffer);
-
 static int verify_hex(const char *buffer);
 
 static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *entries, char *buffer, char **next);
@@ -702,7 +700,7 @@ static int get_pigsty_field_index(const char *field) {
     return -1;
 }
 
-static int verify_int(const char *buffer) {
+int verify_int(const char *buffer) {
     const char *b;
     if (buffer == NULL) {
         return 0;
