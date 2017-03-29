@@ -19,17 +19,12 @@ void register_options(const int argc, char **argv) {
 }
 
 char *get_option(const char *option, char *default_value) {
-    static char retval[8192];
+    static char retval[8192] = "";
     int a;
     char temp[8192] = "";
 
     if (g_argc <= 0 || g_argv == NULL) {
-        if (default_value == NULL) {
-            return NULL;
-        }
-
-        sprintf(retval, "%s", default_value);
-        goto get_option_epilogue;
+        return default_value;
     }
 
     memset(temp, 0, sizeof(temp));
@@ -39,8 +34,7 @@ char *get_option(const char *option, char *default_value) {
     strncpy(&temp[2], option, sizeof(temp) - 1);
     for (a = 0; a < g_argc; a++) {
         if (strcmp(g_argv[a], temp) == 0) {
-            sprintf(retval, "1");
-            goto get_option_epilogue;
+            return "1";
         }
     }
 
@@ -48,8 +42,7 @@ char *get_option(const char *option, char *default_value) {
 
     for (a = 0; a < g_argc; a++) {
         if (strstr(g_argv[a], temp) == g_argv[a]) {
-            sprintf(retval, "%s", g_argv[a] + strlen(temp));
-            goto get_option_epilogue;
+            return (g_argv[a] + strlen(temp));
         }
     }
 
@@ -60,8 +53,6 @@ char *get_option(const char *option, char *default_value) {
     } else {
         return NULL;
     }
-
-get_option_epilogue:
 
     return &retval[0];
 }

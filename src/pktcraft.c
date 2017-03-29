@@ -24,18 +24,6 @@
 
 static int g_pig_out = 0; //  :)
 
-struct pktcraft_options_ctx {
-    char *signatures;
-    char *targets;
-    char *gw_addr;
-    char *loiface;
-    char *nt_mask;
-    char *single_test;
-    char *no_gateway;
-    int should_be_quiet;
-    int timeo;
-};
-
 typedef int (*pig_pktcrafter)(const pigsty_entry_ctx *pigsty,
                               const size_t signatures_count,
                               pig_hwaddr_ctx *hwaddr,
@@ -50,10 +38,6 @@ static pigsty_entry_ctx *load_signatures(const char *signatures);
 static pig_target_addr_ctx *parse_targets(const char *targets);
 
 static int is_targets_option_required(const pigsty_entry_ctx *entries);
-
-static int parse_pktcraft_options(struct pktcraft_options_ctx *options);
-
-static int exec_pktcraft(const struct pktcraft_options_ctx user_options);
 
 static int singletest_pktcrafter(const pigsty_entry_ctx *pigsty,
                                  const size_t signatures_count,
@@ -114,6 +98,8 @@ int pktcraft() {
         return pktcraft_help();
     }
 
+    user_options.pigsty = NULL;
+
     if ((exit_code = parse_pktcraft_options(&user_options)) != 0) {
         return exit_code;
     }
@@ -133,7 +119,7 @@ int pktcraft_help() {
     return 0;
 }
 
-static int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
+int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
     char *data = NULL;
     char *dp = NULL;
 
@@ -143,7 +129,7 @@ static int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
 
     options->signatures = get_option("signatures", NULL);
 
-    if (options->signatures == NULL) {
+    if (options->signatures == NULL && options->pigsty == NULL) {
         printf("pig ERROR: --signatures option is missing.\n");
         return 1;
     }
@@ -188,7 +174,7 @@ static int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
     return 0;
 }
 
-static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
+int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0, addr_count = 0;
     pigsty_entry_ctx *signature = NULL, *sp = NULL;
@@ -203,6 +189,8 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     in_addr_t gw_in_addr = 0;
     pig_pktcrafter pktcrafter = random_pktcrafter;
 
+    g_pig_out = 0;
+
     if (!user_options.should_be_quiet) {
         printf("pig INFO: starting up pig engine...\n\n");
     }
@@ -214,7 +202,11 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
         return 1;
     }
 
-    pigsty = load_signatures(user_options.signatures);
+    if (user_options.pigsty == NULL) {
+        pigsty = load_signatures(user_options.signatures);
+    } else {
+        pigsty = user_options.pigsty;
+    }
 
     if (pigsty == NULL) {
         printf("pig ERROR: aborted.\n");
@@ -233,7 +225,9 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     if (is_targets_option_required(pigsty) && addr == NULL) {
         printf("pig PANIC: --targets option is required by some loaded signatures.\n");
         deinit_raw_socket(sockfd);
-        del_pigsty_entry(pigsty);
+        if (pigsty != user_options.pigsty) {
+            del_pigsty_entry(pigsty);
+        }
         return 1;
     }
 
@@ -246,7 +240,9 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     if (user_options.no_gateway == NULL && user_options.nt_mask == NULL) {
         printf("\npig PANIC: --net-mask option is required.\n");
         deinit_raw_socket(sockfd);
-        del_pigsty_entry(pigsty);
+        if (pigsty != user_options.pigsty) {
+            del_pigsty_entry(pigsty);
+        }
         return 1;
     }
 
@@ -254,7 +250,9 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     if (user_options.no_gateway == NULL && verify_ipv4_addr(user_options.nt_mask) == 0) {
         printf("pig PANIC: --net-mask has an invalid ip address.\n");
         deinit_raw_socket(sockfd);
-        del_pigsty_entry(pigsty);
+        if (pigsty != user_options.pigsty) {
+            del_pigsty_entry(pigsty);
+        }
         return 1;
     }
 
@@ -290,7 +288,9 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
 
     free(gw_hwaddr);
 
-    del_pigsty_entry(pigsty);
+    if (pigsty != user_options.pigsty) {
+        del_pigsty_entry(pigsty);
+    }
     del_pig_target_addr(addr);
     del_pig_hwaddr(hwaddr);
     deinit_raw_socket(sockfd);

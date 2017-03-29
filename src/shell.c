@@ -13,6 +13,7 @@
 #include "lists.h"
 #include "strglob.h"
 #include "memory.h"
+#include "pktcraft.h"
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
@@ -96,11 +97,13 @@ static void pigshell_pack_options(void);
 
 static char *get_next_cmdarg(const char *cmd, const char **next);
 
+static int flood_cmdtrap(const char *cmd);
+
 static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
     { "[",       0, add_pigsty_cmdtrap },
     // TODO(Rafael): Yep.
     { "flood ",  0, NULL               },
-    { "flood",   1, NULL               },
+    { "flood",   1, flood_cmdtrap      },
     { "oink ",   0, NULL               },
     { "oink",    1, NULL               },
     { "pigsty ", 0, pigsty_cmdtrap     },
@@ -812,4 +815,31 @@ static char *get_next_cmdarg(const char *cmd, const char **next) {
     }
 
     return &curr_arg[0];
+}
+
+static int flood_cmdtrap(const char *cmd) {
+    struct pktcraft_options_ctx options;
+    int exit_code = 0;
+
+    options.pigsty = g_pigsty_head;
+
+    if (parse_pktcraft_options(&options) != 0) {
+        return 1;
+    }
+
+    if (*cmd == 0) {
+        signal(SIGINT, stop_pktcraft);
+        signal(SIGTERM, stop_pktcraft);
+
+        exit_code = exec_pktcraft(options);
+
+        printf("\nWARN: Your shell will come back within 3 secs...\n");
+
+        sleep(3);
+
+        signal(SIGINT, shell_sigint_watchdog);
+        signal(SIGTERM, shell_sigint_watchdog);
+    }
+
+    return exit_code;
 }
