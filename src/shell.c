@@ -828,8 +828,8 @@ static int flood_cmdtrap(const char *cmd) {
     }
 
     if (*cmd == 0) {
-        signal(SIGINT, stop_pktcraft);
-        signal(SIGTERM, stop_pktcraft);
+        signal(SIGINT, pktcrafter_sigint_watchdog);
+        signal(SIGTERM, pktcrafter_sigint_watchdog);
 
         exit_code = exec_pktcraft(options);
 
