@@ -682,6 +682,18 @@ static int set_cmdtrap(const char *cmd) {
     cp = next;
 
     while (arg != NULL) {
+        while (arg != NULL && *arg == '-' && *(arg + 1) == '-') {
+            arg += 2;
+            if (*arg == 0) {
+                arg = get_next_cmdarg(cp, &next);
+                cp = next;
+            }
+        }
+
+        if (arg == NULL) {
+            continue;
+        }
+
         sprintf(data, "--%s", arg);
         sprintf(option, "--%s", arg);
         op = strstr(option, "=");

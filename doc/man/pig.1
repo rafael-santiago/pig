@@ -1,4 +1,4 @@
-.TH pig 1 "August 22, 2016" "version 0.0.4" "USER COMMANDS"
+.TH pig 1 "March 30, 2017" "version 0.0.5" "USER COMMANDS"
 .SH NAME
 pig \- a packet crafting tool
 .SH SYNOPSIS
@@ -43,9 +43,11 @@ Specifies the pigsty traverse mode. It can be \fIrandom\fR (the default) or \fIs
 Shows the application version.
 
 .TP
-\-\-sub-task=\fI<task>\fR
+\-\-sub-task=\fI<task-name>\fR
 Asks the execution of a specific task. Call it with the option \fI\-\-help\fR in order
-to know more about the related task.
+to know more about the related sub-task.
+
+Until now the implemented sub-tasks are: \fIpcap-import\fR, \fIshell\fR.
 
 .TP
 \-\-help

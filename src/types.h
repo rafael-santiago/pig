@@ -10,7 +10,7 @@
 
 #include <stdlib.h>
 
-#define PIG_VERSION "0.0.4"
+#define PIG_VERSION "0.0.5"
 
 typedef enum _pig_fields {
     kIpv4_version = 0, kIpv4_ihl, kIpv4_tos, kIpv4_tlen, kIpv4_id, kIpv4_flags,
