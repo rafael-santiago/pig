@@ -865,6 +865,7 @@ static int flood_cmdtrap(const char *cmd) {
 static int oink_cmdtrap(const char *cmd) {
     int exit_code = 1;
     const char *arg1 = NULL, *cp = NULL, *next = NULL, *arg2 = NULL, *temp = NULL;
+    char mask[255] = "";
     struct pktcraft_options_ctx options;
 
     options.pigsty = g_pigsty_head;
@@ -874,9 +875,16 @@ static int oink_cmdtrap(const char *cmd) {
     }
 
     if (cmd != NULL && *cmd == 0) {
-        printf("\n-- Sending signatures based on the pattern '%s'...\n", options.globmask);
+        printf("\n-- Sending a random signature...\n\n");
+
         options.single_test = "1";
+
         exit_code = exec_pktcraft(options);
+
+        if (exit_code == 0) {
+            printf("\n\n-- done.\n");
+        }
+
         return exit_code;
     }
 
@@ -888,19 +896,25 @@ static int oink_cmdtrap(const char *cmd) {
     signal(SIGTERM, pktcrafter_sigint_watchdog);
 
     while (arg1 != NULL) {
-        printf("\n-- Sending signatures based on the pattern '%s'...\n", options.globmask);
-
-        options.globmask = (char *)arg1;
+        strncpy(mask, arg1, sizeof(mask) - 1);
+        options.globmask = &mask[0];
 
         arg2 = get_next_cmdarg(cp, &next);
         cp = next;
 
-        if (verify_int(arg2)) {
+        if (arg2 != NULL && strcmp(arg2, "0") != 0 && verify_int(arg2)) {
             options.times_nr = atoi(arg2);
             temp = get_next_cmdarg(cp, &next);
             cp = next;
         } else {
+            options.times_nr = 0;
             temp = arg2;
+        }
+
+        if (options.times_nr > 1) {
+            printf("\n-- Sending signatures based on the pattern '%s' (%d for each found one)...\n\n", options.globmask, options.times_nr);
+        } else {
+            printf("\n-- Sending signatures based on the pattern '%s'...\n\n", options.globmask);
         }
 
         exit_code = exec_pktcraft(options);
@@ -910,7 +924,7 @@ static int oink_cmdtrap(const char *cmd) {
             printf("\nINFO: Your shell will come back within 3 secs...\n");
             sleep(3);
             temp = NULL;
-        } else {
+        } else if (exit_code == 0) {
             printf("\ndone. --\n");
         }
 

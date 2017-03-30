@@ -564,7 +564,7 @@ static int glob_pktcrafter(const pigsty_entry_ctx *pigsty,
     int exit_code = 0;
     int t = 0;
 
-    while (sp != NULL) {
+    while (sp != NULL && !g_pig_out) {
         if (strglob(sp->signature_name, user_options.globmask)) {
             exit_code = single_pktcraft(sp, hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
             usleep(user_options.timeo);
@@ -576,4 +576,6 @@ static int glob_pktcrafter(const pigsty_entry_ctx *pigsty,
         }
         sp = sp->next;
     }
+
+    return exit_code;
 }
