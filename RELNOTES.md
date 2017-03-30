@@ -1,5 +1,15 @@
 # pig - Release Notes
 
+## Version: 0.0.5
+
+### Features
+
+- Introducing the sub-task ``shell``.
+
+### Bugfixes
+
+- None! :1st_place_medal:
+
 ## Version: 0.0.4
 
 ### Features
