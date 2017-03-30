@@ -86,7 +86,7 @@ On ``shell`` you can use the command ``pigsty`` with its ``sub-command`` called 
 
 ```
 ~ pigsty ld /usr/local/pigsty/pentest-session-1.pigsty
-``
+```
 
 If you have more than one file to load, you can pass them as a comma separated list. Take a look:
 
