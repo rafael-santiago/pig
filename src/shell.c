@@ -454,6 +454,11 @@ static void pig_shell_deinit(void) {
         free(g_pig_shell_argv);
         g_pig_shell_argv = NULL;
     }
+
+    if (g_pigsty_head != NULL) {
+        del_pigsty_entry(g_pigsty_head);
+        g_pigsty_head = g_pigsty_tail = NULL;
+    }
 }
 
 static int exec_compound_cmd(const char *cmd) {
