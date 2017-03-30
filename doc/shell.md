@@ -230,3 +230,7 @@ prompt:
 | ``flood  [<n>]``         | Sends random loaded signatures                                            |
 | ``oink <glob>, [<n>]``   | Sends one time or n times signatures that match the supplied glob pattern |
 | ``!<external-command>``  | Executes out of the shell the supplied command and returns back           |
+
+The command line ``pig --sub-task=shell --help`` shows the command line help about this sub-task.
+
+That's it! Have fun!
