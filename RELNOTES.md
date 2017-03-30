@@ -4,7 +4,7 @@
 
 ### Features
 
-- Introducing the sub-task ``shell``.
+- Introducing the sub-task ``shell``, now is possible to use ``pig`` on interactive mode besides the default batch mode.
 
 ### Bugfixes
 
