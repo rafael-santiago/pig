@@ -206,14 +206,14 @@ supplied command externally from the pig's shell.
 The outsider marker is denoted by an exclamation symbol:
 
 ```
-~!ls /usr/local/report.txt
+~ !ls /usr/local/report.txt
 ```
 
 After the command execution you will back to the ``shell`` mode, so is possible to run programs that will hang up the
 prompt:
 
 ```
-~!mcedit /usr/local/report.txt
+~ !mcedit /usr/local/report.txt
 ```
 
 ## Commands summary
