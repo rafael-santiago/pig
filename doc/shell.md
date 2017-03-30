@@ -17,7 +17,7 @@ you@SOMEWHERE:~/over/the/rainbow# pig --sub-task=shell
 With this shell you are able to do anything that you do being on batch mode and also
 things that you do not.
 
-Even on interactive mode is necessary to indicate the options ``gateway`` or ``--no-gateway``, ``net-mask``, ``lo-iface``.
+Even on interactive mode is necessary to indicate the options ``--gateway`` or ``--no-gateway``, ``--net-mask``, ``--lo-iface``.
 Depending on the loaded signatures you also need to specify additional options related.
 
 ## Setting the pig options
@@ -74,6 +74,7 @@ Sometimes a pigsty can be longer so a good way is to escape the line with a back
 ... udp.payload = "(null)",\
 ... signature = "s1lly-t0o" ]
 1 signature was added. --
+```
 
 I find it good but only for minor tasks, things that you do not need to follow any method.
 

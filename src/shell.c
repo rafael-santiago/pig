@@ -741,6 +741,17 @@ static int unset_cmdtrap(const char *cmd) {
     cp = next;
 
     while (arg != NULL) {
+        while (arg != NULL && *arg == '-' && *(arg + 1) == '-') {
+            arg += 2;
+            if (*arg == 0) {
+                arg = get_next_cmdarg(cp, &next);
+                cp = next;
+            }
+        }
+
+        if (arg == NULL) {
+            continue;
+        }
 
         sprintf(option, "--%s", arg);
 
@@ -768,7 +779,7 @@ static int unset_cmdtrap(const char *cmd) {
         return 0;
     }
 
-    printf("WARN: option '%s' could not be unset because it does not exist.\n");
+    printf("WARN: could not unset any option.\n");
 
     return 1;
 }
