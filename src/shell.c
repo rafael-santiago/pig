@@ -99,12 +99,14 @@ static char *get_next_cmdarg(const char *cmd, const char **next);
 
 static int flood_cmdtrap(const char *cmd);
 
+static int oink_cmdtrap(const char *cmd);
+
 static struct compound_cmd_traps_ctx g_pigshell_traps[] = {
     { "[",       0, add_pigsty_cmdtrap },
     { "flood ",  0, flood_cmdtrap      },
     { "flood",   1, flood_cmdtrap      },
-    { "oink ",   0, NULL               },
-    { "oink",    1, NULL               },
+    { "oink ",   0, oink_cmdtrap       },
+    { "oink",    1, oink_cmdtrap       },
     { "pigsty ", 0, pigsty_cmdtrap     },
     { "set ",    0, set_cmdtrap        },
     { "set",     1, set_cmdtrap        },
@@ -852,6 +854,67 @@ static int flood_cmdtrap(const char *cmd) {
         sleep(3);
     } else if (exit_code == 0 && options.times_nr > 1) {
         printf("\n%d signatures sent. --\n", options.times_nr);
+    }
+
+    signal(SIGINT, shell_sigint_watchdog);
+    signal(SIGTERM, shell_sigint_watchdog);
+
+    return exit_code;
+}
+
+static int oink_cmdtrap(const char *cmd) {
+    int exit_code = 1;
+    const char *arg1 = NULL, *cp = NULL, *next = NULL, *arg2 = NULL, *temp = NULL;
+    struct pktcraft_options_ctx options;
+
+    options.pigsty = g_pigsty_head;
+
+    if (parse_pktcraft_options(&options) != 0) {
+        return 1;
+    }
+
+    if (cmd != NULL && *cmd == 0) {
+        printf("\n-- Sending signatures based on the pattern '%s'...\n", options.globmask);
+        options.single_test = "1";
+        exit_code = exec_pktcraft(options);
+        return exit_code;
+    }
+
+    cp = cmd;
+    arg1 = get_next_cmdarg(cp, &next);
+    cp = next;
+
+    signal(SIGINT, pktcrafter_sigint_watchdog);
+    signal(SIGTERM, pktcrafter_sigint_watchdog);
+
+    while (arg1 != NULL) {
+        printf("\n-- Sending signatures based on the pattern '%s'...\n", options.globmask);
+
+        options.globmask = (char *)arg1;
+
+        arg2 = get_next_cmdarg(cp, &next);
+        cp = next;
+
+        if (verify_int(arg2)) {
+            options.times_nr = atoi(arg2);
+            temp = get_next_cmdarg(cp, &next);
+            cp = next;
+        } else {
+            temp = arg2;
+        }
+
+        exit_code = exec_pktcraft(options);
+
+        if (pktcraft_aborted()) {
+            // INFO(Rafael): Avoiding users with impatient nervous hands... ;)
+            printf("\nINFO: Your shell will come back within 3 secs...\n");
+            sleep(3);
+            temp = NULL;
+        } else {
+            printf("\ndone. --\n");
+        }
+
+        arg1 = temp;
     }
 
     signal(SIGINT, shell_sigint_watchdog);

@@ -15,6 +15,7 @@
 #include "arp.h"
 #include "netmask.h"
 #include "options.h"
+#include "strglob.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -92,6 +93,15 @@ static int loop_pktcrafter(const pigsty_entry_ctx *pigsty,
                            const unsigned int nt_mask_addr[4],
                            const struct pktcraft_options_ctx user_options);
 
+static int glob_pktcrafter(const pigsty_entry_ctx *pigsty,
+                           const size_t signatures_count,
+                           pig_hwaddr_ctx *hwaddr,
+                           const pig_target_addr_ctx *addr,
+                           const int sockfd,
+                           const unsigned char *gw_hwaddr,
+                           const unsigned int nt_mask_addr[4],
+                           const struct pktcraft_options_ctx user_options);
+
 void stop_pktcraft() {
     g_pig_out = 1;
 }
@@ -137,6 +147,8 @@ int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
     }
 
     options->times_nr = 0;
+
+    options->globmask = NULL;
 
     options->signatures = get_option("signatures", NULL);
 
@@ -286,7 +298,9 @@ int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     }
 
     if (user_options.no_gateway != NULL || gw_hwaddr != NULL) {
-        if (user_options.single_test == NULL && user_options.times_nr == 0) {
+        if (user_options.globmask != NULL) {
+            pktcrafter = glob_pktcrafter;
+        } else if (user_options.single_test == NULL && user_options.times_nr == 0) {
             pktcrafter = endless_pktcrafter;
         } else if (user_options.times_nr == 0) {
             pktcrafter = singletest_pktcrafter;
@@ -536,4 +550,30 @@ static int loop_pktcrafter(const pigsty_entry_ctx *pigsty,
 
 int pktcraft_aborted(void) {
     return g_pig_out;
+}
+
+static int glob_pktcrafter(const pigsty_entry_ctx *pigsty,
+                           const size_t signatures_count,
+                           pig_hwaddr_ctx *hwaddr,
+                           const pig_target_addr_ctx *addr,
+                           const int sockfd,
+                           const unsigned char *gw_hwaddr,
+                           const unsigned int nt_mask_addr[4],
+                           const struct pktcraft_options_ctx user_options) {
+    const pigsty_entry_ctx *sp = pigsty;
+    int exit_code = 0;
+    int t = 0;
+
+    while (sp != NULL) {
+        if (strglob(sp->signature_name, user_options.globmask)) {
+            exit_code = single_pktcraft(sp, hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
+            usleep(user_options.timeo);
+
+            for (t = 1; t < user_options.times_nr && !g_pig_out; t++) {
+                exit_code = single_pktcraft(sp, hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
+                usleep(user_options.timeo);
+            }
+        }
+        sp = sp->next;
+    }
 }

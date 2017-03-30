@@ -22,6 +22,7 @@ struct pktcraft_options_ctx {
     int timeo;
     unsigned int times_nr;
     pigsty_entry_ctx *pigsty;
+    char *globmask;
 };
 
 void stop_pktcraft();
