@@ -39,6 +39,7 @@
 #define PIG_SHELL_LEFT_KEY              0x44
 #define PIG_SHELL_RIGHT_KEY             0x43
 #define PIG_SHELL_END_KEY               0x34
+#define PIG_SHELL_HOME_KEY              0x31
 #define PIG_SHELL_DELETE_KEY            0x33
 #define PIG_SHELL_CTRL_C                0x03
 #define PIG_SHELL_BACKSPACE_KEY         0x7f
@@ -228,6 +229,11 @@ static int shell_prompt(void) {
                     if (continue_line) {
                         printf("\n");
                     }
+                    while (cmdbuf[c] != 0 && c < PIG_SHELL_CMDBUF_LEN) {
+                        c++;
+                        printf("\033[1C");
+                        fflush(stdout);
+                    }
                     while (c > 0) {
                         printf("\b \b");
                         c--;
@@ -278,7 +284,23 @@ static int shell_prompt(void) {
                             fflush(stdout);
                         }
                     } else {
-                        printf("\b -- IGNORED key event, command buffer cleared. --\n", sk);
+                        printf("\b -- IGNORED key event, command buffer cleared. --\n");
+                        fflush(stdout);
+                        goto shell_prompt_reset;
+                    }
+                    break;
+
+                case PIG_SHELL_HOME_KEY:
+                    sk = getch();
+                    if (sk == 126) {
+                        while (lc > 0) {
+                            lc--;
+                            c--;
+                            printf("\b");
+                            fflush(stdout);
+                        }
+                    } else {
+                        printf("\b -- IGNORED key event, command buffer cleared. --\n");
                         fflush(stdout);
                         goto shell_prompt_reset;
                     }

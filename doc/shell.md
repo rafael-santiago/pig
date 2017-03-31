@@ -216,7 +216,37 @@ prompt:
 ~ !mcedit /usr/local/report.txt
 ```
 
+## Pig shell tricks
+
+If you really enjoy using ``pig`` on shell mode and the ``network mask``, ``gateway`` and ``lo-iface`` data
+never changes, you can pass this data when starting ``pig``:
+
+```
+you@SOMEWHERE:~/over/the/rainbow# pig --sub-task=shell \
+> --net-mask=255.255.255.0 --gateway=10.0.2.2 --lo-iface=eth0
+```
+
+Even better: you can create a shell script to automate it...
+
+```bash
+# pig-shell.sh
+pig --sub-task=shell --net-mask=255.255.255.0 --gateway=10.0.2.2 --lo-iface=eth0
+```
+
+...and then:
+
+```
+you@SOMEWHERE:~/over/the/rainbow# ./pig-shell.sh
+```
+
+Maybe change the script to read the network config data from ``$1``...``$n`` arguments. Anyway, it is up to you.
+
+
 ## Commands summary
+
+Well, now that you master all shell aspects present in ``pig`` here goes a short summary of all you have
+been learning during this reading:
+
 
 |     **Command**          |                      **What does it perform?**                            |
 |:------------------------:|:-------------------------------------------------------------------------:|
