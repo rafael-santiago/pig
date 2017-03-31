@@ -116,7 +116,7 @@ function pig_install() : result type int {
     $dst_paths.add_item("/usr/local/share/pig/doc/pcap-import.md");
 
     $src_files.add_item("../doc/shell.md");
-    $src_files.add_item("/usr/local/share/pig/doc/shell.md");
+    $dst_paths.add_item("/usr/local/share/pig/doc/shell.md");
 
     $src_files.add_item("../doc/man/pig.1");
     $dst_paths.add_item("/usr/local/man/man1/pig.1");
