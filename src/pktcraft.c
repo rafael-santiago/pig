@@ -133,7 +133,7 @@ int pktcraft_help() {
            "--no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n --no-gateway --loop=<random|sequential>]\n\n"
            "*** If you want to know more about some sub-task you should try: \"pig --sub-task=<name> --help\".\n"
            "    Do not you know any sub-task name? Welcome newbie! It is time to read some documentation: \"man pig\".\n___\n"
-           "pig is Copyright (C) 2015-2016 by Rafael Santiago.\n\n"
+           "pig is Copyright (C) 2015-2017 by Rafael Santiago.\n\n"
            "Bug reports, feedback, etc: <voidbrainvoid@gmail.com> or <https://github.com/rafael-santiago/pig/issues>\n");
     return 0;
 }
