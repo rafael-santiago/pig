@@ -33,6 +33,7 @@ pig-utests.prologue() {
             $includes.add_item("cutest/src");
             $ldflags.add_item("cutest/src/lib/libcutest.a");
             $ldflags.add_item("-ldl");
+            $ldflags.add_item("-lpthread");
         }
     }
     if ($exit_code != 0) {

@@ -1,5 +1,15 @@
 # pig - Release Notes
 
+## Version: 0.0.5
+
+### Features
+
+- Introducing the sub-task ``shell``, now is possible to use ``pig`` on interactive mode besides the default batch mode.
+
+### Bugfixes
+
+- None! :1st_place_medal:
+
 ## Version: 0.0.4
 
 ### Features

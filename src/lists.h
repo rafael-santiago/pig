@@ -64,4 +64,6 @@ unsigned char *get_ph_addr_from_pig_hwaddr(const unsigned int nt_addr[4], const 
 
 pig_hwaddr_ctx *get_pig_hwaddr_tail(pig_hwaddr_ctx *hwaddr);
 
+int rm_pigsty_entry(pigsty_entry_ctx **entries, const char *signature_name);
+
 #endif

@@ -54,7 +54,7 @@ int lin_rsk_create(const char *iface) {
     return sk;
 }
 
-int lin_rsk_lo_create() {
+int lin_rsk_lo_create(void) {
     int yes = 1;
     int sk = socket(AF_INET, SOCK_RAW, IPPROTO_TCP);
     if (sk != -1) {

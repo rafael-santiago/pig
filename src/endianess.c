@@ -7,7 +7,7 @@
  */
 #include "endianess.h"
 
-int little_endian() {
+int little_endian(void) {
     unsigned char *m = (unsigned char *)"\x00\x00\x00\x01";
     return (*((unsigned int *)(m)) >> 24);
 }

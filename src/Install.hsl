@@ -115,6 +115,9 @@ function pig_install() : result type int {
     $src_files.add_item("../doc/pcap-import.md");
     $dst_paths.add_item("/usr/local/share/pig/doc/pcap-import.md");
 
+    $src_files.add_item("../doc/shell.md");
+    $dst_paths.add_item("/usr/local/share/pig/doc/shell.md");
+
     $src_files.add_item("../doc/man/pig.1");
     $dst_paths.add_item("/usr/local/man/man1/pig.1");
 
@@ -159,6 +162,7 @@ function pig_uninstall() : result type none {
     $files2burn.add_item("/usr/local/share/pig/doc/README.md");
     $files2burn.add_item("/usr/local/share/pig/doc/arp-spoofing-with-pig.md");
     $files2burn.add_item("/usr/local/share/pig/doc/pcap-import.md");
+    $files2burn.add_item("/usr/local/share/pig/doc/shell.md");
     $files2burn.add_item("/usr/local/share/pig/doc");
     $files2burn.add_item("/usr/local/share/pig/pigsty");
     $files2burn.add_item("/usr/local/share/pig");

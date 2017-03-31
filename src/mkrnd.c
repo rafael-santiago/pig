@@ -10,35 +10,35 @@
 
 static unsigned int mk_rnd_ipv4(const int msb_floor);
 
-unsigned char mk_rnd_u1() {
+unsigned char mk_rnd_u1(void) {
     return (rand() & 0x1);
 }
 
-unsigned char mk_rnd_u3() {
+unsigned char mk_rnd_u3(void) {
     return (rand() & 0x7);
 }
 
-unsigned char mk_rnd_u4() {
+unsigned char mk_rnd_u4(void) {
     return (rand() & 0xf);
 }
 
-unsigned char mk_rnd_u6() {
+unsigned char mk_rnd_u6(void) {
     return (rand() & 0x3f);
 }
 
-unsigned char mk_rnd_u8() {
+unsigned char mk_rnd_u8(void) {
     return (rand() & 0xff);
 }
 
-unsigned short mk_rnd_u13() {
+unsigned short mk_rnd_u13(void) {
     return (rand() & 0x1fff);
 }
 
-unsigned short mk_rnd_u16() {
+unsigned short mk_rnd_u16(void) {
     return (rand() & 0xffff);
 }
 
-unsigned int mk_rnd_u32() {
+unsigned int mk_rnd_u32(void) {
     return (rand() & 0xffffffff);
 }
 
@@ -53,19 +53,19 @@ static unsigned int mk_rnd_ipv4(const int msb_floor) {
            ((unsigned int) b3);
 }
 
-unsigned int mk_rnd_european_ipv4() {
+unsigned int mk_rnd_european_ipv4(void) {
     return mk_rnd_ipv4(194);
 }
 
-unsigned int mk_rnd_north_american_ipv4() {
+unsigned int mk_rnd_north_american_ipv4(void) {
     return mk_rnd_ipv4(198);
 }
 
-unsigned int mk_rnd_south_american_ipv4() {
+unsigned int mk_rnd_south_american_ipv4(void) {
     return mk_rnd_ipv4(200);
 }
 
-unsigned int mk_rnd_asian_ipv4() {
+unsigned int mk_rnd_asian_ipv4(void) {
     return mk_rnd_ipv4(202);
 }
 

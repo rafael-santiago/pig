@@ -10,12 +10,12 @@
 #include "options.h"
 #include <stdio.h>
 
-static int pcap_import_help() {
+static int pcap_import_help(void) {
     printf("usage: pig --sub-task=pcap-import --pcap=<pcap-file-path> --pigsty=<pigsty-file-path> --include-ethernet-frames\n");
     return 0;
 }
 
-int pcap_import() {
+int pcap_import(void) {
     char *pcap = NULL;
     char *pigsty = NULL;
     char *incl_ethframe = NULL;

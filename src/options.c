@@ -7,6 +7,7 @@
  */
 #include "options.h"
 #include <string.h>
+#include <stdio.h>
 
 static char **g_argv = NULL;
 
@@ -18,32 +19,48 @@ void register_options(const int argc, char **argv) {
 }
 
 char *get_option(const char *option, char *default_value) {
-    static char retval[8192];
+    static char retval[8192] = "";
     int a;
     char temp[8192] = "";
+
     if (g_argc <= 0 || g_argv == NULL) {
         return default_value;
     }
+
     memset(temp, 0, sizeof(temp));
     temp[0] = '-';
     temp[1] = '-';
+
     strncpy(&temp[2], option, sizeof(temp) - 1);
     for (a = 0; a < g_argc; a++) {
         if (strcmp(g_argv[a], temp) == 0) {
             return "1";
         }
     }
+
     strncat(temp, "=", sizeof(temp) - 1);
+
     for (a = 0; a < g_argc; a++) {
         if (strstr(g_argv[a], temp) == g_argv[a]) {
-            return g_argv[a] + strlen(temp);
+            return (g_argv[a] + strlen(temp));
         }
     }
+
     memset(retval, 0, sizeof(retval));
+
     if (default_value != NULL) {
         strncpy(retval, default_value, sizeof(retval) - 1);
     } else {
         return NULL;
     }
-    return retval;
+
+    return &retval[0];
+}
+
+char **get_argv(void) {
+    return g_argv;
+}
+
+int get_argc(void) {
+    return g_argc;
 }

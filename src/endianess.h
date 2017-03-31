@@ -8,6 +8,6 @@
 #ifndef PIG_ENDIANESS_H
 #define PIG_ENDIANESS_H 1
 
-int little_endian();
+int little_endian(void);
 
 #endif

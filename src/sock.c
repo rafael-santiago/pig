@@ -18,7 +18,7 @@ int init_raw_socket(const char *iface) {
 #endif
 }
 
-int init_loopback_raw_socket() {
+int init_loopback_raw_socket(void) {
 #ifdef __linux
     return lin_rsk_lo_create();
 #else

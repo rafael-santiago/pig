@@ -15,6 +15,7 @@
 #include "arp.h"
 #include "netmask.h"
 #include "options.h"
+#include "strglob.h"
 #include <unistd.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -23,18 +24,6 @@
 #include <arpa/inet.h>
 
 static int g_pig_out = 0; //  :)
-
-struct pktcraft_options_ctx {
-    char *signatures;
-    char *targets;
-    char *gw_addr;
-    char *loiface;
-    char *nt_mask;
-    char *single_test;
-    char *no_gateway;
-    int should_be_quiet;
-    int timeo;
-};
 
 typedef int (*pig_pktcrafter)(const pigsty_entry_ctx *pigsty,
                               const size_t signatures_count,
@@ -50,10 +39,6 @@ static pigsty_entry_ctx *load_signatures(const char *signatures);
 static pig_target_addr_ctx *parse_targets(const char *targets);
 
 static int is_targets_option_required(const pigsty_entry_ctx *entries);
-
-static int parse_pktcraft_options(struct pktcraft_options_ctx *options);
-
-static int exec_pktcraft(const struct pktcraft_options_ctx user_options);
 
 static int singletest_pktcrafter(const pigsty_entry_ctx *pigsty,
                                  const size_t signatures_count,
@@ -99,11 +84,29 @@ static int single_pktcraft(const pigsty_entry_ctx *signature,
                            const unsigned int nt_mask_addr[4],
                            const struct pktcraft_options_ctx user_options);
 
-void stop_pktcraft() {
+static int loop_pktcrafter(const pigsty_entry_ctx *pigsty,
+                           const size_t signatures_count,
+                           pig_hwaddr_ctx *hwaddr,
+                           const pig_target_addr_ctx *addr,
+                           const int sockfd,
+                           const unsigned char *gw_hwaddr,
+                           const unsigned int nt_mask_addr[4],
+                           const struct pktcraft_options_ctx user_options);
+
+static int glob_pktcrafter(const pigsty_entry_ctx *pigsty,
+                           const size_t signatures_count,
+                           pig_hwaddr_ctx *hwaddr,
+                           const pig_target_addr_ctx *addr,
+                           const int sockfd,
+                           const unsigned char *gw_hwaddr,
+                           const unsigned int nt_mask_addr[4],
+                           const struct pktcraft_options_ctx user_options);
+
+void stop_pktcraft(void) {
     g_pig_out = 1;
 }
 
-int pktcraft() {
+int pktcraft(void) {
     char *option = NULL;
     struct pktcraft_options_ctx user_options;
     int exit_code = 0;
@@ -114,6 +117,8 @@ int pktcraft() {
         return pktcraft_help();
     }
 
+    user_options.pigsty = NULL;
+
     if ((exit_code = parse_pktcraft_options(&user_options)) != 0) {
         return exit_code;
     }
@@ -121,19 +126,19 @@ int pktcraft() {
     return exec_pktcraft(user_options);
 }
 
-int pktcraft_help() {
+int pktcraft_help(void) {
     printf("usage: pig --signatures=file.0,file.1,(...),file.n "
            "--gateway=<gateway address> --net-mask=<network mask> "
            "--lo-iface=<network interface> [--timeout=<in msecs> "
            "--no-echo --targets=n.n.n.n,n.*.*.*,n.n.n.n/n --no-gateway --loop=<random|sequential>]\n\n"
            "*** If you want to know more about some sub-task you should try: \"pig --sub-task=<name> --help\".\n"
            "    Do not you know any sub-task name? Welcome newbie! It is time to read some documentation: \"man pig\".\n___\n"
-           "pig is Copyright (C) 2015-2016 by Rafael Santiago.\n\n"
+           "pig is Copyright (C) 2015-2017 by Rafael Santiago.\n\n"
            "Bug reports, feedback, etc: <voidbrainvoid@gmail.com> or <https://github.com/rafael-santiago/pig/issues>\n");
     return 0;
 }
 
-static int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
+int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
     char *data = NULL;
     char *dp = NULL;
 
@@ -141,9 +146,13 @@ static int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
         return 1;
     }
 
+    options->times_nr = 0;
+
+    options->globmask = NULL;
+
     options->signatures = get_option("signatures", NULL);
 
-    if (options->signatures == NULL) {
+    if (options->signatures == NULL && options->pigsty == NULL) {
         printf("pig ERROR: --signatures option is missing.\n");
         return 1;
     }
@@ -188,7 +197,7 @@ static int parse_pktcraft_options(struct pktcraft_options_ctx *options) {
     return 0;
 }
 
-static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
+int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     pigsty_entry_ctx *pigsty = NULL;
     size_t signatures_count = 0, addr_count = 0;
     pigsty_entry_ctx *signature = NULL, *sp = NULL;
@@ -202,6 +211,9 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     char *temp = NULL;
     in_addr_t gw_in_addr = 0;
     pig_pktcrafter pktcrafter = random_pktcrafter;
+    unsigned int t = 0;
+
+    g_pig_out = 0;
 
     if (!user_options.should_be_quiet) {
         printf("pig INFO: starting up pig engine...\n\n");
@@ -214,7 +226,11 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
         return 1;
     }
 
-    pigsty = load_signatures(user_options.signatures);
+    if (user_options.pigsty == NULL) {
+        pigsty = load_signatures(user_options.signatures);
+    } else {
+        pigsty = user_options.pigsty;
+    }
 
     if (pigsty == NULL) {
         printf("pig ERROR: aborted.\n");
@@ -233,7 +249,9 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     if (is_targets_option_required(pigsty) && addr == NULL) {
         printf("pig PANIC: --targets option is required by some loaded signatures.\n");
         deinit_raw_socket(sockfd);
-        del_pigsty_entry(pigsty);
+        if (pigsty != user_options.pigsty) {
+            del_pigsty_entry(pigsty);
+        }
         return 1;
     }
 
@@ -246,7 +264,9 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     if (user_options.no_gateway == NULL && user_options.nt_mask == NULL) {
         printf("\npig PANIC: --net-mask option is required.\n");
         deinit_raw_socket(sockfd);
-        del_pigsty_entry(pigsty);
+        if (pigsty != user_options.pigsty) {
+            del_pigsty_entry(pigsty);
+        }
         return 1;
     }
 
@@ -254,7 +274,9 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     if (user_options.no_gateway == NULL && verify_ipv4_addr(user_options.nt_mask) == 0) {
         printf("pig PANIC: --net-mask has an invalid ip address.\n");
         deinit_raw_socket(sockfd);
-        del_pigsty_entry(pigsty);
+        if (pigsty != user_options.pigsty) {
+            del_pigsty_entry(pigsty);
+        }
         return 1;
     }
 
@@ -276,10 +298,14 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
     }
 
     if (user_options.no_gateway != NULL || gw_hwaddr != NULL) {
-        if (user_options.single_test == NULL) {
+        if (user_options.globmask != NULL) {
+            pktcrafter = glob_pktcrafter;
+        } else if (user_options.single_test == NULL && user_options.times_nr == 0) {
             pktcrafter = endless_pktcrafter;
-        } else {
+        } else if (user_options.times_nr == 0) {
             pktcrafter = singletest_pktcrafter;
+        } else {
+            pktcrafter = loop_pktcrafter;
         }
     } else {
         printf("\npig PANIC: unable to get the gateway's physical address.\n");
@@ -290,7 +316,9 @@ static int exec_pktcraft(const struct pktcraft_options_ctx user_options) {
 
     free(gw_hwaddr);
 
-    del_pigsty_entry(pigsty);
+    if (pigsty != user_options.pigsty) {
+        del_pigsty_entry(pigsty);
+    }
     del_pig_target_addr(addr);
     del_pig_hwaddr(hwaddr);
     deinit_raw_socket(sockfd);
@@ -498,4 +526,56 @@ static int is_targets_option_required(const pigsty_entry_ctx *entries) {
         }
     }
     return 0;
+}
+
+static int loop_pktcrafter(const pigsty_entry_ctx *pigsty,
+                           const size_t signatures_count,
+                           pig_hwaddr_ctx *hwaddr,
+                           const pig_target_addr_ctx *addr,
+                           const int sockfd,
+                           const unsigned char *gw_hwaddr,
+                           const unsigned int nt_mask_addr[4],
+                           const struct pktcraft_options_ctx user_options) {
+    unsigned int t;
+    int exit_code = 1;
+
+    for (t = 0; t < user_options.times_nr && !g_pig_out; t++) {
+        exit_code = single_pktcraft(get_pigsty_entry_by_index(rand() % signatures_count, pigsty),
+                                       hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
+        usleep(user_options.timeo);
+    }
+
+    return exit_code;
+}
+
+int pktcraft_aborted(void) {
+    return g_pig_out;
+}
+
+static int glob_pktcrafter(const pigsty_entry_ctx *pigsty,
+                           const size_t signatures_count,
+                           pig_hwaddr_ctx *hwaddr,
+                           const pig_target_addr_ctx *addr,
+                           const int sockfd,
+                           const unsigned char *gw_hwaddr,
+                           const unsigned int nt_mask_addr[4],
+                           const struct pktcraft_options_ctx user_options) {
+    const pigsty_entry_ctx *sp = pigsty;
+    int exit_code = 0;
+    int t = 0;
+
+    while (sp != NULL && !g_pig_out) {
+        if (strglob(sp->signature_name, user_options.globmask)) {
+            exit_code = single_pktcraft(sp, hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
+            usleep(user_options.timeo);
+
+            for (t = 1; t < user_options.times_nr && !g_pig_out; t++) {
+                exit_code = single_pktcraft(sp, hwaddr, addr, sockfd, gw_hwaddr, nt_mask_addr, user_options);
+                usleep(user_options.timeo);
+            }
+        }
+        sp = sp->next;
+    }
+
+    return exit_code;
 }

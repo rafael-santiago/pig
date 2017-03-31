@@ -8,14 +8,15 @@
 #include "run_pig_run.h"
 #include "pktcraft.h"
 #include "pcap_import.h"
+#include "shell.h"
 #include "options.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
-typedef int (*pig_task_exec)();
+typedef int (*pig_task_exec)(void);
 
-int run_pig_run() {
+int run_pig_run(void) {
     const char *option = NULL;
     struct pig_subtask {
         const char *name;
@@ -23,7 +24,8 @@ int run_pig_run() {
     };
     pig_task_exec pig_task = pktcraft;
     struct pig_subtask subtasks[] = {
-        { "pcap-import", pcap_import }
+        { "pcap-import", pcap_import },
+        { "shell", shell }
     };
     size_t subtasks_nr = sizeof(subtasks) / sizeof(subtasks[0]);
     size_t s = 0;

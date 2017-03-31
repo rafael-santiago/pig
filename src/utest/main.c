@@ -22,6 +22,7 @@
 #include "../pcap.h"
 #include "../pktslicer.h"
 #include "../pcap2pigsty.h"
+#include "../strglob.h"
 #include "pcap_data.h"
 #include <cutest.h>
 #include <stdlib.h>
@@ -319,7 +320,7 @@ CUTE_TEST_CASE(to_ipv4_tests)
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(pigsty_entry_ctx_tests)
-    pigsty_entry_ctx *pigsty = NULL, *p;
+    pigsty_entry_ctx *pigsty = NULL, *p, *oink, *roc, *boo;
     const pigsty_entry_ctx *p_item = NULL;
     pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
     pigsty = add_signature_to_pigsty_entry(pigsty, "roc!");
@@ -340,6 +341,25 @@ CUTE_TEST_CASE(pigsty_entry_ctx_tests)
     p_item = get_pigsty_entry_by_index(-1, pigsty);
     CUTE_CHECK("p != NULL", p_item == NULL);
     del_pigsty_entry(pigsty);
+    pigsty = NULL;
+    pigsty = add_signature_to_pigsty_entry(pigsty, "oink");
+    oink = pigsty;
+    pigsty = add_signature_to_pigsty_entry(pigsty, "roc!");
+    roc = oink->next;
+    pigsty = add_signature_to_pigsty_entry(pigsty, "boo.");
+    boo = roc->next;
+    CUTE_ASSERT(rm_pigsty_entry(NULL, "(null)") == 0);
+    CUTE_ASSERT(rm_pigsty_entry(NULL, NULL) == 0);
+    CUTE_ASSERT(rm_pigsty_entry(&pigsty, NULL) == 0);
+    CUTE_ASSERT(rm_pigsty_entry(&pigsty, "roc!") == 1);
+    CUTE_ASSERT(pigsty != NULL);
+    CUTE_ASSERT(pigsty->next == boo);
+    CUTE_ASSERT(pigsty->next->next == NULL);
+    CUTE_ASSERT(pigsty == oink);
+    CUTE_ASSERT(rm_pigsty_entry(&pigsty, "oink") == 1);
+    CUTE_ASSERT(pigsty == boo);
+    CUTE_ASSERT(rm_pigsty_entry(&pigsty, "boo.") == 1);
+    CUTE_ASSERT(pigsty == NULL);
 CUTE_TEST_CASE_END
 
 CUTE_TEST_CASE(pigsty_conf_set_ctx_tests)
@@ -1482,6 +1502,41 @@ CUTE_TEST_CASE(pcap2pigsty_tests)
 
 CUTE_TEST_CASE_END
 
+CUTE_TEST_CASE(strglob_tests)
+    struct strglob_tests_ctx {
+        const char *str;
+        const char *pattern;
+        int result;
+    };
+    struct strglob_tests_ctx tests[] = {
+        { NULL,                         NULL                                                       , 0 },
+        { "abc",                        "abc"                                                      , 1 },
+        { "abc",                        "ab"                                                       , 0 },
+        { "abc",                        "a?c"                                                      , 1 },
+        { "abc",                        "ab[abdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.c]", 1 },
+        { "abc",                        "ab[abdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.?]", 0 },
+        { "ab*",                        "ab[c*]"                                                   , 1 },
+        { "ab*",                        "ab[*c]"                                                   , 1 },
+        { "abc",                        "ab*"                                                      , 1 },
+        { "abc",                        "abc*"                                                     , 1 },
+        { "strglob.c",                  "strglo*.c"                                                , 1 },
+        { "parangaricutirimirruaru!!!", "*"                                                        , 1 },
+        { "parangaritititero",          "?"                                                        , 0 },
+        { "parangaritititero",          "?*"                                                       , 1 },
+        { "parangaricutirimirruaru",    "paran*"                                                   , 1 },
+        { "parangaricutirimirruaru",    "parruari"                                                 , 0 },
+        { "parangaricutirimirruaru",    "paran*garicuti"                                           , 0 },
+        { "parangaricutirimirruaru",    "paran*garicutirimirruaru"                                 , 1 },
+        { "parangaricutirimirruaru",    "paran*ru"                                                 , 1 },
+        { "hell yeah!",                 "*yeah!"                                                   , 1 }
+    };
+    size_t tests_nr = sizeof(tests) / sizeof(tests[0]), t;
+
+    for (t = 0; t < tests_nr; t++) {
+        CUTE_ASSERT(strglob(tests[t].str, tests[t].pattern) == tests[t].result);
+    }
+CUTE_TEST_CASE_END
+
 CUTE_TEST_CASE(run_tests)
     printf("running unit tests...\n\n");
     CUTE_RUN_TEST(pigsty_file_parsing_tests);
@@ -1509,6 +1564,7 @@ CUTE_TEST_CASE(run_tests)
     CUTE_RUN_TEST(pcap_loading_tests);
     CUTE_RUN_TEST(pktslicer_get_pkt_field_tests);
     CUTE_RUN_TEST(pcap2pigsty_tests);
+    CUTE_RUN_TEST(strglob_tests);
 CUTE_TEST_CASE_END
 
 CUTE_MAIN(run_tests)

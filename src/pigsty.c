@@ -27,8 +27,6 @@ static char *get_pigsty_file_data(const char *filepath);
 
 static int compile_next_buffered_pigsty_entry(char *buffer, char **next);
 
-static int compile_pigsty_buffer(const char *data);
-
 static char *skip_pigsty_comment(char *buffer);
 
 static char *skip_pigsty_blank(char *buffer);
@@ -67,13 +65,9 @@ static int verify_arp_paddr(const char *buffer);
 
 static int get_pigsty_field_index(const char *field);
 
-static int verify_int(const char *buffer);
-
 static int verify_hex(const char *buffer);
 
 static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *entries, char *buffer, char **next);
-
-static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *data);
 
 static int verify_required_fields(pigsty_entry_ctx *entry);
 
@@ -176,7 +170,7 @@ pigsty_entry_ctx *load_pigsty_data_from_file(pigsty_entry_ctx *entry, const char
     return entry;
 }
 
-static pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *buffer) {
+pigsty_entry_ctx *make_pigsty_data_from_loaded_data(pigsty_entry_ctx *entry, const char *buffer) {
     char *data = (char *) buffer;
     char *next_data = NULL;
     entry = mk_pigsty_entry_from_compiled_buffer(entry, data, &next_data);
@@ -327,19 +321,26 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
     char *signature_name = NULL;
     char *data = NULL;
     void *fmt_data = NULL;
+    char temp[255] = "";
     size_t fmt_dsize = 0;
     pigsty_entry_ctx *entry_p = NULL;
     int field_index = 0;
     size_t sz = 0;
+
     token = get_next_pigsty_word(tmp_buffer, next);
+
     while (**next != 0 && signature_name == NULL) {
         if (strcmp(token, "signature") == 0) {
             tmp_buffer = *next;
             signature_name = get_next_pigsty_word(tmp_buffer, next); //  =
+
             free(signature_name);
+
             tmp_buffer = *next;
             token = get_next_pigsty_word(tmp_buffer, next);
+
             signature_name = to_str(token, &sz);
+
             if (get_pigsty_entry_signature_name(signature_name, entries) != NULL) {
                 printf("pig PANIC: packet signature \"%s\" redeclared.\n", signature_name);
                 free(signature_name);
@@ -347,18 +348,24 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
                 del_pigsty_entry(entries);
                 return NULL;
             }
+
         }
+
         tmp_buffer = *next;
         free(token);
+
         if (signature_name == NULL) {
             token = get_next_pigsty_word(tmp_buffer, next);
         }
     }
+
     if (signature_name != NULL) {
         entries = add_signature_to_pigsty_entry(entries, signature_name);
         free(signature_name);
+
         entry_p = get_pigsty_entry_tail(entries);
         tmp_buffer = buffer;
+
         token = get_next_pigsty_word(tmp_buffer, next);
         while (**next != 0) {
             if ((field_index = get_pigsty_field_index(token)) > -1 && field_index != kSignature) {
@@ -368,7 +375,9 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
                 free(token);
                 token = NULL;
                 tmp_buffer = *next;
+
                 data = get_next_pigsty_word(tmp_buffer, next);
+
                 if (data != NULL) {
                     if (verify_int(data) || verify_hex(data)) {
                         fmt_data = int_to_voidp(data, &fmt_dsize);
@@ -379,9 +388,11 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
                             strcmp(data, "hw-dst-addr") == 0) {
                             token = data;
                             data = get_option(data, NULL);
+                            // INFO(Rafael): Otherwise we will be changing the argv[n] and we should not do it.
+                            sprintf(temp, "%s", data);
                         }
-                        data[strlen(data) - 1] = 0;
-                        fmt_data = mac2byte(data + 1, 6);
+                        temp[strlen(temp) - 1] = 0;
+                        fmt_data = mac2byte(temp + 1, 6);
                         fmt_dsize = 6;
                         if (token != NULL) {
                             data = token;
@@ -401,24 +412,32 @@ static pigsty_entry_ctx *mk_pigsty_entry_from_compiled_buffer(pigsty_entry_ctx *
                     } else if (verify_string(data)) {
                         fmt_data = str_to_voidp(data, &fmt_dsize);
                     }
+
                     entry_p->conf = add_conf_to_pigsty_conf_set(entry_p->conf, field_index, fmt_data, fmt_dsize);
+
                     free(fmt_data);
                     fmt_data = NULL;
                 }
+
                 free(data);
                 data = NULL;
             }
+
             tmp_buffer = *next;
             free(token);
+
             token = get_next_pigsty_word(tmp_buffer, next);
+
             if (*token == ']') {
                 break;
             }
         }
+
         free(token);
     } else if (**next != 0) {
         printf("pig PANIC: signature field missing.\n");
     }
+
     return entries;
 }
 
@@ -501,7 +520,7 @@ static int compile_next_buffered_pigsty_entry(char *buffer, char **next) {
     return all_ok;
 }
 
-static int compile_pigsty_buffer(const char *buffer) {
+int compile_pigsty_buffer(const char *buffer) {
     int all_ok = 1;
     char *data = (char *) buffer;
     char *next_data = NULL;
@@ -681,7 +700,7 @@ static int get_pigsty_field_index(const char *field) {
     return -1;
 }
 
-static int verify_int(const char *buffer) {
+int verify_int(const char *buffer) {
     const char *b;
     if (buffer == NULL) {
         return 0;
@@ -1003,4 +1022,8 @@ static int check_eth_frame_sanity(const pigsty_conf_set_ctx *conf, int *ip_versi
     }
 
     return normal;
+}
+
+void reset_compile_pigsty_line_ct(void) {
+    g_line_nr = 1;
 }

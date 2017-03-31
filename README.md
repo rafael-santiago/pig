@@ -275,6 +275,7 @@ the details about them follows in their own manual. Take a look at the ``Table 3
 |      **Sub-task**     |                **What does it perform?**               |         **Manual**                                                                                 |
 |:---------------------:|:------------------------------------------------------:|:--------------------------------------------------------------------------------------------------:|
 |     ``pcap-import``   |     Imports packet from a PCAP file into a pigsty file | [``cat doc/pcap-import.md``](https://github.com/rafael-santiago/pig/blob/master/doc/pcap-import.md)|
+|     ``shell``         |     Executes pig on interactive mode                   | [``cat doc/shell.md``](https://github.com/rafael-santiago/pig/blob/master/doc/shell.md)            |
 
 ## Pig tricks
 

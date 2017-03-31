@@ -8,10 +8,33 @@
 #ifndef PIG_PKTCRAFT_H
 #define PIG_PKTCRAFT_H 1
 
-void stop_pktcraft();
+#include "types.h"
 
-int pktcraft();
+struct pktcraft_options_ctx {
+    char *signatures;
+    char *targets;
+    char *gw_addr;
+    char *loiface;
+    char *nt_mask;
+    char *single_test;
+    char *no_gateway;
+    int should_be_quiet;
+    int timeo;
+    unsigned int times_nr;
+    pigsty_entry_ctx *pigsty;
+    char *globmask;
+};
 
-int pktcraft_help();
+void stop_pktcraft(void);
+
+int pktcraft(void);
+
+int pktcraft_help(void);
+
+int parse_pktcraft_options(struct pktcraft_options_ctx *options);
+
+int exec_pktcraft(const struct pktcraft_options_ctx user_options);
+
+int pktcraft_aborted(void);
 
 #endif
