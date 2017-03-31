@@ -138,7 +138,7 @@ static int shell_help(void) {
     return 0;
 }
 
-int quit_shell(void) {
+void quit_shell(void) {
     g_pig_shell_exit = 1;
 }
 

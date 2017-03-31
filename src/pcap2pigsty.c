@@ -30,11 +30,9 @@ struct pkt_field_dumper_ctx {
 
 //static pcap_rec_dumper g_pcap_rec_dumper_ip6tlayer_lt[0xffff] = { 0 };
 
-static void init_pcap_rec_dumper_lookup_tables();
+static void init_pcap_rec_dumper_lookup_tables(void);
 
 static int pigsty_data(FILE *pigsty, const pcap_record_ctx *record, const int incl_ethframe);
-
-static void init_pcap_rec_dumper_lookup_table();
 
 static int ethframe_dumper(FILE *pigsty, const pcap_record_ctx *record);
 
@@ -172,7 +170,7 @@ static void pigsty_finis(FILE *pigsty, const char *signature_fmt, const int inde
     fprintf(pigsty, str_fmt, index);
 }
 
-static void init_pcap_rec_dumper_lookup_tables() {
+static void init_pcap_rec_dumper_lookup_tables(void) {
     static int ltdone = 0;
     size_t c = 0, r = 0;
     size_t c_nr = 0, r_nr = 0;

@@ -102,11 +102,11 @@ static int glob_pktcrafter(const pigsty_entry_ctx *pigsty,
                            const unsigned int nt_mask_addr[4],
                            const struct pktcraft_options_ctx user_options);
 
-void stop_pktcraft() {
+void stop_pktcraft(void) {
     g_pig_out = 1;
 }
 
-int pktcraft() {
+int pktcraft(void) {
     char *option = NULL;
     struct pktcraft_options_ctx user_options;
     int exit_code = 0;
@@ -126,7 +126,7 @@ int pktcraft() {
     return exec_pktcraft(user_options);
 }
 
-int pktcraft_help() {
+int pktcraft_help(void) {
     printf("usage: pig --signatures=file.0,file.1,(...),file.n "
            "--gateway=<gateway address> --net-mask=<network mask> "
            "--lo-iface=<network interface> [--timeout=<in msecs> "

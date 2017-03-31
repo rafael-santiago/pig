@@ -10,29 +10,29 @@
 
 #include "types.h"
 
-unsigned char mk_rnd_u1();
+unsigned char mk_rnd_u1(void);
 
-unsigned char mk_rnd_u3();
+unsigned char mk_rnd_u3(void);
 
-unsigned char mk_rnd_u4();
+unsigned char mk_rnd_u4(void);
 
-unsigned char mk_rnd_u6();
+unsigned char mk_rnd_u6(void);
 
-unsigned char mk_rnd_u8();
+unsigned char mk_rnd_u8(void);
 
-unsigned short mk_rnd_u13();
+unsigned short mk_rnd_u13(void);
 
-unsigned short mk_rnd_u16();
+unsigned short mk_rnd_u16(void);
 
-unsigned int mk_rnd_u32();
+unsigned int mk_rnd_u32(void);
 
-unsigned int mk_rnd_european_ipv4();
+unsigned int mk_rnd_european_ipv4(void);
 
-unsigned int mk_rnd_north_american_ipv4();
+unsigned int mk_rnd_north_american_ipv4(void);
 
-unsigned int mk_rnd_south_american_ipv4();
+unsigned int mk_rnd_south_american_ipv4(void);
 
-unsigned int mk_rnd_asian_ipv4();
+unsigned int mk_rnd_asian_ipv4(void);
 
 unsigned int mk_rnd_ipv4_by_mask(const pig_target_addr_ctx *mask);
 

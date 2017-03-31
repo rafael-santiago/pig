@@ -14,9 +14,9 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef int (*pig_task_exec)();
+typedef int (*pig_task_exec)(void);
 
-int run_pig_run() {
+int run_pig_run(void) {
     const char *option = NULL;
     struct pig_subtask {
         const char *name;

@@ -10,6 +10,6 @@
 
 int shell(void);
 
-int quit_shell(void);
+void quit_shell(void);
 
 #endif

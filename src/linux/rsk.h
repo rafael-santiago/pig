@@ -12,7 +12,7 @@
 
 int lin_rsk_create(const char *iface);
 
-int lin_rsk_lo_create();
+int lin_rsk_lo_create(void);
 
 void lin_rsk_close(const int sockfd);
 

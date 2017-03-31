@@ -119,10 +119,11 @@ void *get_pkt_field(const char *field, const unsigned char *buf, const size_t bu
     static unsigned char mbuf[0xffff] = "";
     static size_t mbuf_size = 0;
     get_pkt_data_func get_data = NULL;
+    void *data = NULL;
+
     if (field == NULL || buf == NULL) {
         return NULL;
     }
-    void *data = NULL;
 
     memcpy(mbuf, buf, buf_size);
     mbuf_size = buf_size;

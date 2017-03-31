@@ -45,6 +45,8 @@ pig.prologue() {
 
     }
 
+    $cflags = hefesto.sys.get_option("cflags");
+
     if ($chosen_toolset == "clang-c-app") {
         # Disabling boring-useless-chicken-shit warnings on Clang.
         $cflags.add_item("-Wno-switch");

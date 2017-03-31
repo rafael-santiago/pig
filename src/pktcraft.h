@@ -25,11 +25,11 @@ struct pktcraft_options_ctx {
     char *globmask;
 };
 
-void stop_pktcraft();
+void stop_pktcraft(void);
 
-int pktcraft();
+int pktcraft(void);
 
-int pktcraft_help();
+int pktcraft_help(void);
 
 int parse_pktcraft_options(struct pktcraft_options_ctx *options);
 
