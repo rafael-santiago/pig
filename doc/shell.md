@@ -1,28 +1,27 @@
 # The shell sub-task
 
-This sub-task allows you to use ``pig`` on an interactive mode. For doing it you should call the
+This sub-task allows you to use ``pig`` on interactive mode. For doing this you should call the
 application with the following arguments:
 
 ```
 you@SOMEWHERE:~/over/the/rainbow# pig --sub-task=shell
 ```
 
-After doing it will be presented to you a very simple shell prompt:
+Just after will be presented a very simple shell prompt:
 
 ```
 you@SOMEWHERE:~/over/the/rainbow# pig --sub-task=shell
 ~ _
 ```
 
-With this shell you are able to do anything that you do being on batch mode and also
-things that you do not.
+With this shell you are able to do anything that you do on batch mode and also things that you do not.
 
 Even on interactive mode is necessary to indicate the options ``--gateway`` or ``--no-gateway``, ``--net-mask``, ``--lo-iface``.
-Depending on the loaded signatures you also need to specify additional options related.
+Depending on the loaded signatures, you also need to specify some additional options related with your desired task.
 
 ## Setting the pig options
 
-There are two ways of doing it, you can pass these options when starting ``pig`` on "shell mode" or into the ``shell``
+There are two ways for doing this. You can pass these options when starting ``pig`` on "shell mode" or into the ``shell``
 specify the options using the command ``set`` as follows:
 
 ```
@@ -43,7 +42,7 @@ To probe any ``pig``'s option you should call ``set`` without arguments.
 ~
 ```
 
-If due to some reason you want to remove a option you should use the command ``unset``:
+If due to some reason you want to remove an option you should use the command ``unset``:
 
 ```
 ~ unset net-mask
@@ -51,7 +50,7 @@ If due to some reason you want to remove a option you should use the command ``u
 
 ## Inline definition of pigsties
 
-This interactive mode allows us to use the shell prompt as a very simple editor and define signatures on-the-fly.
+The interactive mode allows us to use the shell prompt as a very simple text editor and define signatures on the fly.
 
 Any command started with ``[`` and ended with ``]`` is considered a pigsty. So:
 
@@ -60,7 +59,7 @@ Any command started with ``[`` and ended with ``]`` is considered a pigsty. So:
 1 signature was added. --
 ```
 
-All we should do is to define a pigsty using the rules explained in the main [``README.md``](https://github.com/rafael-santiago/pig/blob/master/README.md).
+All we should do is define a pigsty using the rules explained in the main [``README.md``](https://github.com/rafael-santiago/pig/blob/master/README.md).
 
 Sometimes a pigsty can be longer so a good way is to escape the line with a backslash to keep your sanity:
 
@@ -81,8 +80,8 @@ I find it good but only for minor tasks, things that you do not need to follow a
 ## Manipulating your loaded pigsties
 
 When you have some specific routine task to perform, the best way is to save the related pigsties as files
-and load them. When you use ``pig`` on standard ``batch-mode`` you can load previous pigsties with the option ``--signatures``.
-On ``shell`` you can use the command ``pigsty`` with its ``sub-command`` called ``ld``:
+and later load them all. When you use ``pig`` on standard ``batch-mode`` you can load previous pigsties with
+the option ``--signatures``. On ``shell`` you can use the command ``pigsty`` with its ``sub-command`` called ``ld``:
 
 ```
 ~ pigsty ld /usr/local/pigsty/pentest-session-1.pigsty
@@ -126,14 +125,14 @@ We can also pass a comma separated list of patterns:
 ~ pigsty silly-one, *[Ss]ub?7*, *deep*
 ```
 
-You can load a set of pigsties from a file with the sub-command ``ld``, in order to remove from memory you should use the
+You can load a set of pigsties from a file with the sub-command ``ld``. In order to remove them from memory you should use the
 sub-command ``rm``.
 
 ```
 ~ pigsty rm silly-one
 ```
 
-The ``rm`` argument is taken as a glob so:
+The ``rm`` argument is taken as a glob, so:
 
 ```
 ~ pigsty rm *
@@ -158,7 +157,7 @@ In order to do it you should use the command ``flood``
 ```
 
 It will send random signatures based on the signatures previously read throught ``pigsty ld`` and/or ``--signatures=(...)``.
-If you want to cancel this endless flood you should press ``CTRL + c``.
+If you want to cancel this endless flood session you should press ``CTRL + c``.
 
 Is also possible to flood with just a specific amount of random signatures:
 
@@ -188,7 +187,7 @@ After the glob pattern, you can also specify the total of sendings:
 ~ oink "SpaceCadet", 10, Catamaran
 ```
 
-This last shown sample will send 10 packets of "SpaceCadet" signature and so 1 of "Catamaran".
+This last shown command will send 10 packets of "SpaceCadet" signature and then 1 of "Catamaran".
 
 ```
 ~ oink "[sS]ub?7*", "NewApt*[Ww][Oo][Rr][Mm]*", 60
@@ -199,9 +198,9 @@ pattern ``NewApt*[Ww][Oo][Rr][Mm]*`` will be sent sixty times.
 
 ## Executing external commands from the shell
 
-When you are doing some pentest session or anything related sometimes you need to switch to another applications, maybe
-a editor to take some notes, etc. Being on ``shell`` mode you can use the "outsider" marker in order to execute the
-supplied command externally from the pig's shell.
+When you are doing some pentest session or anything related, sometimes you need to switch to other applications, maybe
+a text editor to take some notes, etc. Being on ``shell`` mode you can use the "outsider marker" in order to execute the
+supplied command outside from the pig's shell.
 
 The outsider marker is denoted by an exclamation symbol:
 
@@ -209,8 +208,8 @@ The outsider marker is denoted by an exclamation symbol:
 ~ !ls /usr/local/report.txt
 ```
 
-After the command execution you will back to the ``shell`` mode, so is possible to run programs that will hang up the
-prompt:
+After the command execution you will back to the ``shell`` mode, so is possible to run programs that will hang the
+prompt until their exit:
 
 ```
 ~ !mcedit /usr/local/report.txt
@@ -226,7 +225,7 @@ you@SOMEWHERE:~/over/the/rainbow# pig --sub-task=shell \
 > --net-mask=255.255.255.0 --gateway=10.0.2.2 --lo-iface=eth0
 ```
 
-Even better: you can create a shell script to automate it...
+Even better: you can create a shell script to automate this call...
 
 ```bash
 # pig-shell.sh
