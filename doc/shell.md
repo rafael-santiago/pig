@@ -156,7 +156,7 @@ In order to do it you should use the command ``flood``
 ~ flood
 ```
 
-It will send random signatures based on the signatures previously read throught ``pigsty ld`` and/or ``--signatures=(...)``.
+It will send random signatures based on the signatures previously read through ``pigsty ld`` and/or ``--signatures=(...)``.
 If you want to cancel this endless flood session you should press ``CTRL + c``.
 
 Is also possible to flood with just a specific amount of random signatures:
