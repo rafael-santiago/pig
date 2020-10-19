@@ -1528,7 +1528,8 @@ CUTE_TEST_CASE(strglob_tests)
         { "parangaricutirimirruaru",    "paran*garicuti"                                           , 0 },
         { "parangaricutirimirruaru",    "paran*garicutirimirruaru"                                 , 1 },
         { "parangaricutirimirruaru",    "paran*ru"                                                 , 1 },
-        { "hell yeah!",                 "*yeah!"                                                   , 1 }
+        { "hell yeah!",                 "*yeah!"                                                   , 1 },
+        { ".",                          "*[Gg]lenda*"                                              , 0 },
     };
     size_t tests_nr = sizeof(tests) / sizeof(tests[0]), t;
 
